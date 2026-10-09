@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-09T18:01:43Z",
+  "description": "Implement approved SameSite isolation design from current widget-configuration HEAD. Dedicated widget cookie path and scoped LiveView socket, connector policy validation, generated embed URL, host migration contract and focused transport/browser tests. Work in a new branch of the existing worktree as explicitly requested.",
+  "id": "ww-323",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Isolate widget sessions and scoped LiveView transport (#12)",
+  "type": "task",
+  "updated_at": "2026-10-09T18:01:43Z"
+}
