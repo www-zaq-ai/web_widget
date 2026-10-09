@@ -123,6 +123,44 @@ defmodule WebWidget.Embedding.SessionTest do
     refute Map.has_key?(again.resp_cookies, "_web_widget_session")
   end
 
+  test "the last same-widget first-load cookie invalidates the other page's CSRF handshake" do
+    # Two independent requests without a cookie model overlapping first navigations.
+    first = get(build_conn(), "https://www.example.com/widget/none")
+    second = get(build_conn(), "https://www.example.com/widget/none")
+
+    csrf = fn page ->
+      page
+      |> html_response(200)
+      |> LazyHTML.from_document()
+      |> LazyHTML.query("meta[name='csrf-token']")
+      |> LazyHTML.attribute("content")
+      |> hd()
+    end
+
+    assert first.resp_cookies["_web_widget_session"].path ==
+             second.resp_cookies["_web_widget_session"].path
+
+    refute first.resp_cookies["_web_widget_session"].value ==
+             second.resp_cookies["_web_widget_session"].value
+
+    refute get_session(first, "_csrf_token") == get_session(second, "_csrf_token")
+
+    socket = %Phoenix.Socket{endpoint: @endpoint}
+
+    for transport <- ["websocket", "longpoll"] do
+      path = "/widget/none/live/" <> transport
+      own_first = handshake(first, path, csrf.(first))
+      own_second = handshake(second, path, csrf.(second))
+      assert {:ok, _} = Socket.connect(%{"widget_id" => "none"}, socket, own_first)
+      assert {:ok, _} = Socket.connect(%{"widget_id" => "none"}, socket, own_second)
+
+      # The browser retains the second response's cookie at the shared name/path.
+      overwritten_first = handshake(second, path, csrf.(first))
+      assert is_nil(overwritten_first.session)
+      assert :error = Socket.connect(%{"widget_id" => "none"}, socket, overwritten_first)
+    end
+  end
+
   test "a manually copied cookie cannot carry session state across widget scopes" do
     first = get(build_conn(), "https://www.example.com/widget/lax")
 
