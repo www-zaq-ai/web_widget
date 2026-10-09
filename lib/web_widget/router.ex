@@ -29,7 +29,7 @@ defmodule WebWidget.Router do
       end
 
       pipeline unquote(session) do
-        plug :accepts, ["html"]
+        plug :accepts, ["html", "json"]
         plug WebWidget.Embedding.Session
         plug :fetch_live_flash
         plug :protect_from_forgery
@@ -39,6 +39,9 @@ defmodule WebWidget.Router do
 
       scope unquote(prefix), alias: false do
         pipe_through unquote(session)
+
+        get "/:widget_id/session", WebWidget.Embedding.SessionBootstrap, [],
+          private: %{web_widget_session_bootstrap: true}
 
         LiveViewRouter.live_session unquote(session),
           layout: false,

@@ -51,6 +51,8 @@ defmodule WebWidget.Embedding.Session do
     end
 
     id = conn.path_params["widget_id"] || ""
+    bootstrap? = conn.private[:web_widget_session_bootstrap] == true
+    conn = put_resp_header(conn, "cache-control", "no-store")
 
     widget =
       case WebWidget.Runtime.fetch_widget(id) do
@@ -58,36 +60,66 @@ defmodule WebWidget.Embedding.Session do
         _ -> %{}
       end
 
-    case effective(widget, conn.private.phoenix_endpoint, conn.scheme) do
-      {:ok, policy} -> install(conn, id, policy)
-      {:error, reason} -> conn |> send_resp(503, Atom.to_string(reason)) |> halt()
+    cond do
+      bootstrap? and not same_origin?(conn) ->
+        conn |> send_resp(403, "session_bootstrap_forbidden") |> halt()
+
+      bootstrap? and Map.get(widget, :allowed_domains, []) == [] ->
+        conn |> send_resp(404, "widget_unavailable") |> halt()
+
+      true ->
+        case effective(widget, conn.private.phoenix_endpoint, conn.scheme) do
+          {:ok, policy} -> install(conn, id, policy)
+          {:error, reason} -> conn |> send_resp(503, Atom.to_string(reason)) |> halt()
+        end
     end
   end
 
+  defp same_origin?(conn) do
+    origin =
+      URI.to_string(%URI{scheme: Atom.to_string(conn.scheme), host: conn.host, port: conn.port})
+
+    get_req_header(conn, "sec-fetch-site") in [[], ["same-origin"]] and
+      get_req_header(conn, "origin") in [[], [origin]]
+  end
+
   defp install(conn, id, policy) do
-    path = conn.request_path
+    bootstrap? = conn.private[:web_widget_session_bootstrap] == true
+    path = if bootstrap?, do: Path.dirname(conn.request_path), else: conn.request_path
 
     opts =
       options() ++
         [path: path, same_site: policy.same_site, secure: policy.secure, http_only: true]
 
+    conn = conn |> Plug.Session.call(Plug.Session.init(opts)) |> fetch_session()
+
+    established? =
+      get_session(conn, @scope_id) == id and
+        get_session(conn, @scope_path) == path and
+        get_session(conn, @policy) == policy.same_site and
+        is_binary(get_session(conn, "_csrf_token"))
+
+    if bootstrap? and fetch_query_params(conn).query_params["verify"] == "1" and not established? do
+      conn |> send_resp(409, "cookie_unavailable") |> halt()
+    else
+      conn = if established?, do: conn, else: new_scope(conn, id, path, policy)
+      conn = if bootstrap?, do: conn, else: configure_session(conn, ignore: true)
+
+      conn
+      |> assign(:web_widget_socket_path, path <> "/live")
+      |> assign(:web_widget_session_path, path <> "/session")
+    end
+  end
+
+  defp new_scope(conn, id, path, policy) do
+    Plug.CSRFProtection.delete_csrf_token()
+
     conn
-    |> Plug.Session.call(Plug.Session.init(opts))
-    |> fetch_session()
-    |> isolate_scope(id, path)
+    |> clear_session()
+    |> configure_session(renew: true)
     |> put_session(@scope_id, id)
     |> put_session(@scope_path, path)
     |> put_session(@policy, policy.same_site)
-    |> assign(:web_widget_socket_path, path <> "/live")
-  end
-
-  defp isolate_scope(conn, id, path) do
-    if get_session(conn, @scope_id) == id and get_session(conn, @scope_path) == path do
-      conn
-    else
-      Plug.CSRFProtection.delete_csrf_token()
-      conn |> clear_session() |> configure_session(renew: true)
-    end
   end
 
   def valid_scope?(session, id, uri) when is_map(session) and is_struct(uri, URI) do

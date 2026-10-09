@@ -5,6 +5,7 @@ defmodule WebWidget.Embedding.SessionTest do
 
   alias Phoenix.Socket.Transport
   alias Phoenix.Transports.WebSocket
+  alias Phoenix.LiveView.Session, as: LiveViewSession
   alias WebWidget.Embedding.Session
   alias WebWidget.Embedding.Socket
   @endpoint WebWidget.TestHost.Endpoint
@@ -48,7 +49,9 @@ defmodule WebWidget.Embedding.SessionTest do
         prefix <- ["/widget", "/support/chat"] do
       path = prefix <> "/" <> id
       conn = get(build_conn(), "https://www.example.com" <> path)
-      cookie = conn.resp_cookies["_web_widget_session"]
+      refute Map.has_key?(conn.resp_cookies, "_web_widget_session")
+      bootstrap = get(build_conn(), "https://www.example.com" <> path <> "/session")
+      cookie = bootstrap.resp_cookies["_web_widget_session"]
       assert cookie.path == path
       assert cookie.same_site == value
       assert cookie.secure
@@ -56,25 +59,19 @@ defmodule WebWidget.Embedding.SessionTest do
       refute Map.has_key?(cookie, :domain)
       refute Map.has_key?(conn.resp_cookies, "_host")
       assert html_response(conn, 200) =~ "content=\"#{path}/live\""
+      assert html_response(conn, 200) =~ "content=\"#{path}/session\""
     end
 
     assert response(get(build_conn(), "/widget/none"), 503) == "https_required"
-    conn = get(build_conn(), "/widget/lax")
+    conn = get(build_conn(), "/widget/lax/session")
     refute conn.resp_cookies["_web_widget_session"].secure
   end
 
   test "real Phoenix handshake decodes scoped cookie and validates CSRF" do
     for prefix <- ["/widget", "/support/chat"], transport <- ["websocket", "longpoll"] do
       path = prefix <> "/none"
-      page = get(build_conn(), "https://www.example.com" <> path)
-
-      token =
-        page
-        |> html_response(200)
-        |> LazyHTML.from_document()
-        |> LazyHTML.query("meta[name='csrf-token']")
-        |> LazyHTML.attribute("content")
-        |> hd()
+      page = get(build_conn(), "https://www.example.com" <> path <> "/session")
+      token = json_response(page, 200)["csrf_token"]
 
       info = handshake(page, path <> "/live/" <> transport, token)
       assert info.session["web_widget_id"] == "none"
@@ -108,13 +105,22 @@ defmodule WebWidget.Embedding.SessionTest do
     assert html_response(widget, 200)
     refute Map.has_key?(widget.resp_cookies, "_host")
     refute Map.has_key?(get_session(widget), "bo_user")
+    refute Map.has_key?(widget.resp_cookies, "_web_widget_session")
+
+    bootstrap =
+      build_conn()
+      |> Plug.Test.put_req_cookie("_host", host_cookie.value)
+      |> get("/widget/lax/session")
+
+    refute Map.has_key?(bootstrap.resp_cookies, "_host")
+    refute Map.has_key?(get_session(bootstrap), "bo_user")
 
     again =
       build_conn()
       |> Plug.Test.put_req_cookie("_host", host_cookie.value)
       |> Plug.Test.put_req_cookie(
         "_web_widget_session",
-        widget.resp_cookies["_web_widget_session"].value
+        bootstrap.resp_cookies["_web_widget_session"].value
       )
       |> get("/bo-session")
 
@@ -123,46 +129,54 @@ defmodule WebWidget.Embedding.SessionTest do
     refute Map.has_key?(again.resp_cookies, "_web_widget_session")
   end
 
-  test "the last same-widget first-load cookie invalidates the other page's CSRF handshake" do
-    # Two independent requests without a cookie model overlapping first navigations.
+  test "independent signed pages accept one shared session established after rendering" do
     first = get(build_conn(), "https://www.example.com/widget/none")
     second = get(build_conn(), "https://www.example.com/widget/none")
+    refute Map.has_key?(first.resp_cookies, "_web_widget_session")
+    refute Map.has_key?(second.resp_cookies, "_web_widget_session")
 
-    csrf = fn page ->
-      page
-      |> html_response(200)
-      |> LazyHTML.from_document()
-      |> LazyHTML.query("meta[name='csrf-token']")
-      |> LazyHTML.attribute("content")
-      |> hd()
-    end
+    ids =
+      for page <- [first, second] do
+        root =
+          page
+          |> html_response(200)
+          |> LazyHTML.from_document()
+          |> LazyHTML.query("[data-phx-main]")
 
-    assert first.resp_cookies["_web_widget_session"].path ==
-             second.resp_cookies["_web_widget_session"].path
+        [id] = LazyHTML.attribute(root, "id")
+        [token] = LazyHTML.attribute(root, "data-phx-session")
+        [static] = LazyHTML.attribute(root, "data-phx-static")
 
-    refute first.resp_cookies["_web_widget_session"].value ==
-             second.resp_cookies["_web_widget_session"].value
+        assert {:ok, %{id: ^id}} =
+                 LiveViewSession.verify_session(@endpoint, "lv:" <> id, token, static)
 
-    refute get_session(first, "_csrf_token") == get_session(second, "_csrf_token")
+        id
+      end
 
+    assert Enum.uniq(ids) == ids
+    shared = get(build_conn(), "https://www.example.com/widget/none/session")
+
+    reused =
+      build_conn()
+      |> Plug.Test.put_req_cookie(
+        "_web_widget_session",
+        shared.resp_cookies["_web_widget_session"].value
+      )
+      |> get("https://www.example.com/widget/none/session?verify=1")
+
+    refute Map.has_key?(reused.resp_cookies, "_web_widget_session")
+    assert get_session(shared, "_csrf_token") == get_session(reused, "_csrf_token")
     socket = %Phoenix.Socket{endpoint: @endpoint}
 
-    for transport <- ["websocket", "longpoll"] do
+    for response <- [shared, reused], transport <- ["websocket", "longpoll"] do
       path = "/widget/none/live/" <> transport
-      own_first = handshake(first, path, csrf.(first))
-      own_second = handshake(second, path, csrf.(second))
-      assert {:ok, _} = Socket.connect(%{"widget_id" => "none"}, socket, own_first)
-      assert {:ok, _} = Socket.connect(%{"widget_id" => "none"}, socket, own_second)
-
-      # The browser retains the second response's cookie at the shared name/path.
-      overwritten_first = handshake(second, path, csrf.(first))
-      assert is_nil(overwritten_first.session)
-      assert :error = Socket.connect(%{"widget_id" => "none"}, socket, overwritten_first)
+      info = handshake(shared, path, json_response(response, 200)["csrf_token"])
+      assert {:ok, _} = Socket.connect(%{"widget_id" => "none"}, socket, info)
     end
   end
 
   test "a manually copied cookie cannot carry session state across widget scopes" do
-    first = get(build_conn(), "https://www.example.com/widget/lax")
+    first = get(build_conn(), "https://www.example.com/widget/lax/session")
 
     second =
       build_conn()
@@ -170,7 +184,7 @@ defmodule WebWidget.Embedding.SessionTest do
         "_web_widget_session",
         first.resp_cookies["_web_widget_session"].value
       )
-      |> get("https://www.example.com/widget/strict")
+      |> get("https://www.example.com/widget/strict/session")
 
     assert get_session(second, "web_widget_id") == "strict"
     assert get_session(second, "web_widget_path") == "/widget/strict"
@@ -213,15 +227,8 @@ defmodule WebWidget.Embedding.SessionTest do
   end
 
   test "a changed policy rejects the old session and reload issues the replacement" do
-    page = get(build_conn(), "https://www.example.com/widget/lax")
-
-    token =
-      page
-      |> html_response(200)
-      |> LazyHTML.from_document()
-      |> LazyHTML.query("meta[name='csrf-token']")
-      |> LazyHTML.attribute("content")
-      |> hd()
+    page = get(build_conn(), "https://www.example.com/widget/lax/session")
+    token = json_response(page, 200)["csrf_token"]
 
     old_info = handshake(page, "/widget/lax/live/websocket", token)
     socket = %Phoenix.Socket{endpoint: @endpoint}
@@ -246,7 +253,7 @@ defmodule WebWidget.Embedding.SessionTest do
     )
 
     assert :error = Socket.connect(%{"widget_id" => "lax"}, socket, old_info)
-    reloaded = get(build_conn(), "https://www.example.com/widget/lax")
+    reloaded = get(build_conn(), "https://www.example.com/widget/lax/session")
     assert reloaded.resp_cookies["_web_widget_session"].same_site == "Strict"
     refute Map.has_key?(reloaded.resp_cookies, "_host")
   end

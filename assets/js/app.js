@@ -29,8 +29,9 @@ import "../css/app.css"
 import "./widget-demo"
 import {WidgetContext} from "./widget-context"
 import {currentConversationId, currentIdentityToken} from "./widget-bootstrap"
+import {widgetSessionToken} from "./widget-session"
 
-const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 class WidgetTransportSocket extends Socket {
   constructor(url, opts) {
     super(url, {...opts, params: () => ({_csrf_token: csrfToken})})
@@ -53,8 +54,39 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
-// connect if there are any LiveViews on the page
-liveSocket.connect()
+const sessionPath = document.querySelector("meta[name='web-widget-session']")?.getAttribute("content")
+const sessionFailure = error => {
+  const alert = document.getElementById("widget-session-error")
+  if (alert) { alert.hidden = false; alert.dataset.reason = error.message || "session_bootstrap_failed" }
+}
+const prepareSession = async () => {
+  csrfToken = await widgetSessionToken(sessionPath)
+  document.querySelector("meta[name='csrf-token']").setAttribute("content", csrfToken)
+}
+
+if (sessionPath && document.getElementById("widget-context")) {
+  let resynchronizing = false
+  let sessionRetries = 0
+  liveSocket.getSocket().onOpen(() => { sessionRetries = 0 })
+  liveSocket.getSocket().onError(() => {
+    // Locks can be partitioned more narrowly than cookies. A late first response
+    // in another partition can replace the cookie after our verification read.
+    if (resynchronizing) return
+    if (sessionRetries++ >= 3) {
+      liveSocket.disconnect()
+      sessionFailure(new Error("session_connection_failed"))
+      return
+    }
+    resynchronizing = true
+    liveSocket.disconnect()
+    void prepareSession().then(() => liveSocket.connect()).catch(sessionFailure)
+      .finally(() => { resynchronizing = false })
+  })
+  void prepareSession().then(() => liveSocket.connect()).catch(sessionFailure)
+} else if (!sessionPath) {
+  // The standalone parent/demo retains its normal Phoenix session.
+  liveSocket.connect()
+}
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

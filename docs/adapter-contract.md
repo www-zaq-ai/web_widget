@@ -138,6 +138,21 @@ session. It installs its own session before flash/CSRF handling. Signing salts a
 package-specific; signed widget ID and mount path are checked against the socket
 request URI and page session. Cookie paths are not authorization boundaries.
 
+Instances of one connector share its transport cookie and CSRF state, never user
+identity or conversation state. Initial page responses do not write that cookie.
+Before connecting, the iframe obtains its CSRF token from the same-origin
+`<widget-page-path>/session` endpoint under a connector-path Web Lock. That endpoint
+creates the cookie only when absent/invalid, and otherwise reads the established
+session without rewriting it. A verification read confirms cookie acceptance;
+blocked cookies and unavailable coordination fail explicitly with bounded work.
+The independently signed LiveView page remains the JWT binding identity. Stable
+page, installation and transport URLs do not gain instance IDs or redirects.
+
+Browser locks may be storage-partitioned even where cookies are shared. A bounded
+session-token resynchronization on a rejected transport must cover late concurrent
+cookie establishment across those partitions, without disabling CSRF or repeatedly
+rewriting an established cookie. Cookie policy changes require a fresh bootstrap.
+
 Canonical `config.settings["same_site"]` accepts exactly `"None"`, `"Lax"`,
 `"Strict"`; present nil/blank/invalid values reject runtime construction. Missing
 legacy settings inherit the serving endpoint's declared `:web_widget_session`
