@@ -36,14 +36,21 @@ ZAQ's local mount uses the existing host endpoint for `/widget/:id`, `/widget-ap
 
 ## Runtime builder and shared protocol
 
+The resolved connector must include string-keyed settings
+`%{"identity_issuer" => "zaq_issuer", "identity_audience" => "zaq_audience"}`.
+ZAQ supplies these new-connector defaults; sign tokens with the actual configured
+values. Identifiers must be exact UTF-8 strings of 1–255 bytes without surrounding
+whitespace. Missing or invalid settings fail construction; integration options
+provide no fallback. Upgrade existing connectors atomically before installing this
+version. Editing either identifier requires a host runtime rebuild, invalidates
+old sessions and rejects tokens with old claims.
+
 Register `WebWidget.Integration.RuntimeBuilder` as the `web_widget` channel runtime builder. The host's existing supervisor owns its child lifecycle. One enabled connector corresponds to one package runtime and a positive integer connector ID. The string form is the public widget route ID. The builder reads the host's resolved connector key privately; no key appears in public widget configuration or the installation snippet.
 
 ```elixir
 config :web_widget, :integration,
   pubsub_server: Zaq.PubSub,
   identity_verifier: :connector_key,
-  identity_issuer: "test-widget",
-  identity_audience: "zaq-web-widget",
   token_url: "/api/widget-token"
 ```
 

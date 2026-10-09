@@ -16,9 +16,9 @@ defmodule WebWidget.E2ESharedHost do
       response: host, context: host, delivery: host,
       sink_mfa: {__MODULE__, :receive_request, [self()]}}
     {:ok, {spec, []}} = WebWidget.Integration.RuntimeBuilder.build(
-      %{id: 420, provider: "web_widget", token: key()}, hooks,
-      pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key,
-      identity_issuer: "e2e-parent", identity_audience: "e2e-widget")
+      %{id: 420, provider: "web_widget", token: key(),
+        settings: %{"identity_issuer" => "e2e-parent", "identity_audience" => "e2e-widget"}}, hooks,
+      pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key)
     Supervisor.start_child(WebWidget.Supervisor, spec)
   end
 

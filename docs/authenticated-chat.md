@@ -7,9 +7,7 @@ Mount `web_widget("/widget")` in the host browser pipeline and `web_widget_api("
 ```elixir
 config :web_widget, :integration,
   pubsub_server: Zaq.PubSub,
-  identity_verifier: :connector_key,
-  identity_issuer: "test-widget",
-  identity_audience: "zaq-web-widget"
+  identity_verifier: :connector_key
 
 config :web_widget, :authentication,
   token_ttl_seconds: 604_800,
@@ -25,12 +23,18 @@ The resolved connector `config.token` is read privately by the runtime builder. 
 
 ## Identity and parent context
 
+Connector settings must contain `"identity_issuer"` and `"identity_audience"`.
+ZAQ's new-connector defaults are `zaq_issuer` and `zaq_audience`; the example below
+uses those values. Use the actual configured identifiers when signing. Missing or
+invalid settings reject construction, with no legacy fallback; upgrade atomically.
+Rebuild the connector runtime after edits to apply them and revoke old sessions.
+
 The parent backend signs a compact HS256 JWT with protected header exactly `{"alg":"HS256","typ":"JWT"}`. Required claims are numeric positive `widget_id`, authenticated `user_id`, matching `iss` and `aud`, integer `iat` and `exp`, and random `jti` (16–255 characters). Optional integer `nbf` is enforced. The raw UTF-8 connector key is the HMAC secret; do not Base64-decode it. Unknown claims and old Phoenix.Token proofs fail closed. The default maximum JWT lifetime is seven days.
 
 ```elixir
 {:ok, identity_token} = WebWidget.Integration.SignedIdentity.sign(
   connector_key, 12, %{user_id: authenticated_external_user_id},
-  issuer: "test-widget", audience: "zaq-web-widget"
+   issuer: "zaq_issuer", audience: "zaq_audience"
 )
 ```
 

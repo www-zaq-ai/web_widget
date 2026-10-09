@@ -8,17 +8,22 @@ Create and enable a Web Widget connector in **Channels → Communication → Web
 
 ZAQ must serve `/web_widget/assets`, `/widget/:id`, `/widget-api/:id/disconnect`, and `/live` from its public HTTPS origin. The host mounts `web_widget("/widget")` in a browser pipeline and `web_widget_api("/widget-api")` in a separate backend API scope. The latter has no browser session or CSRF dependency; its signed proof is mandatory.
 
-Connector-key verification requires matching host settings:
+Connector-key verification uses trusted host options:
 
 ```elixir
 config :web_widget, :integration,
   pubsub_server: Zaq.PubSub,
-  identity_verifier: :connector_key,
-  identity_issuer: "test-widget",
-  identity_audience: "zaq-web-widget"
+  identity_verifier: :connector_key
 ```
 
-The backend control audience is `identity_audience <> ":control"`, here `zaq-web-widget:control`. Keep the key on the backend. Use its exact UTF-8 bytes for HS256; do not Base64-decode it.
+Set **Identity issuer** and **Identity audience** on the connector. Canonical
+settings keys are `identity_issuer` and `identity_audience`; new-connector defaults
+are `zaq_issuer` and `zaq_audience`. Values must be exact UTF-8 strings of 1–255
+bytes without surrounding whitespace. Both are mandatory, with no adapter default
+or application-option fallback. Upgrade existing connectors atomically. Edits
+require a runtime rebuild and invalidate old sessions and old-claim tokens.
+
+The backend control audience is `identity_audience <> ":control"`, here `zaq_audience:control`. Keep the key on the backend. Use its exact UTF-8 bytes for HS256; do not Base64-decode it.
 
 ## Issue identity tokens
 
@@ -36,8 +41,8 @@ async function issueWidgetToken(authenticatedUserId) {
   const now = Math.floor(Date.now() / 1000);
   return new SignJWT({ widget_id: 12, user_id: String(authenticatedUserId) })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-    .setIssuer("test-widget")
-    .setAudience("zaq-web-widget")
+    .setIssuer("zaq_issuer")
+    .setAudience("zaq_audience")
     .setIssuedAt(now)
     .setExpirationTime(now + 604800)
     .setJti(randomUUID())
