@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-09T20:12:41Z",
   "created": "2026-10-09T19:43:09Z",
   "description": "Implement version-1 optional status/2 using bounded runtime snapshots, real scoped cookie/CSRF WebSocket handshakes, delivery/authentication/cookie checks, secret-free results and focused regression coverage. Work in a separate branch of the current worktree as requested. Contract and runtime snapshot precede transport/coordinator; regression and host handoff follow.",
   "id": "ww-432",
@@ -17,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Expose scoped widget transport readiness (#16)",
   "type": "task",
-  "updated_at": "2026-10-09T20:12:38Z"
+  "updated_at": "2026-10-09T20:12:41Z"
 }
