@@ -6,9 +6,15 @@
   "description": "User requests regression test and confirmation only. Add deterministic same-widget first-load cookie/CSRF collision reproduction on existing branch; inspect and report concrete transport evidence. Do not implement session isolation redesign or unrelated WebKit fixes.",
   "id": "ww-zsv",
   "labels": [],
+  "comments": [
+    {
+      "text": "Confirmed production cookie/CSRF collision without any production changes. New assets/tests/session-race.spec.ts holds two real same-widget page responses and application scripts, verifies both original navigations lack the widget cookie, then delivers both Set-Cookie responses before releasing handshakes. Chromium repeat-each=3 fails 3/3 at the usability assertion: first iframe false, second true. Server-side diagnostic in SessionTest verifies both page tokens with their own cookie, then proves first token + last response cookie yields nil Phoenix connect_info.session and Socket :error for both websocket and longpoll. mix precommit passes 196 tests/no Credo issues; TypeScript check passes. Browser regression intentionally remains red to expose unfixed behavior. WebKit permission fix and production redesign not attempted; user authorized confirmation only.",
+      "timestamp": "2026-10-09T20:29:57Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Confirm same-widget concurrent session regression (#12, #19)",
   "type": "task",
-  "updated_at": "2026-10-09T20:26:50Z"
+  "updated_at": "2026-10-09T20:29:57Z"
 }
