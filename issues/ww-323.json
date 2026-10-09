@@ -10,11 +10,15 @@
     {
       "text": "Implemented on ww-323/widget-session-isolation from cc192ff (preserves connector-owned issuer/audience). Standard Phoenix session decoding with distinct widget cookie name, per-page cookie paths, signed ID/path scope checks at socket and page mount; canonical SameSite validation and declared endpoint legacy policy; scoped endpoint macro and own browser pipeline; explicit data-widget-url in host embed script including trusted custom prefixes. Validation: mix precommit 194 tests/no Credo issues; assets build; 31 Chromium authentication/cookie/host tests pass including real HTTPS cross-site reconnect and third-party-cookie restriction. ZAQ endpoint/router/proxy migration remains external; #16 readiness probe is explicitly separate. Local browser prerequisites: dev DB created/migrated; existing Chromium 1223 selected through PLAYWRIGHT_CHROMIUM_BIN. Readiness URL moved to package port4019 to avoid Docker collision on4020.",
       "timestamp": "2026-10-09T18:35:52Z"
+    },
+    {
+      "text": "Landed repository implementation as 64a576a. Final mix precommit: 195 tests pass and no Credo findings. Final cookie/host Chromium rerun: 7 pass; broader auth-bootstrap + cookie + host run: 31 pass. Added reset of manually copied cross-widget session cookies and scope-bound CSRF seeds. Built assets committed. GitHub #12 intentionally remains open until external ZAQ endpoint/router/proxy migration and deployment acceptance; no host repository modified and no PR/code push requested.",
+      "timestamp": "2026-10-09T18:38:43Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Isolate widget sessions and scoped LiveView transport (#12)",
   "type": "task",
-  "updated_at": "2026-10-09T18:35:52Z"
+  "updated_at": "2026-10-09T18:38:43Z"
 }
