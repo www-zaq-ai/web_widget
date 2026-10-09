@@ -1,6 +1,6 @@
 # Phoenix host integration
 
-`web_widget` is a dependency of the host application. The host supplies connector configuration, trusted shared-protocol constructors, a config-bound sink callback, its PubSub server, and its LiveView socket. ZAQ owns routing, permissions, identity resolution, and durable conversations. The package owns iframe delivery, signed identity verification, page binding, browser state, and host response delivery to the correct widget. It has no compile-time ZAQ dependency.
+`web_widget` is a dependency of the host application. The host supplies connector configuration, trusted shared-protocol constructors, a config-bound sink callback, its PubSub server, and the serving endpoint with the package's scoped LiveView socket. ZAQ owns routing, permissions, identity resolution, and durable conversations. The package owns iframe delivery, signed identity verification, page binding, browser state, and host response delivery to the correct widget. It has no compile-time ZAQ dependency.
 
 ## Routes and assets
 
@@ -83,6 +83,60 @@ within a top-level site; different parent sites use separate partitions. JWT/pag
 authorization and conversations remain independent. Blocked cookies fail explicitly.
 
 Install the package, endpoint mount, router pipeline, proxy rules and updated generated snippet together. Existing iframe documents using `/live` require reload; changing a connector policy requires runtime replacement and page reload. No BO cookie is rewritten by widget routes. Independently scoped widgets cannot overwrite one another's cookie attributes. Partitioned None supports cross-site embedding on supported browsers even when ordinary third-party cookies are blocked; Lax/Strict still do not support normal cross-site iframe sessions.
+
+### Local readiness
+
+ZAQ may invoke the optional configured adapter callback
+`WebWidget.Integration.RuntimeBuilder.status(id, timeout_ms: 2_000)` on the serving
+node through its existing NodeRouter action. Configure the serving endpoint explicitly
+in host-mounted mode, retaining the other integration options:
+
+```elixir
+config :web_widget, :integration,
+  pubsub_server: Zaq.PubSub,
+  identity_verifier: :connector_key,
+  widget_path: "/widget",
+  readiness: [endpoint: ZaqWeb.Endpoint, scheme: :https]
+```
+
+In package-endpoint mode (`start_integration_server: true`), omitting `endpoint`
+selects `WebWidgetWeb.Endpoint`. Scheme selects an **actual local listener**, default
+`:http`; use `:https` for direct TLS. Listener address/port come from the configured
+endpoint, not a caller URL. Wildcard addresses are probed through loopback. The
+endpoint's `url: [host: ...]` supplies Host, Origin and the verified TLS hostname;
+normal socket origin checks stay enabled. Private CAs may be supplied through
+`readiness: [tls_options: [cacertfile: "/trusted/widget-ca.pem"]]` (or `cacerts`).
+Disabling TLS verification is not supported. The probe uses Req for the page and
+Mint (already used by Req) for the HTTP/1.1 WebSocket upgrade, then closes without
+joining a LiveView or issuing/consuming identity credentials.
+
+The version-1 response contains five checks and only allowlisted effective settings;
+see [adapter contract](adapter-contract.md#adapter-readiness-version-1). Cookie and
+CSRF probe values, signing keys, callbacks, private configuration and raw failures
+never leave the checker. Connector-key identity reports the installed connector
+values. A custom verifier's opaque identity policy stays unresolved. Effective
+SameSite is reported only after verification of the scoped page cookie and socket.
+
+Response-delivery checks cover the installed Phoenix PubSub registry, running
+supervision tree and local PG2 membership, without subscribing or broadcasting.
+Unsupported custom PubSub adapters report unknown rather than assumed readiness.
+These checks do not establish availability of remote PubSub nodes.
+
+Zero visitors can be ready. No new listener, connector endpoint process or browser
+connection is introduced. Results are intentionally uncached: endpoint-wide listener
+lookups are cheap; per-widget handshakes must reflect its current runtime/policy.
+Runtime generation and listener identity are rechecked before a positive result.
+Without authoritative lifecycle evidence the checker reports unavailable/unknown,
+not a guessed starting state. Caller input accepts only a positive integer ID and
+an optional 1–2,000 millisecond total timeout.
+
+Readiness is local evidence, not proof that a public reverse proxy forwards widget
+upgrades or that browsers accept third-party cookies. A TLS-terminating proxy with
+only a local HTTP listener cannot obtain a green None/Secure check through an HTTPS
+`public_url` alone. Until its serving HTTPS/session path can be verified, keep that
+deployment non-ready and verify the external proxy path separately; never spoof
+forwarded headers or weaken CSRF/origin/TLS checks to make the probe pass. Preserve
+the HTTPS cross-site connect/reconnect deployment tests alongside local readiness.
 
 ## Runtime builder and shared protocol
 

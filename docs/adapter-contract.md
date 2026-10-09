@@ -42,7 +42,7 @@ ZAQ's existing Channels map is:
 ```elixir
 web_widget: %{
   bridge: Zaq.Channels.WebBridge,
-  runtime_builder: WebWidget.Integration.RuntimeBuilder
+  adapter: WebWidget.Integration.RuntimeBuilder
 }
 ```
 
@@ -76,7 +76,7 @@ the existing verifier, and derives the backend audience as
 `identity_audience <> ":control"`. Changing either value requires a host-owned
 runtime rebuild; old sessions lose runtime-generation authorization and proofs
 with the old claims are rejected. Desired settings alone do not change an installed
-runtime. Cookie policy and optional readiness reporting remain separate work.
+runtime. Readiness reports installed values, never a copy of desired host settings.
 
 One persisted connector identifies one widget. Keep its positive integer ID in
 Context/Delivery and use its string form in the registry and `/widget/:widget_id`.
@@ -187,6 +187,60 @@ The generated host installation script includes the explicit `data-widget-url`,
 using the trusted `:widget_path` mount prefix (default `/widget`) and public origin.
 The iframe renders its scoped transport URL; no JWT enters either URL's query.
 Host router, endpoint socket mount, proxy and installation prefix must agree.
+
+## Adapter readiness (version 1)
+
+The configured adapter optionally exposes `status(widget_id, timeout_ms: 2_000)`.
+The ID is a positive integer and the timeout is a total budget, capped at 2 seconds.
+ZAQ independently bounds invocation and validates the closed response. Old adapters
+without this callback remain supported; missing support never means ready.
+
+The response is `{:ok, %{protocol_version: 1, status: state, reason: reason,
+checks: checks, effective_settings: settings}}`. All five checks are required, in
+order: `runtime`, `transport`, `delivery`, `authentication`, `cookie_policy`.
+Each is `%{status: state, reason: reason}`. States are `:ready`, `:starting`,
+`:unavailable`, `:unknown`; ready has a nil reason. Overall precedence is
+unavailable, unknown, starting, ready; ties use check order.
+
+Fixed reasons are:
+
+| Check | Reasons |
+| --- | --- |
+| runtime | `runtime_not_registered`, `runtime_unresponsive`, `runtime_starting` |
+| transport | `transport_not_listening`, `transport_starting`, `transport_unverifiable` |
+| delivery | `pubsub_unavailable` |
+| authentication | `identity_not_configured`, `identity_settings_mismatch` |
+| cookie_policy | `cookie_policy_unsupported`, `cookie_policy_mismatch`, `secure_cookie_required`, `https_required` |
+| any | `check_timeout`, `check_failed` |
+
+Starting reasons mean starting. `transport_unverifiable`,
+`cookie_policy_unsupported`, `check_timeout`, `check_failed` mean unknown; other
+reasons mean unavailable. Callback failures are
+`{:error, :invalid_request | :check_timeout | :check_failed}`.
+
+Effective settings contain only `identity_issuer`, `identity_audience`, and
+`same_site`, each `%{value: value, source: source}`. Connector-key identifiers
+are connector-owned; legacy SameSite inherits the serving endpoint's policy.
+Sources allowed by the protocol are connector/application/default, plus endpoint
+for SameSite. Unresolved is `%{value: nil, source: :unresolved}` and cannot be
+ready. Custom verifiers without provable effective identity settings are not green.
+ZAQ owns comparison against current desired settings, disabled state, NodeRouter
+invocation and refresh of both BO surfaces after lifecycle changes.
+
+Readiness checks the configured serving host endpoint in mounted mode or the
+package endpoint in package mode. It obtains an anonymous page cookie and CSRF
+token, verifies widget-only attributes, and upgrades the widget-scoped WebSocket.
+It does not join a LiveView channel, authenticate a user, consume a JWT, create a
+conversation, require visitors, or start a listener. These ephemeral probe values
+never appear in results. A healthy BO `/live` or long-poll transport is insufficient.
+Listener observations are endpoint-wide; session/handshake results are widget-specific
+and are not retained across calls, avoiding stale green after lifecycle changes.
+
+This proves local listener/session/transport readiness only. It does not prove
+public proxy routing, TLS termination, real-user authentication or browser cookie
+acceptance. None requires an actually verified HTTPS session path; an unverifiable
+TLS-terminating topology must stay unknown rather than trust a public URL string.
+See [host integration](host-integration.md) for trusted readiness configuration.
 
 ## Identity, embedding and parent bootstrap
 

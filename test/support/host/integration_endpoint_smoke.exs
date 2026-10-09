@@ -53,5 +53,25 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
     assert body =~ "data-widget-id"
     assert %{status: 200, body: body} = Req.get!(base_url <> "/widget/#{config.id}")
     assert body =~ "widget-state"
+
+    stop_supervised!({WebWidget.Runtime, config.id})
+
+    config =
+      Map.merge(config, %{
+        token: String.duplicate("package-readiness-key", 3),
+        settings: %{
+          "identity_issuer" => "package-issuer",
+          "identity_audience" => "package-audience"
+        }
+      })
+
+    opts = [pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key]
+    {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, opts)
+    start_supervised!(spec)
+    # No endpoint override: package mode must resolve its own serving endpoint.
+    Application.put_env(:web_widget, :integration, [])
+    assert {:ok, %{status: :ready}} = RuntimeBuilder.status(config.id, [])
+    assert :ok = Supervisor.terminate_child(WebWidget.Supervisor, WebWidget.RuntimeRegistry)
+    assert {:ok, %{reason: :runtime_not_registered}} = RuntimeBuilder.status(config.id, [])
   end
 end
