@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-09T20:30:06Z",
   "created": "2026-10-09T20:26:47Z",
   "description": "User requests regression test and confirmation only. Add deterministic same-widget first-load cookie/CSRF collision reproduction on existing branch; inspect and report concrete transport evidence. Do not implement session isolation redesign or unrelated WebKit fixes.",
   "id": "ww-zsv",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Confirm same-widget concurrent session regression (#12, #19)",
   "type": "task",
-  "updated_at": "2026-10-09T20:29:57Z"
+  "updated_at": "2026-10-09T20:30:06Z"
 }
