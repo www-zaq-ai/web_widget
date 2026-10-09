@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-09T21:06:55Z",
@@ -7,8 +7,8 @@
   "id": "ww-0r2",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Coordinate shared connector session bootstrap (#12, #19)",
   "type": "task",
-  "updated_at": "2026-10-09T21:06:55Z"
+  "updated_at": "2026-10-09T21:06:59Z"
 }
