@@ -58,7 +58,25 @@ Hooks supply `widget_id = config.id`, presentation settings, the shared
 config-bound `sink_mfa`. They do **not** supply a PubSub server. For this host,
 the adapter receives `Zaq.PubSub` through trusted application configuration.
 `config :web_widget, :integration` supplies `pubsub_server` and `identity_verifier`
-(an MFA); `build/3` accepts these options explicitly for isolated consumers/tests.
+(a trusted MFA or `:connector_key`); `build/3` accepts these options explicitly for
+isolated consumers/tests. Neither connector settings nor browser input may select
+these providers.
+
+Connector-key verification requires both canonical string keys
+`config.settings["identity_issuer"]` and `config.settings["identity_audience"]`.
+Each must be valid UTF-8, 1–255 bytes, with no leading/trailing whitespace. Missing,
+nil, blank and invalid values reject runtime construction with
+`:invalid_identity_config`. There are no adapter defaults or integration-option
+fallbacks: ZAQ supplies new-connector defaults `zaq_issuer` / `zaq_audience` and
+enforces the atomic configuration upgrade for existing connectors. Trusted custom
+verifier MFAs retain their own policy and do not use these connector-key settings.
+
+The builder binds the resolved connector key and exact identifiers privately into
+the existing verifier, and derives the backend audience as
+`identity_audience <> ":control"`. Changing either value requires a host-owned
+runtime rebuild; old sessions lose runtime-generation authorization and proofs
+with the old claims are rejected. Desired settings alone do not change an installed
+runtime. Cookie policy and optional readiness reporting remain separate work.
 
 One persisted connector identifies one widget. Keep its positive integer ID in
 Context/Delivery and use its string form in the registry and `/widget/:widget_id`.

@@ -106,14 +106,17 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
 
     {config, hooks, options} = Host.fixture()
     key = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
-    config = Map.put(config, :token, key)
+
+    config =
+      Map.merge(config, %{
+        token: key,
+        settings: %{"identity_issuer" => "parent", "identity_audience" => "widget"}
+      })
 
     options =
       Keyword.merge(options,
         pubsub_server: WebWidget.PubSub,
-        identity_verifier: :connector_key,
-        identity_issuer: "parent",
-        identity_audience: "widget"
+        identity_verifier: :connector_key
       )
 
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, options)

@@ -2,8 +2,8 @@ defmodule WebWidget.Integration.SignedIdentity do
   @moduledoc """
   HS256 JWT parent-backend identity assertions. Never expose the signing key.
 
-  Configure `identity_verifier: :connector_key`, `identity_issuer` and
-  `identity_audience` in the integration options. Mint a fresh proof for each
+  Configure `identity_verifier: :connector_key` in trusted integration options and
+  `identity_issuer` / `identity_audience` in connector settings. Mint a fresh proof for each
   iframe connection using `sign/4` on the authenticated parent backend.
   The third argument is a map containing only `:user_id`.
   Standard JWT claims bind issuer, audience, issue/expiry times
@@ -144,6 +144,9 @@ defmodule WebWidget.Integration.SignedIdentity do
         length(Enum.uniq(String.graphemes(key))) >= 8
 
   def valid_key?(_), do: false
+
+  @doc false
+  def valid_identifier?(value), do: identifier?(value)
 
   defp identifier?(value),
     do:

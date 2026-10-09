@@ -4,7 +4,8 @@ defmodule WebWidget.Integration.RuntimeBuilder do
 
   `build/2` reads `config :web_widget, :integration` with `:pubsub_server` and
   `:identity_verifier` (an MFA or `:connector_key`). `build/3` accepts the same options explicitly.
-  Connector-key verification also requires `:identity_issuer` and `:identity_audience`;
+  Connector-key verification requires string-keyed `identity_issuer` and
+  `identity_audience` in `config.settings`, with no fallback or adapter defaults;
   the key is read privately from the resolved host `config.token`.
   The verifier is invoked with its configured arguments followed by proof and
   `%{widget_id: string_id, channel_config_id: integer_id}`. It must verify proof
@@ -55,11 +56,12 @@ defmodule WebWidget.Integration.RuntimeBuilder do
   defp verification_options(config, opts) when is_list(opts) do
     if Keyword.keyword?(opts) and opts[:identity_verifier] == :connector_key do
       key = Map.get(config, :token)
-      issuer = opts[:identity_issuer]
-      audience = opts[:identity_audience]
+      settings = Map.get(config, :settings)
+      issuer = if is_map(settings), do: Map.get(settings, "identity_issuer")
+      audience = if is_map(settings), do: Map.get(settings, "identity_audience")
 
       if SignedIdentity.valid_key?(key) and
-           is_binary(issuer) and issuer != "" and is_binary(audience) and audience != "" do
+           SignedIdentity.valid_identifier?(issuer) and SignedIdentity.valid_identifier?(audience) do
         {:ok,
          opts
          |> Keyword.put(:identity_verifier, {SignedIdentity, :verify, [key, issuer, audience]})

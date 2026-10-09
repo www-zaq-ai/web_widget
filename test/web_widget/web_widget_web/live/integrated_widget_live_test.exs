@@ -21,11 +21,16 @@ defmodule WebWidgetWeb.IntegratedWidgetLiveTest do
     }
 
     {:ok, {spec, []}} =
-      RuntimeBuilder.build(%{id: id, provider: "web_widget", token: key}, hooks,
+      RuntimeBuilder.build(
+        %{
+          id: id,
+          provider: "web_widget",
+          token: key,
+          settings: %{"identity_issuer" => "parent", "identity_audience" => "widget"}
+        },
+        hooks,
         pubsub_server: WebWidget.PubSub,
-        identity_verifier: :connector_key,
-        identity_issuer: "parent",
-        identity_audience: "widget"
+        identity_verifier: :connector_key
       )
 
     start_supervised!(spec)

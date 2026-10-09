@@ -17,7 +17,7 @@ defmodule WebWidget.Integration.ControlProof do
          true <- is_integer(widget_id) and widget_id > 0,
          true <-
            identifier?(user_id) and identifier?(opts[:issuer]) and
-             identifier?(opts[:audience]),
+             control_audience?(opts[:audience]),
          true <- is_integer(ttl) and ttl in 1..lifetime() do
       claims = %{
         "iss" => opts[:issuer],
@@ -73,6 +73,20 @@ defmodule WebWidget.Integration.ControlProof do
   end
 
   def verify(_, _, _, _, _, _), do: {:error, :unauthorized}
+
+  defp control_audience?(value) when is_binary(value) do
+    suffix = ":control"
+
+    if String.valid?(value) and String.ends_with?(value, suffix) do
+      value
+      |> binary_part(0, byte_size(value) - byte_size(suffix))
+      |> SignedIdentity.valid_identifier?()
+    else
+      false
+    end
+  end
+
+  defp control_audience?(_), do: false
 
   defp identifier?(value),
     do:
