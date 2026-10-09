@@ -6,9 +6,15 @@
   "description": "Implement approved SameSite isolation design from current widget-configuration HEAD. Dedicated widget cookie path and scoped LiveView socket, connector policy validation, generated embed URL, host migration contract and focused transport/browser tests. Work in a new branch of the existing worktree as explicitly requested.",
   "id": "ww-323",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented on ww-323/widget-session-isolation from cc192ff (preserves connector-owned issuer/audience). Standard Phoenix session decoding with distinct widget cookie name, per-page cookie paths, signed ID/path scope checks at socket and page mount; canonical SameSite validation and declared endpoint legacy policy; scoped endpoint macro and own browser pipeline; explicit data-widget-url in host embed script including trusted custom prefixes. Validation: mix precommit 194 tests/no Credo issues; assets build; 31 Chromium authentication/cookie/host tests pass including real HTTPS cross-site reconnect and third-party-cookie restriction. ZAQ endpoint/router/proxy migration remains external; #16 readiness probe is explicitly separate. Local browser prerequisites: dev DB created/migrated; existing Chromium 1223 selected through PLAYWRIGHT_CHROMIUM_BIN. Readiness URL moved to package port4019 to avoid Docker collision on4020.",
+      "timestamp": "2026-10-09T18:35:52Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Isolate widget sessions and scoped LiveView transport (#12)",
   "type": "task",
-  "updated_at": "2026-10-09T18:01:50Z"
+  "updated_at": "2026-10-09T18:35:52Z"
 }
