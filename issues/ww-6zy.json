@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-09T17:42:05Z",
   "created": "2026-10-09T17:28:43Z",
   "description": "Enforce connector settings atomically; retain trusted PubSub/verifier options; tests and documentation.",
   "id": "ww-6zy",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Fix connector-owned widget identity configuration (#10)",
   "type": "task",
-  "updated_at": "2026-10-09T17:41:55Z"
+  "updated_at": "2026-10-09T17:42:05Z"
 }
