@@ -6,9 +6,15 @@
   "description": "Enforce connector settings atomically; retain trusted PubSub/verifier options; tests and documentation.",
   "id": "ww-6zy",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented mandatory connector settings identity_issuer/identity_audience (string keys), exact UTF-8 1–255-byte validation, no fallback/defaults per user's atomic upgrade decision. Trusted PubSub and custom MFA selection retained. Derived control audience supports 255-byte base. Tests cover build/2 and build/3, invalid/missing settings, cross-connector claims, runtime rebuild/session/proof rejection and redacted status. Updated host/browser/cluster fixtures and docs. mix precommit passes: 185 tests, 0 failures, Credo clean. Host ZAQ end-to-end deployment not exercised.",
+      "timestamp": "2026-10-09T17:41:55Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Fix connector-owned widget identity configuration (#10)",
   "type": "task",
-  "updated_at": "2026-10-09T17:28:49Z"
+  "updated_at": "2026-10-09T17:41:55Z"
 }
