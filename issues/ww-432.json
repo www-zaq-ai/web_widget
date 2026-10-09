@@ -10,11 +10,15 @@
     {
       "text": "Implemented optional version-1 RuntimeBuilder.status/2 with an unlinked bounded worker, safe generation-tagged runtime snapshots, actual scoped cookie/CSRF HTTP-to-WebSocket upgrade, delivery PG2 responsiveness/membership, installed connector identity provenance and cookie-policy verification. Serving endpoint/configuration/policy and runtime generation are rechecked; no retained green cache. Req pools use stable options, Mint is promoted from an already locked transitive dependency for upgrade parsing. Host/package/custom mounts covered. Proxy-only TLS remains non-ready without actual HTTPS/session verification; custom opaque identity and unsupported PubSub are not green. Full gate and Chromium HTTPS cross-site tests pass; final rerun before commit. ZAQ UI/NodeRouter code is not modified and deployment handoff is documented.",
       "timestamp": "2026-10-09T20:09:02Z"
+    },
+    {
+      "text": "Landed locally as 5b8fb2a on ww-432/widget-readiness, based on existing 64a576a (current worktree retained). Final mix precommit: format/Credo/warnings-as-errors compile clean, 218 ExUnit tests passed. Chromium cookie-policy suite: all 5 passed, including authenticated HTTPS cross-site connect/reconnect on package and custom host paths. git diff --check clean. No code push, PR creation or ZAQ/GitHub issue closure performed; documented trusted endpoint/HTTPS configuration remains a deployment handoff.",
+      "timestamp": "2026-10-09T20:12:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Expose scoped widget transport readiness (#16)",
   "type": "task",
-  "updated_at": "2026-10-09T20:09:02Z"
+  "updated_at": "2026-10-09T20:12:38Z"
 }
