@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-09T21:06:55Z",
+  "description": "Approved stable-URL fix: cookie-free initial widget page, connector-scoped session bootstrap coordinated with Web Locks, standard Phoenix CSRF session verification, shared cookie for same connector but per-page JWT binding. Prove deferred-session LiveView handshake then implement and run full Chromium/Firefox/WebKit suites. Keep original sibling test unchanged; update deterministic race regression; fix separate WebKit permission configuration. Existing branch/worktree delivery continues.",
+  "id": "ww-0r2",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Coordinate shared connector session bootstrap (#12, #19)",
+  "type": "task",
+  "updated_at": "2026-10-09T21:06:55Z"
+}
