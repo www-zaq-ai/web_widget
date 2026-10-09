@@ -6,9 +6,15 @@
   "description": "Implement version-1 optional status/2 using bounded runtime snapshots, real scoped cookie/CSRF WebSocket handshakes, delivery/authentication/cookie checks, secret-free results and focused regression coverage. Work in a separate branch of the current worktree as requested. Contract and runtime snapshot precede transport/coordinator; regression and host handoff follow.",
   "id": "ww-432",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented optional version-1 RuntimeBuilder.status/2 with an unlinked bounded worker, safe generation-tagged runtime snapshots, actual scoped cookie/CSRF HTTP-to-WebSocket upgrade, delivery PG2 responsiveness/membership, installed connector identity provenance and cookie-policy verification. Serving endpoint/configuration/policy and runtime generation are rechecked; no retained green cache. Req pools use stable options, Mint is promoted from an already locked transitive dependency for upgrade parsing. Host/package/custom mounts covered. Proxy-only TLS remains non-ready without actual HTTPS/session verification; custom opaque identity and unsupported PubSub are not green. Full gate and Chromium HTTPS cross-site tests pass; final rerun before commit. ZAQ UI/NodeRouter code is not modified and deployment handoff is documented.",
+      "timestamp": "2026-10-09T20:09:02Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Expose scoped widget transport readiness (#16)",
   "type": "task",
-  "updated_at": "2026-10-09T19:43:14Z"
+  "updated_at": "2026-10-09T20:09:02Z"
 }
