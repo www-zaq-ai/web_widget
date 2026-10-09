@@ -37,7 +37,8 @@ class WidgetTransportSocket extends Socket {
   }
 }
 
-const liveSocket = new LiveSocket("/live", WidgetTransportSocket, {
+const socketPath = document.querySelector("meta[name='web-widget-socket']")?.getAttribute("content") || "/live"
+const liveSocket = new LiveSocket(socketPath, WidgetTransportSocket, {
   longPollFallbackMs: 2500,
   params: () => ({
     _csrf_token: csrfToken,

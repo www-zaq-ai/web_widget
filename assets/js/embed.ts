@@ -195,7 +195,13 @@ if (script instanceof HTMLScriptElement && script.hasAttribute("data-widget-id")
   if (widgetId.length > 200 || !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(widgetId)) {
     throw new Error("Invalid widget ID.");
   }
-  const url = new URL(`/widget/${widgetId}`, script.src).href;
+  const target = new URL(script.dataset.widgetUrl || `/widget/${widgetId}`, script.src);
+  if (target.origin !== new URL(script.src).origin || target.username || target.password ||
+      target.search || target.hash || !["https:", "http:"].includes(target.protocol) ||
+      !target.pathname.endsWith(`/${widgetId}`)) {
+    throw new Error("data-widget-url must select this widget on the loader origin.");
+  }
+  const url = target.href;
   const selector = script.getAttribute("iframe-location-id") ?? undefined;
   const stylesheet = script.getAttribute("stylesheet-url") ?? undefined;
   const tokenUrl = script.getAttribute("data-token-url");

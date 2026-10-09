@@ -112,7 +112,7 @@ Iframe and embed assets use the built bundle. Run `mix assets.build` after chang
 
 During a connection interruption, the widget keeps messages and the draft visible and pauses sending. After two seconds it shows a reconnecting banner; after fifteen seconds it offers **Retry connection**. A brief **Connected** notice appears after authentication and conversation restoration. Interrupted responses are recovered without automatically resending the question.
 
-ZAQ can depend on a released tag with `{:web_widget, git: "https://github.com/www-zaq-ai/web_widget.git", tag: "vX.Y.Z"}` and mount `web_widget("/widget")` in its browser router. The macro serves `/web_widget/assets/*path` directly from the dependency's `priv/static/assets`. ZAQ needs no asset copy, frontend build, static-path allowlist entry, or endpoint `WebWidget.Static` plug. See [host integration](docs/host-integration.md#routes-and-assets).
+ZAQ can depend on a released tag with `{:web_widget, git: "https://github.com/www-zaq-ai/web_widget.git", tag: "vX.Y.Z"}` and mount `web_widget("/widget")` outside its BO browser pipeline, plus `WebWidget.Endpoint.web_widget_socket("/widget")` in its endpoint. The widget uses an isolated cookie and its single `/widget/:id/live` connection; BO sessions remain unchanged. Generated installation scripts include the widget page URL, including a configured custom mount prefix. The macro serves `/web_widget/assets/*path` directly from the dependency's `priv/static/assets`. ZAQ needs no asset copy, frontend build, static-path allowlist entry, or endpoint `WebWidget.Static` plug. See [host integration](docs/host-integration.md#routes-and-assets).
 
 ## Contributing
 

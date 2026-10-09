@@ -19,11 +19,13 @@ defmodule WebWidget.Integration.Installation do
          true <- Keyword.keyword?(opts),
          {:ok, _} <- origin(base_url),
          {:ok, url} <- origin(Keyword.get(opts, :public_url, base_url)),
+         {:ok, prefix} <- widget_path(Keyword.get(opts, :widget_path, "/widget")),
          {:ok, token_attribute} <- token_attribute(Keyword.get(opts, :token_url)) do
       src = Phoenix.HTML.html_escape(url <> "/web_widget/assets/embed.js")
+      widget_url = Phoenix.HTML.html_escape(url <> prefix <> "/" <> widget_id)
 
       snippet =
-        "<script src=\"#{Phoenix.HTML.safe_to_string(src)}\" data-widget-id=\"#{widget_id}\"#{token_attribute} defer></script>"
+        "<script src=\"#{Phoenix.HTML.safe_to_string(src)}\" data-widget-id=\"#{widget_id}\" data-widget-url=\"#{Phoenix.HTML.safe_to_string(widget_url)}\"#{token_attribute} defer></script>"
 
       if byte_size(snippet) <= 32_768,
         do: {:ok, snippet},
@@ -34,6 +36,14 @@ defmodule WebWidget.Integration.Installation do
   end
 
   def widget_script(_, _, _), do: {:error, :invalid_widget_installation}
+
+  defp widget_path(path) when is_binary(path) and byte_size(path) <= 1_024 do
+    if Regex.match?(~r/\A(?:\/[a-zA-Z0-9][a-zA-Z0-9_-]*)+\z/, path),
+      do: {:ok, path},
+      else: {:error, :invalid_widget_installation}
+  end
+
+  defp widget_path(_), do: {:error, :invalid_widget_installation}
 
   defp token_attribute(nil), do: {:ok, ""}
 

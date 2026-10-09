@@ -14,6 +14,7 @@ defmodule WebWidget.Integration.RuntimeBuilder do
   Missing configuration fails closed. No endpoint or PubSub server is started.
   """
 
+  alias WebWidget.Embedding.Session
   alias WebWidget.Integration.Installation
   alias WebWidget.Integration.Protocol
   alias WebWidget.Integration.SignedIdentity
@@ -30,6 +31,8 @@ defmodule WebWidget.Integration.RuntimeBuilder do
   def build(%{id: id, provider: provider} = host_config, %{widget_id: id} = hooks, opts)
       when is_integer(id) and id > 0 and provider in [:web_widget, "web_widget"] do
     with {:ok, opts} <- verification_options(host_config, opts),
+         {:ok, same_site} <-
+           Session.validate_settings(Map.get(host_config, :settings)),
          {:ok, integration} <- Protocol.new(hooks, opts),
          :ok <- display_name(Map.get(hooks, :display_name)),
          {:ok, config} <-
@@ -40,6 +43,7 @@ defmodule WebWidget.Integration.RuntimeBuilder do
              widgets: [
                %{
                  widget_id: Integer.to_string(id),
+                 same_site: same_site,
                  display_name: Map.get(hooks, :display_name),
                  allowed_domains: Map.get(hooks, :allowed_domains, []),
                  stylesheet_url: nil,

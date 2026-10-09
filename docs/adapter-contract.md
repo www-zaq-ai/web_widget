@@ -98,20 +98,20 @@ The local ZAQ install mounts the package router on its existing endpoint.
 Released Git tags contain the built bundle in `web_widget/priv/static/assets`.
 The `web_widget/1` router macro serves those files at `/web_widget/assets/*path`
 from the dependency itself. ZAQ does not copy or build assets, change its static
-path allowlist, or add `WebWidget.Static` to its endpoint. Its `/live` socket
-serves the iframe; BO authentication does not apply to the widget mount.
+path allowlist, or add `WebWidget.Static` to its endpoint. Its scoped
+`/widget/:widget_id/live` socket serves the iframe; BO authentication does not apply to the widget mount.
 This supersedes the earlier configuration-only choice for this installation.
 
 For hosts retaining configuration-only installation, opt in to
 `start_integration_server: true` to start the package endpoint and its socket
 PubSub once, without the Repo/demo. Connector runtimes remain ZAQ-owned and use
-`Zaq.PubSub` for responses. The iframe uses this endpoint's existing `/live`
+`Zaq.PubSub` for responses. The iframe uses this endpoint's scoped LiveView
 connection; no additional browser realtime connection is introduced.
 
 `RuntimeBuilder.embed_script(widget_id, base_url)` returns one escaped script tag
 with `data-widget-id`. The optional trusted integration `public_url` overrides
 the supplied base URL; otherwise the deployment must proxy `/widget`,
-`/web_widget/assets` and `/live` at the ZAQ base origin to the package endpoint.
+`/web_widget/assets` and `/widget/:widget_id/live/*` at the ZAQ base origin to the package endpoint.
 Only root HTTP(S) origins are supported. The loader creates a single iframe at
 `/widget/<id>` on its own origin and applies the existing layout/client behavior.
 The authenticated loader obtains a fresh backend JWT and delivers it in the
@@ -125,6 +125,34 @@ The parent API remains single-widget. A missing/invalid target fails explicitly;
 it never falls back to the body. If the div is `#zaq-widget`, the child iframe is
 `#zaq-widget-frame` to avoid duplicate IDs. Otherwise the iframe is `#zaq-widget`.
 Manual callers may use `zaq.widget.mount(url, selector)` with the same behavior.
+
+## Widget session isolation (issue #12)
+
+The widget browser pipeline owns a separate signed, HttpOnly, host-only cookie
+`_web_widget_session`, scoped to the actual widget page path (including custom
+mount prefixes). Its sole LiveView transport is `<widget-page-path>/live`, mounted
+with `WebWidget.Endpoint.web_widget_socket/1`; BO retains its existing `/live` and
+session options. This supersedes the shared `/live` installation described above.
+The widget router must not run inside a pipeline that has already fetched the BO
+session. It installs its own session before flash/CSRF handling. Signing salts are
+package-specific; signed widget ID and mount path are checked against the socket
+request URI and page session. Cookie paths are not authorization boundaries.
+
+Canonical `config.settings["same_site"]` accepts exactly `"None"`, `"Lax"`,
+`"Strict"`; present nil/blank/invalid values reject runtime construction. Missing
+legacy settings inherit the serving endpoint's declared `:web_widget_session`
+`:same_site` policy (default `"Lax"`), not a new-connector default. Hosts must declare
+their previous effective policy when migrating. ZAQ owns new defaults and edits.
+None requires HTTPS and Secure; HTTP development must explicitly use Lax/Strict.
+No implicit downgrade, BO cookie rewrite, second iframe connection, or CSRF bypass
+is allowed. Policy changes require runtime replacement and a page reload before
+reconnecting with a session under the new policy. Third-party-cookie blocking can
+still prevent cross-site connection even with None.
+
+The generated host installation script includes the explicit `data-widget-url`,
+using the trusted `:widget_path` mount prefix (default `/widget`) and public origin.
+The iframe renders its scoped transport URL; no JWT enters either URL's query.
+Host router, endpoint socket mount, proxy and installation prefix must agree.
 
 ## Identity, embedding and parent bootstrap
 

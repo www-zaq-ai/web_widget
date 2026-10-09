@@ -19,6 +19,7 @@ defmodule WebWidget.Runtime do
 
   @widget_fields [
     :widget_id,
+    :same_site,
     :display_name,
     :allowed_domains,
     :stylesheet_url,
@@ -315,6 +316,7 @@ defmodule WebWidget.Runtime do
   defp normalize_widget(%{widget_id: id, display_name: name} = widget)
        when is_binary(id) and id != "" and is_binary(name) do
     with true <- is_boolean(Map.get(widget, :multiple_conversations, false)),
+         true <- Map.get(widget, :same_site, :inherit) in [:inherit, "None", "Lax", "Strict"],
          {:ok, origins} <- Origins.normalize(Map.get(widget, :allowed_domains)),
          true <- valid_stylesheet_url?(Map.get(widget, :stylesheet_url)) do
       {:ok, widget |> Map.take(@widget_fields) |> Map.put(:allowed_domains, origins)}

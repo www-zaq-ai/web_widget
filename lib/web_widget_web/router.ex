@@ -17,7 +17,6 @@ defmodule WebWidgetWeb.Router do
   import WebWidget.Router
 
   scope "/" do
-    pipe_through :browser
     web_widget("/widget")
   end
 

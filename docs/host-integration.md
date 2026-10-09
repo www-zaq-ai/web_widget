@@ -12,13 +12,12 @@ Add a released Git tag to the host's Mix dependencies and run `mix deps.get`:
 
 Git dependency installs use the bundle committed in the tag; they do not fetch release attachments.
 
-Mount the browser widget and backend control routes in separate scopes. The browser scope needs the normal session, LiveView flash, CSRF and secure headers. The API scope needs no browser session or CSRF; each request carries a strict signed backend proof. The control plug can parse its JSON body even when the host endpoint has no general JSON parser.
+Mount the widget outside the host browser/authentication pipeline: the macro installs its own scoped session, LiveView flash, CSRF and secure headers. Do not fetch the BO session first. Backend controls remain separate and stateless; each request carries a strict signed backend proof.
 
 ```elixir
 import WebWidget.Router
 
 scope "/" do
-  pipe_through :browser
   web_widget("/widget")
 end
 
@@ -28,11 +27,33 @@ scope "/" do
 end
 ```
 
-Expose the host's LiveView socket at `/live` with the same `Plug.Session` options used for the widget route. Mount `web_widget` outside other authenticated `live_session` blocks; its macro creates its own. Keep normal socket origin checks. `allowed_domains` controls iframe parent origins separately. The package supplies the widget root layout, LiveView hook and browser bundle.
+Add the matching socket mount to the host endpoint, leaving BO's `/live` and session configuration unchanged:
+
+```elixir
+import WebWidget.Endpoint
+web_widget_socket("/widget")
+```
+
+Each iframe uses only `/widget/:widget_id/live` (WebSocket or the existing long-poll fallback). Its HttpOnly, host-only `_web_widget_session` cookie has Path `/widget/:widget_id`, and uses package-specific signing options. Signed widget ID and mount path are verified at socket connection and connected page mount. Normal CSRF and socket origin checks remain enabled. Mount `web_widget` outside other authenticated `live_session` blocks; its macro creates its own. `allowed_domains` controls iframe parent origins separately.
+
+For a nested/custom router mount such as `/support/chat`, register `web_widget_socket("/support/chat")` on the endpoint and set trusted integration `widget_path: "/support/chat"`. The returned `RuntimeBuilder.embed_script/2` snippet includes `data-widget-url="https://PUBLIC-ORIGIN/support/chat/42"`; the loader honors that URL and the iframe renders the corresponding socket URL. All three prefixes must match.
 
 The `web_widget/1` macro serves `/web_widget/assets/*path` directly from the dependency's `priv/static/assets`, using `WebWidget.Static` as a route. Released Git tags include the tracked production bundle. The host needs no Node installation, asset copy/build task, static-path allowlist entry, or endpoint static plug. Do not run a second package endpoint when mounting in the host endpoint.
 
-ZAQ's local mount uses the existing host endpoint for `/widget/:id`, `/widget-api/:id/disconnect`, `/web_widget/assets`, and `/live`. A separate configuration-only package endpoint is supported for deployments that proxy all four paths to it; keep one endpoint topology per public URL.
+The host-mounted topology uses the host endpoint for `/widget/:id`, `/widget/:id/live/*`, `/widget-api/:id/disconnect` and `/web_widget/assets`. A separate configuration-only package endpoint supports the same paths. Proxy the widget subtree, including WebSocket upgrades and long polling, to that endpoint; BO's `/live` must not be redirected. Keep one endpoint topology per public URL.
+
+### Cookie policy and migration
+
+Canonical connector `settings["same_site"]` accepts exactly `"None"`, `"Lax"`, `"Strict"`. Explicit nil, blank and invalid values fail runtime construction. New connector defaults belong to the host. An omitted legacy key inherits the endpoint's declared policy, default Lax:
+
+```elixir
+config :zaq, ZaqWeb.Endpoint,
+  web_widget_session: [same_site: "Lax"]
+```
+
+Set that legacy policy to the actual previous serving policy before migrating (including None if that was intentionally applied); do not silently adopt the new-connector default. `WebWidget.Embedding.Session.effective(widget, endpoint, scheme)` resolves the installed pipeline's value, Secure flag and source, or a fixed configuration failure. It is not a transport readiness probe: #16 must verify host mounting before reporting a policy as applied; old/unverified adapters remain unknown. None forces Secure and requires HTTPS. HTTP development uses explicit Lax/Strict and does not silently downgrade None. Trust only correctly configured TLS termination/proxy scheme handling.
+
+Install the package, endpoint mount, router pipeline, proxy rules and updated generated snippet together. Existing iframe documents using `/live` require reload; changing a connector policy requires runtime replacement and page reload. No BO cookie is rewritten by widget routes. Independently scoped widgets cannot overwrite one another's cookie attributes. None does not bypass browser third-party-cookie blocking; Lax/Strict do not support normal cross-site iframe sessions.
 
 ## Runtime builder and shared protocol
 
@@ -62,7 +83,8 @@ For an integrated connector, the installer emits a public script containing the 
 
 ```html
 <script src="https://ZAQ-HOST/web_widget/assets/embed.js"
-        data-widget-id="42" data-token-url="/api/widget-token" defer></script>
+        data-widget-id="42" data-widget-url="https://ZAQ-HOST/widget/42"
+        data-token-url="/api/widget-token" defer></script>
 ```
 
 `iframe-location-id="#my-widget-container"` selects an existing div with a parent-supplied height. If that div is `#zaq-widget`, the iframe ID is `#zaq-widget-frame`; otherwise it is `#zaq-widget`. `stylesheet-url` is a parent-supplied HTTP(S) CSS URL, handled by the validated postMessage handshake. Neither stylesheet nor presentation settings belong in JWT identity. See [styling](styling-guideline.md) and the [website guide](integration-guideline.md).

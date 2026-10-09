@@ -38,7 +38,9 @@ for (const prefix of ["/widget", "/support/chat"]) {
     expect(assets.some(url => url.endsWith("/app.js"))).toBe(true);
     expect(assets.some(url => url.endsWith("/app.css"))).toBe(true);
     expect(sockets.length).toBeGreaterThan(0);
-    expect(sockets.every(url => url.startsWith("ws://127.0.0.1:4020/live/websocket"))).toBe(true);
+    const widgetSockets = sockets.filter(url => url.includes(`${prefix}/demo/live/`));
+    expect(widgetSockets.length).toBeGreaterThan(0);
+    expect(widgetSockets.every(url => url.startsWith(`ws://127.0.0.1:4020${prefix}/demo/live/websocket`))).toBe(true);
     expect(errors).toEqual([]);
   });
 }

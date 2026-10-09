@@ -3,7 +3,7 @@ defmodule WebWidgetWeb.WidgetLive do
 
   alias WebWidget.Adapter
   alias WebWidget.Conversation.State, as: Conversation
-  alias WebWidget.Embedding.Settings
+  alias WebWidget.Embedding.{Session, Settings}
   alias WebWidget.Integration.{BindingStore, Chat}
   alias WebWidget.Protocol.Events
   alias WebWidget.Protocol.Response
@@ -11,7 +11,16 @@ defmodule WebWidgetWeb.WidgetLive do
   alias WebWidgetWeb.Localization
 
   @impl true
-  def mount(%{"widget_id" => widget_id}, _session, socket) do
+  def mount(%{"widget_id" => widget_id}, session, socket) do
+    if connected?(socket) and
+         not Session.page_scope?(
+           session,
+           widget_id,
+           get_connect_info(socket, :uri)
+         ) do
+      raise ArgumentError, "widget page session scope mismatch"
+    end
+
     case WebWidget.Runtime.fetch_widget(widget_id) do
       {:ok, %{allowed_domains: [_ | _]} = widget} ->
         with {:ok, socket} <- mount_widget(socket, widget) do
