@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-10T15:16:55Z",
@@ -7,8 +7,8 @@
   "id": "ww-9vq",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Fix partition race and recovery reload E2E failures",
   "type": "bug",
-  "updated_at": "2026-10-10T15:16:55Z"
+  "updated_at": "2026-10-10T15:17:03Z"
 }
