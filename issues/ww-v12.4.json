@@ -4,6 +4,7 @@
     "ww-v12.3"
   ],
   "blocks": [],
+  "closed_at": "2026-10-10T18:26:13Z",
   "created": "2026-10-10T17:11:06Z",
   "description": "Focused config/lifecycle tests, full precommit, cluster baseline and parity, assets build and browser regressions. Preserve assertions and commit on ww-v12/explicit-host-startup.",
   "id": "ww-v12.4",
@@ -20,8 +21,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Validate lifecycle and security parity",
   "type": "task",
-  "updated_at": "2026-10-10T18:26:09Z"
+  "updated_at": "2026-10-10T18:26:13Z"
 }
