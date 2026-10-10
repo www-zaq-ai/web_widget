@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T15:39:56Z",
   "created": "2026-10-10T15:16:55Z",
   "description": "Match intercepted bootstrap routes to actual frame rather than request arrival order; deterministically test reversed parent arrival order. Hide progress bar on terminal session failure and prevent decorative canvas intercepting reload clicks. Validate macOS WebKit and Chromium session-race suites on existing readiness branch.",
   "id": "ww-9vq",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Fix partition race and recovery reload E2E failures",
   "type": "bug",
-  "updated_at": "2026-10-10T15:39:46Z"
+  "updated_at": "2026-10-10T15:39:56Z"
 }
