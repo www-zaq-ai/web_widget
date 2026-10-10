@@ -7,9 +7,15 @@
   "id": "ww-o4z.1",
   "labels": [],
   "parent": "ww-o4z",
+  "comments": [
+    {
+      "text": "Implemented raw-header endpoint guard and explicit runtime policy/HTTPS Secure. Focused 33 tests pass, including real endpoint WebSocket/long-poll duplicate rejection before cookie parsing. User requested uncommitted delivery; no commit will be made. Unknown widgets now return static unavailable without a policy/session.",
+      "timestamp": "2026-10-10T13:33:16Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Enforce cookie and runtime policy contract",
   "type": "task",
-  "updated_at": "2026-10-10T13:27:37Z"
+  "updated_at": "2026-10-10T13:33:16Z"
 }
