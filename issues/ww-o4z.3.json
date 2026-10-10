@@ -10,9 +10,15 @@
   "id": "ww-o4z.3",
   "labels": [],
   "parent": "ww-o4z",
+  "comments": [
+    {
+      "text": "Final validation: mix precommit passed, 202 ExUnit tests; npm run build passed; complete Chromium suite 132 passed; focused Firefox/macOS WebKit session/policy/recovery suite 40 passed with 2 expected Chromium-only CDP skips. Full Chromium first run exposed reload test querying liveSocket before script load; polling fixed and final full run green. git diff --check clean. Actual ZAQ deployment/migration not executed here; host must populate connector same_site before upgrade. Built tracked assets refreshed. No implementation commit/push.",
+      "timestamp": "2026-10-10T14:01:47Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Validate session feedback and migration",
   "type": "task",
-  "updated_at": "2026-10-10T13:37:52Z"
+  "updated_at": "2026-10-10T14:01:47Z"
 }
