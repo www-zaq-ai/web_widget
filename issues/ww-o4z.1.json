@@ -4,6 +4,8 @@
   "blocks": [
     "ww-o4z.3"
   ],
+  "closed_at": "2026-10-10T14:01:47Z",
+  "close_reason": "Implemented and validated; working tree left uncommitted for owner review",
   "created": "2026-10-10T13:27:11Z",
   "description": "Docs first; duplicate guard, anonymous bootstrap tests, required policy, HTTPS Secure",
   "id": "ww-o4z.1",
@@ -20,7 +22,7 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Enforce cookie and runtime policy contract",
   "type": "task",
   "updated_at": "2026-10-10T14:01:47Z"
