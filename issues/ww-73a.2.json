@@ -6,6 +6,7 @@
   "blocks": [
     "ww-73a.4"
   ],
+  "closed_at": "2026-10-10T21:21:54Z",
   "created": "2026-10-10T20:56:19Z",
   "description": "Validated host-input child specs, duplicate identity, runtime reconstruction, bounded recovery, removal and session fencing.",
   "id": "ww-73a.2",
@@ -18,7 +19,7 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Implement restart-safe connector supervision",
   "type": "task",
   "updated_at": "2026-10-10T21:21:54Z"
