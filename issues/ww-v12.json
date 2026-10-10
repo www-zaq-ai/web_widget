@@ -2,6 +2,7 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T18:26:16Z",
   "created": "2026-10-10T17:10:42Z",
   "description": "Implement approved issue #23 plan on a new branch in the current worktree, per user request. Contract first; singleton init configuration; lifecycle/config consumers; explicit standalone/package fixtures; regression suites and migration docs. No new worktree or PR requested.",
   "id": "ww-v12",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Explicit host-supervised widget infrastructure (#23)",
   "type": "epic",
-  "updated_at": "2026-10-10T18:07:58Z"
+  "updated_at": "2026-10-10T18:26:16Z"
 }
