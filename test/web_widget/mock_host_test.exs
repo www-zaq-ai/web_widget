@@ -16,7 +16,7 @@ defmodule WebWidget.MockHostTest do
          channel_config_id: id,
          sink_mfa: {MockHost, :handle_event, [mock]},
          pubsub_server: WebWidget.PubSub,
-         widgets: [%{widget_id: id, display_name: "Mock", allowed_domains: []}]
+         widgets: [%{widget_id: id, same_site: "Lax", display_name: "Mock", allowed_domains: []}]
        }}
     )
 

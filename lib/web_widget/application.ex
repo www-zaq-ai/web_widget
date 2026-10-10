@@ -52,6 +52,7 @@ defmodule WebWidget.Application do
            widgets: [
              %{
                widget_id: "demo",
+               same_site: "Lax",
                display_name: "Website assistant",
                multiple_conversations:
                  Application.get_env(:web_widget, :demo_multiple_conversations, false),

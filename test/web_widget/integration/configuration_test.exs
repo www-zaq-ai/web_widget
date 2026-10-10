@@ -37,7 +37,13 @@ defmodule WebWidget.Integration.ConfigurationTest do
 
     {config, hooks, opts} = Host.fixture()
     key = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
-    settings = %{"identity_issuer" => "zaq_issuer", "identity_audience" => "zaq_audience"}
+
+    settings = %{
+      "identity_issuer" => "zaq_issuer",
+      "identity_audience" => "zaq_audience",
+      "same_site" => "Lax"
+    }
+
     config = Map.merge(config, %{token: key, settings: settings})
 
     opts =
@@ -71,7 +77,11 @@ defmodule WebWidget.Integration.ConfigurationTest do
     config =
       Map.merge(config, %{
         token: Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false),
-        settings: %{"identity_issuer" => "parent", "identity_audience" => "widget"}
+        settings: %{
+          "identity_issuer" => "parent",
+          "identity_audience" => "widget",
+          "same_site" => "Lax"
+        }
       })
 
     opts =
@@ -139,6 +149,7 @@ defmodule WebWidget.Integration.ConfigurationTest do
 
       config =
         Map.put(config, :settings, %{
+          "same_site" => "Lax",
           "pubsub_server" => "attacker",
           "identity_verifier" => "attacker"
         })

@@ -17,12 +17,14 @@ defmodule WebWidgetWeb.MultipleConversationsTest do
          widgets: [
            %{
              widget_id: "multi-test",
+             same_site: "Lax",
              display_name: "Multiple",
              allowed_domains: ["http://www.example.com"],
              multiple_conversations: true
            },
            %{
              widget_id: "single-test",
+             same_site: "Lax",
              display_name: "Single",
              allowed_domains: ["http://www.example.com"]
            }

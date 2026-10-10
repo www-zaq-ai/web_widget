@@ -153,13 +153,22 @@ for (const change of ["duplicate", "replace", "remove", "error", "timeout"] as c
     expect(await ready()).toBe(0);
     await page.clock.install();
     try {
+      // Probe while CSS is still pending. A probe after removal may legitimately
+      // replay the ready transition rather than test pending-readiness ordering.
+      const bootstrap = () => page.evaluate(() => (window as any).cssEvents.filter((e: any) => e.type === "zaq.widget.bootstrap.ready").length);
+      const beforeProbe = await bootstrap();
+      await page.evaluate(() => {
+        (document.getElementById("css-widget") as HTMLIFrameElement).contentWindow!
+          .postMessage({ type: "zaq.widget.ready.request" }, "http://127.0.0.1:4020");
+      });
+      await expect.poll(bootstrap).toBe(beforeProbe + 1);
+      expect(await ready()).toBe(0);
       const fresh = await identity();
       await page.evaluate(({ change, a, b, fresh }) => {
         const frame = (document.getElementById("css-widget") as HTMLIFrameElement).contentWindow!;
         const url = change === "replace" ? b : change === "remove" ? null : a;
         (window as any).cssURL = url;
         for (let i = 0; i < 3; i++) frame.postMessage({ type: "zaq.widget.stylesheet", url }, "http://127.0.0.1:4020");
-        frame.postMessage({ type: "zaq.widget.ready.request" }, "http://127.0.0.1:4020");
         frame.postMessage({ type: "zaq.widget.connect", identity_token: fresh, request_id: "renew-css" }, "http://127.0.0.1:4020");
       }, { change, a, b, fresh });
       await expect.poll(() => page.evaluate(() => (window as any).cssEvents.some((e: any) => e.request_id === "renew-css" && e.ok))).toBe(true);
@@ -186,6 +195,15 @@ for (const change of ["duplicate", "replace", "remove", "error", "timeout"] as c
       }
       expect(requests.filter(url => url === a)).toHaveLength(1);
       expect(await ready()).toBe(1);
+      // Late-attaching parents must still receive an explicit already-ready reply.
+      const afterReady = await bootstrap();
+      await page.evaluate(() => {
+        (document.getElementById("css-widget") as HTMLIFrameElement).contentWindow!
+          .postMessage({ type: "zaq.widget.ready.request" }, "http://127.0.0.1:4020");
+      });
+      await expect.poll(bootstrap).toBe(afterReady + 1);
+      await expect.poll(ready).toBe(2);
+      await expect(widget.locator("#widget-context")).toHaveAttribute("data-authorized", "true");
     } finally {
       for (const response of held.values()) response.release();
     }

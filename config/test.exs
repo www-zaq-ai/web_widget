@@ -16,6 +16,7 @@ config :web_widget, WebWidget.Repo,
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :web_widget, WebWidgetWeb.Endpoint,
+  web_widget_session: [partitioned: false],
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "hItqrDpSbn8YcVdlF3NUYNNEzMovPEE/ziM0eSAIxf4ZDDX8SSCztM/ifXQ9iq5H",
   server: false

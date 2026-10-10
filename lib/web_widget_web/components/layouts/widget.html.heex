@@ -4,10 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
+    <meta name="web-widget-socket" content={@conn.assigns.web_widget_socket_path} />
+    <meta name="web-widget-session" content={@conn.assigns.web_widget_session_path} />
     <title>{assigns[:page_title] || "Widget unavailable"}</title>
     <link phx-track-static rel="stylesheet" href="/web_widget/assets/app.css" />
     <script type="module" phx-track-static src="/web_widget/assets/app.js">
     </script>
   </head>
-  <body class="zaq-widget-page">{@inner_content}</body>
+  <body class="zaq-widget-page">
+    {@inner_content}
+    <div id="widget-session-error" role="alert" hidden>
+      {gettext("Widget connection unavailable. Refresh the page to retry.")}
+      <button id="widget-session-retry" type="button">{gettext("Reload widget")}</button>
+    </div>
+  </body>
 </html>

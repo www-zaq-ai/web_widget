@@ -92,6 +92,21 @@ defmodule WebWidget.Integration.InstallationTest do
              Installation.script(42, "https://zaq.example", nil)
   end
 
+  test "generated widget URL follows the public origin and custom mount prefix" do
+    assert {:ok, snippet} =
+             Installation.script(42, "https://zaq.example",
+               public_url: "https://widget.example",
+               widget_path: "/support/chat"
+             )
+
+    assert snippet =~ "data-widget-url=\"https://widget.example/support/chat/42\""
+
+    for path <- [nil, "", "/", "//evil", "/widget/", "/../widget", "/widget?x", "/widget\"x"] do
+      assert {:error, :invalid_widget_installation} =
+               Installation.script(42, "https://zaq.example", widget_path: path)
+    end
+  end
+
   test "installation can name a parent same-origin token endpoint without exposing secrets" do
     assert {:ok, snippet} =
              Installation.script(42, "https://widget.example",

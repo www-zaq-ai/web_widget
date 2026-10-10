@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        browser: [chromium, firefox]
     env:
       MIX_ENV: dev
 
@@ -57,8 +57,8 @@ jobs:
           path: |
             deps
             _build/dev
-          key: ${{ runner.os }}-mix-otp-28-1-elixir-1-19-5-e2e-${{ hashFiles('mix.lock', 'mix.exs', 'config/**') }}
-          restore-keys: ${{ runner.os }}-mix-otp-28-1-elixir-1-19-5-e2e-
+          key: ${{ runner.os }}-${{ runner.arch }}-mix-otp-28-1-elixir-1-19-5-e2e-${{ hashFiles('mix.lock', 'mix.exs', 'config/**') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-mix-otp-28-1-elixir-1-19-5-e2e-
 
       - name: Install dependencies
         run: |
@@ -79,12 +79,116 @@ jobs:
       - name: Run browser tests
         run: npm --prefix assets run test:e2e -- --project=${{ matrix.browser }}
 
+      - name: Record browser environment
+        if: always()
+        working-directory: assets
+        run: |
+          {
+            uname -a
+            node --version
+            elixir --version
+            npx --no-install playwright --version
+            node --input-type=module -e 'import { ${{ matrix.browser }} as browserType } from "playwright"; const browser = await browserType.launch(); console.log(browserType.name(), browser.version()); await browser.close();'
+          } > ci-environment.txt 2>&1
+
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-artifacts-${{ matrix.browser }}
+          name: playwright-artifacts-${{ matrix.browser }}-${{ runner.os }}-${{ runner.arch }}
           path: |
             assets/playwright-report
             assets/test-results
+            assets/ci-environment.txt
+          if-no-files-found: ignore
+
+  e2e-webkit:
+    name: E2E webkit macOS
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      MIX_ENV: dev
+
+    # Apple's networking/cookie implementation is needed for Safari CHIPS coverage.
+    # GitHub service containers are Linux-only, so PostgreSQL runs locally here.
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '28.1'
+          elixir-version: '1.19.5'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: assets/package-lock.json
+
+      - name: Restore Mix cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build/dev
+          key: ${{ runner.os }}-${{ runner.arch }}-mix-otp-28-1-elixir-1-19-5-e2e-${{ hashFiles('mix.lock', 'mix.exs', 'config/**') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-mix-otp-28-1-elixir-1-19-5-e2e-
+
+      - name: Start PostgreSQL
+        run: |
+          brew install postgresql@16
+          PG_BIN="$(brew --prefix postgresql@16)/bin"
+          "$PG_BIN/initdb" -D "$RUNNER_TEMP/pgdata" -U postgres -A trust
+          "$PG_BIN/pg_ctl" -D "$RUNNER_TEMP/pgdata" \
+            -l "$RUNNER_TEMP/postgres.log" \
+            -o "-h 127.0.0.1 -p 5432" -w start
+
+      - name: Install dependencies
+        run: |
+          mix deps.get
+          npm --prefix assets ci
+
+      - name: Build assets
+        run: mix assets.build
+
+      - name: Prepare browser tests
+        run: |
+          mix ecto.create
+          mix ecto.migrate
+          cd assets
+          npx playwright install webkit
+
+      - name: Run browser tests
+        run: npm --prefix assets run test:e2e -- --project=webkit
+
+      - name: Record browser environment
+        if: always()
+        working-directory: assets
+        run: |
+          {
+            sw_vers
+            uname -a
+            node --version
+            elixir --version
+            npx --no-install playwright --version
+            node --input-type=module -e 'import { webkit } from "playwright"; const browser = await webkit.launch(); console.log("webkit", browser.version()); await browser.close();'
+          } > ci-environment.txt 2>&1
+
+      - name: Stop PostgreSQL
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/pgdata/postmaster.pid" ]; then
+            "$(brew --prefix postgresql@16)/bin/pg_ctl" -D "$RUNNER_TEMP/pgdata" -m fast -w stop
+          fi
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts-webkit-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            assets/playwright-report
+            assets/test-results
+            assets/ci-environment.txt
+            ${{ runner.temp }}/postgres.log
           if-no-files-found: ignore

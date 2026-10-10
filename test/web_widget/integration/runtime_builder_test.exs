@@ -34,6 +34,7 @@ defmodule WebWidget.Integration.RuntimeBuilderTest do
 
       assert public == %{
                widget_id: to_string(config.id),
+               same_site: "Lax",
                display_name: hooks.display_name,
                allowed_domains: hooks.allowed_domains,
                stylesheet_url: nil,
@@ -82,6 +83,31 @@ defmodule WebWidget.Integration.RuntimeBuilderTest do
              RuntimeBuilder.build(config, %{hooks | widget_id: config.id + 1}, opts)
 
     assert Runtime.fetch_widget(to_string(config.id)) == {:error, :not_found}
+  end
+
+  test "connector cookie settings are validated and retained without adapter defaults" do
+    {config, hooks, opts} = Host.fixture()
+
+    for missing <- [
+          Map.delete(config, :settings),
+          %{config | settings: nil},
+          %{config | settings: %{}}
+        ] do
+      assert {:error, :missing_cookie_policy} = RuntimeBuilder.build(missing, hooks, opts)
+    end
+
+    for value <- ["None", "Lax", "Strict"] do
+      configured = Map.put(config, :settings, %{"same_site" => value})
+      assert {:ok, {spec, []}} = RuntimeBuilder.build(configured, hooks, opts)
+      start_supervised!(spec)
+      assert {:ok, %{same_site: ^value}} = Runtime.fetch_widget(to_string(config.id))
+      stop_supervised!(spec.id)
+    end
+
+    for value <- [nil, "", "none", false] do
+      configured = Map.put(config, :settings, %{"same_site" => value})
+      assert {:error, :invalid_cookie_policy} = RuntimeBuilder.build(configured, hooks, opts)
+    end
   end
 
   test "rejects invalid presentation; empty origins remain denied" do

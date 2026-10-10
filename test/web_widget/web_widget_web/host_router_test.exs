@@ -10,7 +10,8 @@ defmodule WebWidget.HostRouterTest do
       secret_key_base: String.duplicate("host", 16),
       live_view: [signing_salt: "host-live"],
       pubsub_server: WebWidget.PubSub,
-      server: false
+      server: false,
+      web_widget_session: [partitioned: false]
     )
 
     start_supervised!(@endpoint)
@@ -25,6 +26,7 @@ defmodule WebWidget.HostRouterTest do
       widgets: [
         %{
           widget_id: "support",
+          same_site: "Lax",
           display_name: "Host Support",
           allowed_domains: ["https://customer.com", "http://www.example.com"]
         }
@@ -71,9 +73,19 @@ defmodule WebWidget.HostRouterTest do
   test "missing, null and empty origins disable HTTP and connected widgets" do
     for {widget, index} <-
           Enum.with_index([
-            %{widget_id: "disabled", display_name: "Disabled"},
-            %{widget_id: "disabled", display_name: "Disabled", allowed_domains: nil},
-            %{widget_id: "disabled", display_name: "Disabled", allowed_domains: []}
+            %{widget_id: "disabled", same_site: "Lax", display_name: "Disabled"},
+            %{
+              widget_id: "disabled",
+              same_site: "Lax",
+              display_name: "Disabled",
+              allowed_domains: nil
+            },
+            %{
+              widget_id: "disabled",
+              same_site: "Lax",
+              display_name: "Disabled",
+              allowed_domains: []
+            }
           ]) do
       id = {:disabled, index}
 
@@ -112,7 +124,9 @@ defmodule WebWidget.HostRouterTest do
        %{
          channel_config_id: :host_test,
          sink_mfa: {__MODULE__, :unused, []},
-         widgets: [%{widget_id: "support", display_name: "Support", allowed_domains: []}]
+         widgets: [
+           %{widget_id: "support", same_site: "Lax", display_name: "Support", allowed_domains: []}
+         ]
        }}
     )
 
@@ -121,13 +135,13 @@ defmodule WebWidget.HostRouterTest do
     refute has_element?(view, "[phx-hook]")
   end
 
-  test "unknown widgets have no hooks and reject context and submissions" do
-    {:ok, view, _} = live(build_conn(), "/widget/missing")
-    assert has_element?(view, "#widget-unavailable")
-    refute has_element?(view, "[phx-hook]")
-    render_hook(view, "widget.context", %{user_id: "user"})
-    render_hook(view, "widget.submit", %{text: "hello"})
-    assert has_element?(view, "#widget-unavailable")
+  test "unknown widgets are unavailable without initializing any session or transport" do
+    conn = get(build_conn(), "/widget/missing")
+    document = conn |> html_response(404) |> LazyHTML.from_document()
+    assert Enum.count(LazyHTML.query(document, "#widget-unavailable")) == 1
+    assert Enum.empty?(LazyHTML.query(document, "[phx-hook], [data-phx-session], script"))
+    refute Map.has_key?(conn.resp_cookies, "_web_widget_session")
+    assert %Plug.Conn.Unfetched{} = conn.req_cookies
   end
 
   test "incomplete and malformed widget paths return a safe 404" do
@@ -231,6 +245,7 @@ defmodule WebWidget.HostRouterTest do
          widgets: [
            %{
              widget_id: "support",
+             same_site: "Lax",
              display_name: "Replacement",
              allowed_domains: ["https://customer.com", "http://www.example.com"]
            }

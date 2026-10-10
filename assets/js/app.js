@@ -29,15 +29,18 @@ import "../css/app.css"
 import "./widget-demo"
 import {WidgetContext} from "./widget-context"
 import {currentConversationId, currentIdentityToken} from "./widget-bootstrap"
+import {widgetSessionToken} from "./widget-session"
+import {startWidgetSessionConnection} from "./widget-session-connection"
 
-const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 class WidgetTransportSocket extends Socket {
   constructor(url, opts) {
     super(url, {...opts, params: () => ({_csrf_token: csrfToken})})
   }
 }
 
-const liveSocket = new LiveSocket("/live", WidgetTransportSocket, {
+const socketPath = document.querySelector("meta[name='web-widget-socket']")?.getAttribute("content") || "/live"
+const liveSocket = new LiveSocket(socketPath, WidgetTransportSocket, {
   longPollFallbackMs: 2500,
   params: () => ({
     _csrf_token: csrfToken,
@@ -52,8 +55,32 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
-// connect if there are any LiveViews on the page
-liveSocket.connect()
+const sessionPath = document.querySelector("meta[name='web-widget-session']")?.getAttribute("content")
+document.getElementById("widget-session-retry")?.addEventListener("click", () => window.location.reload())
+const sessionFailure = error => {
+  const alert = document.getElementById("widget-session-error")
+  if (alert) { alert.hidden = false; alert.dataset.reason = error.message || "session_bootstrap_failed" }
+}
+const prepareSession = async (verifyOnly, signal) => {
+  const token = await widgetSessionToken(sessionPath, {verifyOnly, signal})
+  if (signal.aborted) return
+  csrfToken = token
+  document.querySelector("meta[name='csrf-token']").setAttribute("content", csrfToken)
+}
+
+if (sessionPath && document.getElementById("widget-context")) {
+  const connection = startWidgetSessionConnection({
+    prepare: prepareSession,
+    connect: () => liveSocket.connect(),
+    disconnect: () => liveSocket.disconnect(),
+    failure: sessionFailure,
+  })
+  liveSocket.getSocket().onError(() => connection.error())
+  liveSocket.getSocket().onClose(() => connection.lost())
+} else if (!sessionPath) {
+  // The standalone parent/demo retains its normal Phoenix session.
+  liveSocket.connect()
+}
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

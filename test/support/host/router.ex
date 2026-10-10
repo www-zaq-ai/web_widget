@@ -12,16 +12,19 @@ defmodule WebWidget.TestHost.Router do
   end
 
   scope "/" do
-    pipe_through :browser
     web_widget()
   end
 
   scope "/support", UnrelatedHostWeb do
-    pipe_through :browser
     web_widget("/chat")
   end
 
   scope "/" do
     web_widget_api()
+  end
+
+  scope "/" do
+    pipe_through :browser
+    get "/bo-session", WebWidget.TestHost.SessionProbe, []
   end
 end

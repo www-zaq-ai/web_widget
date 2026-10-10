@@ -16,7 +16,8 @@ defmodule WebWidget.E2EControl do
     |> put_resp_content_type("application/json")
     |> send_resp(200, Jason.encode!(WebWidget.E2ESharedHost.bootstrap(
       ttl, conn.query_params["user_id"] || "e2e-visitor",
-      if(conn.query_params["stale"] == "true", do: -6, else: 0))))
+       if(conn.query_params["stale"] == "true", do: -6, else: 0),
+       if(conn.query_params["widget_id"] == "421", do: 421, else: 420))))
   end
 
   get "/control-proof" do

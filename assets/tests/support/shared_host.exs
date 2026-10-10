@@ -17,9 +17,15 @@ defmodule WebWidget.E2ESharedHost do
       sink_mfa: {__MODULE__, :receive_request, [self()]}}
     {:ok, {spec, []}} = WebWidget.Integration.RuntimeBuilder.build(
       %{id: 420, provider: "web_widget", token: key(),
-        settings: %{"identity_issuer" => "e2e-parent", "identity_audience" => "e2e-widget"}}, hooks,
+        settings: %{"identity_issuer" => "e2e-parent", "identity_audience" => "e2e-widget", "same_site" => "Lax"}}, hooks,
       pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key)
-    Supervisor.start_child(WebWidget.Supervisor, spec)
+    {:ok, _} = Supervisor.start_child(WebWidget.Supervisor, spec)
+    {:ok, {secure_spec, []}} = WebWidget.Integration.RuntimeBuilder.build(
+      %{id: 421, provider: "web_widget", token: key(),
+        settings: %{"identity_issuer" => "e2e-parent", "identity_audience" => "e2e-widget", "same_site" => "None"}},
+      %{hooks | widget_id: 421, allowed_domains: ["https://localhost:4023", "https://127.0.0.1:4023", "https://127.0.0.1:4022"]},
+      pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key)
+    Supervisor.start_child(WebWidget.Supervisor, secure_spec)
   end
 
   def requests(user), do: Agent.get(@requests, &Map.get(&1, {:requests, user}, []))
@@ -153,9 +159,9 @@ defmodule WebWidget.E2ESharedHost do
     Agent.get(@requests, &Map.get(&1, {user_id, content}, 0))
   end
 
-  def bootstrap(ttl \\ 604_800, user_id \\ "e2e-visitor", issued_offset \\ 0) do
+  def bootstrap(ttl \\ 604_800, user_id \\ "e2e-visitor", issued_offset \\ 0, widget_id \\ 420) do
     now = System.system_time(:second)
-    claims = %{widget_id: 420, user_id: user_id, iss: "e2e-parent", aud: "e2e-widget",
+    claims = %{widget_id: widget_id, user_id: user_id, iss: "e2e-parent", aud: "e2e-widget",
       iat: now + issued_offset, exp: now + ttl, jti: Ecto.UUID.generate()}
     {token, 0} = System.cmd("node", ["test/support/integration/jwt_interop.cjs"],
       env: [{"WIDGET_TEST_KEY", key()}, {"WIDGET_TEST_CLAIMS", Jason.encode!(claims)}])

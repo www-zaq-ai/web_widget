@@ -663,6 +663,25 @@ test("WebSocket reconnect replaces the LiveView process and preserves host messa
 
   const banner = widget.locator(".zaq-connection");
   const send = widget.getByRole("button", { name: "Send message", exact: true });
+  const waitForReplacement = async (previousPid: string) => {
+    await expect.poll(async () => {
+      // The server/network uses real time while this test pauses browser timers.
+      // Keep advancing those timers until both mount and presentation complete.
+      await page.clock.runFor(100);
+      const active = await sessions();
+      return {
+        count: active.length,
+        replaced: active.length === 1 && active[0].pid !== previousPid,
+        authorized: await widget.locator("#widget-context").getAttribute("data-authorized"),
+        reconnecting: await widget.locator(".zaq-widget").getAttribute("data-reconnecting"),
+      };
+    }).toEqual({ count: 1, replaced: true, authorized: "true", reconnecting: "false" });
+    const [replacement] = await sessions();
+    expect(replacement.pid).not.toBe(previousPid);
+    expect(replacement.topic).toBe(before.topic);
+    expect(replacement.conversation_id).toBe(before.conversation_id);
+    return replacement;
+  };
   await input.fill(secondMessage);
   await expect(send).toBeEnabled();
   // Inspector pauses must not consume the banner's grace period.
@@ -684,7 +703,7 @@ test("WebSocket reconnect replaces the LiveView process and preserves host messa
   await expect(banner).toHaveText("Connection lost. Reconnecting…");
   await expect(banner.getByRole("button")).toHaveCount(0);
   await widget.locator("body").evaluate(() => (window as any).liveSocket.connect());
-  await page.clock.runFor(300);
+  await waitForReplacement(before.pid);
   await expect(widget.locator("#widget-context")).toHaveAttribute("data-authorized", "true");
   await expect.poll(sessions).toHaveLength(1);
   const [after] = await sessions();
@@ -721,12 +740,10 @@ test("WebSocket reconnect replaces the LiveView process and preserves host messa
   await expect(banner).toHaveCount(0);
 
   await input.fill("Draft after a brief interruption");
-  await widget.locator("body").evaluate(() => {
-    (window as any).liveSocket.disconnect();
-    (window as any).liveSocket.connect();
-  });
-  await page.clock.runFor(300);
-  await expect.poll(async () => (await sessions())[0]?.pid).not.toBe(after.pid);
+  await widget.locator("body").evaluate(() => (window as any).liveSocket.disconnect());
+  await expect.poll(sessions).toEqual([]);
+  await widget.locator("body").evaluate(() => (window as any).liveSocket.connect());
+  await waitForReplacement(after.pid);
   await expect(widget.locator(".zaq-widget")).toHaveAttribute("data-reconnecting", "false");
   await expect(banner).toHaveCount(0);
   await expect(input).toHaveValue("Draft after a brief interruption");
@@ -1099,20 +1116,32 @@ for (const failure of ["expiry", "store", "reset"] as const) {
     const user = `resume-${failure}-${crypto.randomUUID()}`;
     let tokens = 0;
     let offline = false;
+    let recovering = false;
     let expiry = 0;
+    let initialCredential = "";
     await page.route("**/api/widget-token", async route => {
-      if (offline) return route.fulfill({ status: 503, body: "offline" });
+      // Do not let proactive renewal replace the token whose expiry we test.
+      if (offline || (failure === "expiry" && tokens > 0 && !recovering)) {
+        return route.fulfill({ status: 503, body: "offline" });
+      }
       const response = await request.get(`${control}/identity`, { params: {
         user_id: user, ...(tokens === 0 && failure === "expiry" ? { ttl: "8" } : {}),
       } });
       const { identity_token } = await response.json();
-      expiry = JSON.parse(Buffer.from(identity_token.split(".")[1], "base64url").toString()).exp;
+      if (tokens === 0) {
+        const claims = JSON.parse(Buffer.from(identity_token.split(".")[1], "base64url").toString());
+        expiry = claims.exp;
+        initialCredential = claims.jti;
+      }
       tokens++;
       await route.fulfill({ headers: { "cache-control": "no-store" }, json: { identity_token } });
     });
     const requests = async (): Promise<any[]> => (await request.get(`${control}/requests/${user}`)).json();
     await installTokenWidget(page);
     const widget = page.frameLocator("#zaq-widget");
+    await expect.poll(() => tokens).toBe(1);
+    await expect(widget.locator("#widget-context")).toHaveAttribute("data-auth-credential-id", initialCredential);
+    await expect(widget.locator("#widget-context")).toHaveAttribute("data-auth-expires-at", String(expiry));
     const input = widget.getByRole("textbox", { name: "Message", exact: true });
     await input.fill("reconnect first");
     await input.press("Enter");
@@ -1144,8 +1173,11 @@ for (const failure of ["expiry", "store", "reset"] as const) {
         const { cutoff } = await (await request.get(`${control}/auth-state`)).json();
         await expect.poll(async () => (await (await request.get(`${control}/auth-state`)).json()).now).toBeGreaterThan(cutoff);
       }
+      expect(tokens).toBe(1);
+      recovering = true;
       offline = false;
       await expect(widget.locator("#widget-context")).toHaveAttribute("data-authorized", "true", { timeout: 10_000 });
+      await expect(widget.locator("#widget-context")).not.toHaveAttribute("data-auth-credential-id", initialCredential);
       await expect(widget.locator(".zaq-widget")).toHaveAttribute("data-reconnecting", "false");
       await expect(widget.getByText("Answer to reconnect first", { exact: true })).toBeVisible();
       await input.fill("reconnect second");

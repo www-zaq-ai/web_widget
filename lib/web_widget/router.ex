@@ -1,12 +1,13 @@
 defmodule WebWidget.Router do
   @moduledoc """
-  Mounts the widget in a host browser pipeline with session and CSRF support.
+  Mounts the widget with its own isolated browser session and CSRF pipeline.
 
       import WebWidget.Router
       web_widget("/widget")
 
   The macro serves the dependency's built assets at `/web_widget/assets/`.
-  The iframe uses the host's LiveView socket at `/live`.
+  Do not wrap this macro in a host pipeline that fetches the session.
+  Mount the matching scoped socket with `WebWidget.Endpoint.web_widget_socket/1`.
   """
 
   defmacro web_widget(prefix \\ "/widget") do
@@ -15,6 +16,7 @@ defmodule WebWidget.Router do
     quote do
       alias Phoenix.LiveView.Router, as: LiveViewRouter
       require LiveViewRouter
+      import Phoenix.LiveView.Router, only: [fetch_live_flash: 2]
 
       unless Module.get_attribute(__MODULE__, :web_widget_assets_registered) do
         Module.put_attribute(__MODULE__, :web_widget_assets_registered, true)
@@ -27,11 +29,19 @@ defmodule WebWidget.Router do
       end
 
       pipeline unquote(session) do
+        plug :accepts, ["html", "json"]
+        plug WebWidget.Embedding.Session
+        plug :fetch_live_flash
+        plug :protect_from_forgery
+        plug :put_secure_browser_headers
         plug WebWidget.Embedding.FramePolicy
       end
 
       scope unquote(prefix), alias: false do
         pipe_through unquote(session)
+
+        get "/:widget_id/session", WebWidget.Embedding.SessionBootstrap, [],
+          private: %{web_widget_session_bootstrap: true}
 
         LiveViewRouter.live_session unquote(session),
           layout: false,

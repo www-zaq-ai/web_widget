@@ -110,7 +110,11 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
     config =
       Map.merge(config, %{
         token: key,
-        settings: %{"identity_issuer" => "parent", "identity_audience" => "widget"}
+        settings: %{
+          "identity_issuer" => "parent",
+          "identity_audience" => "widget",
+          "same_site" => "Lax"
+        }
       })
 
     options =
