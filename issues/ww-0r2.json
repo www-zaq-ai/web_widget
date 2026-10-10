@@ -18,11 +18,15 @@
     {
       "text": "Implemented default-on Partitioned for all SameSite policies, host endpoint override only; Secure/HTTPS enforced; HTTP fixtures opt out. Firefox page replay now requests identity encoding. Partition test uses real browser requests (avoids APIRequestContext corrupting cookie partition ownership), verifies two distinct cookies across parent sites. Focused auth/race checks pass across browsers; mix precommit 197 tests no Credo findings, asset build and tsc pass. Full browser suite running; no migration/legacy fallback added.",
       "timestamp": "2026-10-10T08:58:56Z"
+    },
+    {
+      "text": "Final validation: full Chromium/Firefox/WebKit run 361 passed, 2 skipped (CDP-only test outside Chromium), no failures or retries. Re-ran discarded-cookie test after final ordering adjustment: 3/3 passed. mix precommit 197/197, Credo no issues, TypeScript and asset build pass. Original sibling-settings assertions unchanged. Ready to land partitioned transport session work; external host deployment acceptance for #12 remains separate.",
+      "timestamp": "2026-10-10T09:17:57Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Coordinate shared connector session bootstrap (#12, #19)",
   "type": "task",
-  "updated_at": "2026-10-10T08:58:56Z"
+  "updated_at": "2026-10-10T09:17:57Z"
 }
