@@ -6,9 +6,15 @@
   "description": "User requests rerun observations only at current9ab1807 after machine contention resolved: stylesheet remove across Chromium/Firefox/WebKit and Chromium WebSocket reconnect, 10 repetitions traceoff/on, same assertions/reporters/one worker. Isolate outputs, classify exact failures vs setup/auth timeouts. No source edits.",
   "id": "ww-w3i",
   "labels": [],
+  "comments": [
+    {
+      "text": "Started80 executions at unchanged9ab1807, macOS: stylesheet remove on Chromium/Firefox/WebKit +Chromium reconnect,10 per tracing mode. Serial batches of5 ordered off/on/on/off for each case to reduce time-order bias; one worker/no retries/same JSON reporter, separate temp output directories. Recording per-batch duration and system load averages. No source changes. Waiting for automatic completion notification; do not infer result from contention-affected prior runs.",
+      "timestamp": "2026-10-10T11:10:27Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Repeat isolated tracing comparison after contention resolved",
   "type": "task",
-  "updated_at": "2026-10-10T11:09:43Z"
+  "updated_at": "2026-10-10T11:10:27Z"
 }
