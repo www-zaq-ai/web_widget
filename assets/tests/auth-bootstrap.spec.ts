@@ -663,6 +663,25 @@ test("WebSocket reconnect replaces the LiveView process and preserves host messa
 
   const banner = widget.locator(".zaq-connection");
   const send = widget.getByRole("button", { name: "Send message", exact: true });
+  const waitForReplacement = async (previousPid: string) => {
+    await expect.poll(async () => {
+      // The server/network uses real time while this test pauses browser timers.
+      // Keep advancing those timers until both mount and presentation complete.
+      await page.clock.runFor(100);
+      const active = await sessions();
+      return {
+        count: active.length,
+        replaced: active.length === 1 && active[0].pid !== previousPid,
+        authorized: await widget.locator("#widget-context").getAttribute("data-authorized"),
+        reconnecting: await widget.locator(".zaq-widget").getAttribute("data-reconnecting"),
+      };
+    }).toEqual({ count: 1, replaced: true, authorized: "true", reconnecting: "false" });
+    const [replacement] = await sessions();
+    expect(replacement.pid).not.toBe(previousPid);
+    expect(replacement.topic).toBe(before.topic);
+    expect(replacement.conversation_id).toBe(before.conversation_id);
+    return replacement;
+  };
   await input.fill(secondMessage);
   await expect(send).toBeEnabled();
   // Inspector pauses must not consume the banner's grace period.
@@ -684,7 +703,7 @@ test("WebSocket reconnect replaces the LiveView process and preserves host messa
   await expect(banner).toHaveText("Connection lost. Reconnecting…");
   await expect(banner.getByRole("button")).toHaveCount(0);
   await widget.locator("body").evaluate(() => (window as any).liveSocket.connect());
-  await page.clock.runFor(300);
+  await waitForReplacement(before.pid);
   await expect(widget.locator("#widget-context")).toHaveAttribute("data-authorized", "true");
   await expect.poll(sessions).toHaveLength(1);
   const [after] = await sessions();
@@ -721,12 +740,10 @@ test("WebSocket reconnect replaces the LiveView process and preserves host messa
   await expect(banner).toHaveCount(0);
 
   await input.fill("Draft after a brief interruption");
-  await widget.locator("body").evaluate(() => {
-    (window as any).liveSocket.disconnect();
-    (window as any).liveSocket.connect();
-  });
-  await page.clock.runFor(300);
-  await expect.poll(async () => (await sessions())[0]?.pid).not.toBe(after.pid);
+  await widget.locator("body").evaluate(() => (window as any).liveSocket.disconnect());
+  await expect.poll(sessions).toEqual([]);
+  await widget.locator("body").evaluate(() => (window as any).liveSocket.connect());
+  await waitForReplacement(after.pid);
   await expect(widget.locator(".zaq-widget")).toHaveAttribute("data-reconnecting", "false");
   await expect(banner).toHaveCount(0);
   await expect(input).toHaveValue("Draft after a brief interruption");
