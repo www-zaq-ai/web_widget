@@ -10,11 +10,15 @@
     {
       "text": "Initial 80-run controller terminated by SIGTERM after only stylesheet-off batch. Off batch: 30/30 failed, but exact duplicate-ready failure occurred 5/10 Chromium and4/10 WebKit; remaining failures include auth/setup timeouts, so not a clean rate comparison. Tracing is not required to trigger duplicate readiness. Started smaller paired Chromium off/on batches (3 repetitions stylesheet and reconnect), unchanged sources/assertions. Source shows ready.request explicitly reannounces when publicReady=true; stylesheet removal can resolve pending readiness before ready.request processing. Reconnect test predicate .not.toBe(after.pid) also permits undefined (no session), so it is not a complete reconnect barrier. Need complete paired results before final conclusion.",
       "timestamp": "2026-10-10T10:46:04Z"
+    },
+    {
+      "text": "Completed smaller paired Chromium comparison (Node22.16/macOS/Playwright1.63, commit9ab1807, same assertions/workers/json reporter): stylesheet traceoff3/3 duplicate-ready failures; traceon2/3 duplicate-ready +1/3 earlier auth timeout. Trace shows count0 before removal then count2, persistent. Reconnect traceoff3/3 PASS, traceon3/3 PASS. Tracing-only explanation disproven; cannot infer CI reconnect cause from these samples. Source ready.request explicitly replays ready if publicReady; removal settles awaited stylesheet and can publish ready before request is handled, producing transition+reply. Need clarify event semantics/test barrier rather than disable tracing blindly. Initial aborted batch also exact duplicate-ready off5 Chromium/off4 WebKit, other setup timeouts confounded. No source edits. Artifacts in approved temp trace-comparison-9ab1807[-small]. Investigation authorized scope complete, code fixes not implemented.",
+      "timestamp": "2026-10-10T10:52:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Compare E2E failures with tracing off and on",
   "type": "task",
-  "updated_at": "2026-10-10T10:46:04Z"
+  "updated_at": "2026-10-10T10:52:27Z"
 }
