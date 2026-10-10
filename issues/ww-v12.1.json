@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [
     "ww-v12.2"
@@ -10,8 +10,8 @@
   "labels": [],
   "parent": "ww-v12",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Define startup contract and validated infrastructure",
   "type": "task",
-  "updated_at": "2026-10-10T17:11:08Z"
+  "updated_at": "2026-10-10T17:11:15Z"
 }
