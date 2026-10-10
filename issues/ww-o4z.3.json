@@ -5,6 +5,8 @@
     "ww-o4z.2"
   ],
   "blocks": [],
+  "closed_at": "2026-10-10T14:01:47Z",
+  "close_reason": "Validation passed; uncommitted owner-review delivery",
   "created": "2026-10-10T13:27:11Z",
   "description": "Focused and integration validation, explicit fixtures, docs, precommit",
   "id": "ww-o4z.3",
@@ -17,7 +19,7 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Validate session feedback and migration",
   "type": "task",
   "updated_at": "2026-10-10T14:01:47Z"
