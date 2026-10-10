@@ -10,11 +10,15 @@
     {
       "text": "User requested commit and push of current implementation checkpoint. Validation: git diff --check passed; mix precommit fails on alias ordering and complexity in Session.call/install (3 Credo findings). Focused Firefox/WebKit cookie-policy/session-race run: 10 passed, 2 skipped, 6 failed. WebKit cross-site auth fails cookie_unavailable; Firefox concurrent-first-load and partitioned-parent cases fail; WebKit partitioned-parent case fails. Keep task open; no claim of completed fix or issue resolution.",
       "timestamp": "2026-10-09T21:44:58Z"
+    },
+    {
+      "text": "Approved updated plan: partitioned default-on for all widget SameSite policies, only host endpoint override (no connector option), Secure/HTTPS mandatory unless partitioning disabled. No migration or old-browser compatibility. Fix Firefox route.fetch encoding, update partition isolation/blocked cookie regressions and run all suites.",
+      "timestamp": "2026-10-10T08:31:06Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Coordinate shared connector session bootstrap (#12, #19)",
   "type": "task",
-  "updated_at": "2026-10-09T21:44:58Z"
+  "updated_at": "2026-10-10T08:31:06Z"
 }
