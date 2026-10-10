@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T10:52:32Z",
   "created": "2026-10-10T10:19:03Z",
   "description": "User authorized local observation only on current existing branch: stylesheet remove across 3 browsers and Chromium WebSocket reconnect, repeat10 each trace off/on. Preserve assertions, no source changes. Save separate reports/traces, inspect failures and report measured root cause vs hypotheses. Related PR19 CI38042989091.",
   "id": "ww-b4v",
@@ -17,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Compare E2E failures with tracing off and on",
   "type": "task",
-  "updated_at": "2026-10-10T10:52:27Z"
+  "updated_at": "2026-10-10T10:52:32Z"
 }
