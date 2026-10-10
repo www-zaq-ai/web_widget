@@ -1,7 +1,9 @@
 {
   "assignee": "Julien",
   "blocked_by": [],
-  "blocks": [],
+  "blocks": [
+    "ww-o4z.3"
+  ],
   "created": "2026-10-10T13:27:11Z",
   "description": "Docs first; duplicate guard, anonymous bootstrap tests, required policy, HTTPS Secure",
   "id": "ww-o4z.1",
@@ -17,5 +19,5 @@
   "status": "in_progress",
   "title": "Enforce cookie and runtime policy contract",
   "type": "task",
-  "updated_at": "2026-10-10T13:33:16Z"
+  "updated_at": "2026-10-10T13:37:51Z"
 }

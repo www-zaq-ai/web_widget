@@ -1,6 +1,8 @@
 {
   "assignee": "Julien",
-  "blocked_by": [],
+  "blocked_by": [
+    "ww-o4z.1"
+  ],
   "blocks": [],
   "created": "2026-10-10T13:27:11Z",
   "description": "Focused and integration validation, explicit fixtures, docs, precommit",
