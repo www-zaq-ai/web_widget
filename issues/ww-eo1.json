@@ -18,11 +18,15 @@
     {
       "text": "Committed/pushed0d5d890 test: prevent renewal racing expiry reconnect fixture. FullCI automatic PR checks pending creation; retain task open pending CI acceptance.",
       "timestamp": "2026-10-10T12:13:47Z"
+    },
+    {
+      "text": "Hosted browser acceptance PASS run38051184747 at0d5d890: Chromium121pass; Firefox120pass1skip; macOSWebKit120pass1skip (361pass2skip total). Expiry fixture fixed;60 repeatedoff/onPASS and initial9variantPASS. Separate Elixir CI38051184746:197unit testsPASS/Credo/compile/formatPASS, three-node Mnesia check failed at binding_store_cluster.exs:186; expected replayed from peer n2 got unavailable_or_invalid after restart, n1 accepted same-page claim at185. Root cause not established, no OTP/source changes made.",
+      "timestamp": "2026-10-10T12:26:30Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Make expiry reconnect fixture deterministic",
   "type": "task",
-  "updated_at": "2026-10-10T12:13:47Z"
+  "updated_at": "2026-10-10T12:26:30Z"
 }
