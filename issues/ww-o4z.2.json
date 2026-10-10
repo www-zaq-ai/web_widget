@@ -9,6 +9,12 @@
   "id": "ww-o4z.2",
   "labels": [],
   "parent": "ww-o4z",
+  "comments": [
+    {
+      "text": "Focused browser checks pass on Chromium, Firefox and macOS Safari-targeted WebKit: 52 passed, 2 Chromium-only skips. Recovery initializes once and rejects missing cookies through read-only verification; explicit reload starts a new attempt.",
+      "timestamp": "2026-10-10T13:37:52Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bound read-only browser recovery",
