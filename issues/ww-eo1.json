@@ -10,11 +10,15 @@
     {
       "text": "Implemented test-only expiry fixture gate: reject proactive token renewal until explicit recovery, retain initial exp/jti, await issuance before matching accepted credential and expiry; assert exactly1 issuance before recovery and replacement credential after it. First all3 variants/all3browsers9/9PASS; TypeScript/diffcheckPASS. Running60 expiry repetitions all browsers tracingoff/on(10/browser/mode) with no retries before push/fullCI.",
       "timestamp": "2026-10-10T12:02:02Z"
+    },
+    {
+      "text": "Final isolated validation60/60PASS: expiry scenario all3browsers10each traceoff+10each traceon, zero retries/failures/errors. Reports /private/var/folders/9p/mdzhcqxx7hs8bw_10vwjvfp00000gn/T/opencode/expiry-fixture-1791633706955. Initial9 variant checks passed, TypeScript/diffcheck passed. Committing/pushing test-only fixture and awaiting full hosted CI.",
+      "timestamp": "2026-10-10T12:13:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Make expiry reconnect fixture deterministic",
   "type": "task",
-  "updated_at": "2026-10-10T12:02:02Z"
+  "updated_at": "2026-10-10T12:13:18Z"
 }
