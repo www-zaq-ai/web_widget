@@ -1,7 +1,8 @@
 {
   "assignee": "Julien",
   "blocked_by": [
-    "ww-o4z.1"
+    "ww-o4z.1",
+    "ww-o4z.2"
   ],
   "blocks": [],
   "created": "2026-10-10T13:27:11Z",
@@ -13,5 +14,5 @@
   "status": "in_progress",
   "title": "Validate session feedback and migration",
   "type": "task",
-  "updated_at": "2026-10-10T13:37:51Z"
+  "updated_at": "2026-10-10T13:37:52Z"
 }
