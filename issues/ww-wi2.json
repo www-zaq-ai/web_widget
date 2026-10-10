@@ -6,9 +6,15 @@
   "description": "Approved on existing PR19 branch: acknowledge readiness probe while CSS pending before removal/renewal, retain exactly-one transition assertions and explicitly cover already-ready probe replay. Reconnect trace confirmed empty sessions passed notToBe(oldpid); require replacement session and client ready with advancing browser timers, preserve topic/conversation/draft/delivery checks. Test-only edits; validate repeats traceoff/on and full CI.",
   "id": "ww-wi2",
   "labels": [],
+  "comments": [
+    {
+      "text": "Test-only changes implemented. CSS pending probe now acknowledged before stylesheet changes; original ready=1/renewal/link assertions preserved, added already-ready probe reply assertions. Reconnect now tests explicit empty-session interval and uses bounded expect.poll advancing fake clock100ms until exactly1 changed session plus authorized/nonreconnecting client; topic/conversation/draft/delivery checks retained. tsc/diffcheck pass; Chromium all5 pending-CSS variants+reconnect6/6 pass. Running80 isolated repetitions off/on before committing/pushing and hosted fullCI.",
+      "timestamp": "2026-10-10T11:29:07Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Synchronize stylesheet readiness and reconnect E2E tests",
   "type": "task",
-  "updated_at": "2026-10-10T11:26:19Z"
+  "updated_at": "2026-10-10T11:29:07Z"
 }
