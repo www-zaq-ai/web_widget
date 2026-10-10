@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T20:56:19Z",
+  "description": "Remove public builder construction APIs and obsolete documentation; migrate fixtures and standalone integration; focused lifecycle/proxy tests and precommit.",
+  "id": "ww-73a.4",
+  "labels": [],
+  "parent": "ww-73a",
+  "priority": 2,
+  "status": "open",
+  "title": "Migrate builder callers and verify lifecycle acceptance",
+  "type": "task",
+  "updated_at": "2026-10-10T20:56:19Z"
+}
