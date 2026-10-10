@@ -14,11 +14,15 @@
     {
       "text": "Final isolated validation60/60PASS: expiry scenario all3browsers10each traceoff+10each traceon, zero retries/failures/errors. Reports /private/var/folders/9p/mdzhcqxx7hs8bw_10vwjvfp00000gn/T/opencode/expiry-fixture-1791633706955. Initial9 variant checks passed, TypeScript/diffcheck passed. Committing/pushing test-only fixture and awaiting full hosted CI.",
       "timestamp": "2026-10-10T12:13:18Z"
+    },
+    {
+      "text": "Committed/pushed0d5d890 test: prevent renewal racing expiry reconnect fixture. FullCI automatic PR checks pending creation; retain task open pending CI acceptance.",
+      "timestamp": "2026-10-10T12:13:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Make expiry reconnect fixture deterministic",
   "type": "task",
-  "updated_at": "2026-10-10T12:13:18Z"
+  "updated_at": "2026-10-10T12:13:47Z"
 }
