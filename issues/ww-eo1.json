@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T12:26:33Z",
   "created": "2026-10-10T11:57:07Z",
   "description": "Approved continuation PR19 current branch: block successful renewal of short-lived expiry token until recovery phase, freeze initial accepted expiry and verify accepted credential; preserve actual expiry/failed reconnect/conversation recovery assertions and timeouts. Repeat locally across browsers then push and validate full CI. No production changes.",
   "id": "ww-eo1",
@@ -25,8 +26,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Make expiry reconnect fixture deterministic",
   "type": "task",
-  "updated_at": "2026-10-10T12:26:30Z"
+  "updated_at": "2026-10-10T12:26:33Z"
 }
