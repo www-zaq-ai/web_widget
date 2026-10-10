@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T14:52:05Z",
   "created": "2026-10-10T14:35:10Z",
   "description": "Correct rebased readiness probe and stale fixtures for mandatory SameSite, default partitioning and page-cookie suppression. Probe anonymous /session then verify=1, use verified JSON CSRF and cookie for actual WebSocket upgrade, check Partitioned attribute, update outdated policy tests/docs, run focused/full and browser regression suites. Retain existing readiness branch/worktree as requested delivery mode.",
   "id": "ww-99x",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Adapt readiness to current session bootstrap (#16)",
   "type": "bug",
-  "updated_at": "2026-10-10T14:51:54Z"
+  "updated_at": "2026-10-10T14:52:05Z"
 }
