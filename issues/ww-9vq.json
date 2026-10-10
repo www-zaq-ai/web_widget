@@ -6,9 +6,15 @@
   "description": "Match intercepted bootstrap routes to actual frame rather than request arrival order; deterministically test reversed parent arrival order. Hide progress bar on terminal session failure and prevent decorative canvas intercepting reload clicks. Validate macOS WebKit and Chromium session-race suites on existing readiness branch.",
   "id": "ww-9vq",
   "labels": [],
+  "comments": [
+    {
+      "text": "Fixed CI regressions from run 38061477830 / PR #22. Partition test now associates each intercepted initial bootstrap with its request frame, and deterministically covers both arrival orders without weakening cookie partition assertions. Terminal session failure cancels/hides topbar and prevents subsequent loading events from restarting it; dedicated progress class disables pointer interception. Regression tests exercise visible progress, pending progress cancellation, later loading events and ordinary reload click. Rebuilt tracked browser assets. Validation: npm build passed; full Chromium + macOS WebKit E2E run passed 267 tests (134 Chromium, 133 WebKit), 1 existing WebKit skip for Chromium-specific third-party blocking; mix precommit passed 230 tests; git diff --check clean. Initial broad run hit an execution timeout, rerun with sufficient budget completed successfully in 13.2m. Firefox not run.",
+      "timestamp": "2026-10-10T15:39:46Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Fix partition race and recovery reload E2E failures",
   "type": "bug",
-  "updated_at": "2026-10-10T15:17:03Z"
+  "updated_at": "2026-10-10T15:39:46Z"
 }
