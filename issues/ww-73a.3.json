@@ -11,9 +11,15 @@
   "id": "ww-73a.3",
   "labels": [],
   "parent": "ww-73a",
+  "comments": [
+    {
+      "text": "Implemented uncached discovery from registered widget endpoint metadata, actual listener selection and explicit disambiguation. Readiness v2 separates local handshake evidence from external HTTPS (not_checked). Endpoint-owned trusted proxy normalization precedes HTTP and socket dispatch; public origin defaults to endpoint HTTPS URL. Real TLS proxy acceptance verifies Secure/Partitioned cookies and WSS over HTTP backend without spoofed readiness headers.",
+      "timestamp": "2026-10-10T21:21:54Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Discover widget endpoints and support proxy HTTPS readiness",
   "type": "task",
-  "updated_at": "2026-10-10T20:57:34Z"
+  "updated_at": "2026-10-10T21:21:54Z"
 }
