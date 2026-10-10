@@ -11,9 +11,15 @@
   "id": "ww-73a.2",
   "labels": [],
   "parent": "ww-73a",
+  "comments": [
+    {
+      "text": "Implemented host-input supervisor specs, independent connector identity, eager current-generation startup, monitored runtime reconstruction, tagged capped-backoff retries, generation/session fencing, secret redaction and replacement/removal isolation. Fixed killed-Registry partition name-release race. Changes remain uncommitted per requested working-tree delivery.",
+      "timestamp": "2026-10-10T21:21:54Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Implement restart-safe connector supervision",
   "type": "task",
-  "updated_at": "2026-10-10T20:57:34Z"
+  "updated_at": "2026-10-10T21:21:54Z"
 }
