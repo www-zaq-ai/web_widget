@@ -4,6 +4,8 @@
   "blocks": [
     "ww-o4z.3"
   ],
+  "closed_at": "2026-10-10T14:01:47Z",
+  "close_reason": "Implemented and validated; working tree left uncommitted for owner review",
   "created": "2026-10-10T13:27:11Z",
   "description": "One initialization per document; read-only resync; readiness deadlines; tests",
   "id": "ww-o4z.2",
@@ -20,7 +22,7 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Bound read-only browser recovery",
   "type": "task",
   "updated_at": "2026-10-10T14:01:47Z"
