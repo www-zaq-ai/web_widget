@@ -13,6 +13,7 @@ defmodule WebWidgetWeb.WidgetLiveTest do
          widgets: [
            %{
              widget_id: "live-test",
+             same_site: "Lax",
              display_name: "Test",
              allowed_domains: ["http://www.example.com"]
            }
@@ -97,6 +98,7 @@ defmodule WebWidgetWeb.WidgetLiveTest do
            widgets: [
              %{
                widget_id: id,
+               same_site: "Lax",
                display_name: "Host title",
                locale: locale,
                allowed_domains: ["http://www.example.com"]

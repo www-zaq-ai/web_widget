@@ -137,6 +137,11 @@ The widget router must not run inside a pipeline that has already fetched the BO
 session. It installs its own session before flash/CSRF handling. Signing salts are
 package-specific; signed widget ID and mount path are checked against the socket
 request URI and page session. Cookie paths are not authorization boundaries.
+The endpoint integration rejects multiple occurrences of `_web_widget_session`
+in raw Cookie headers before HTTP or transport cookie parsing. Ambiguous requests
+fail without writing cookies; BO paths and cookie names are unaffected.
+Unknown widget IDs return a static unavailable response without initializing a
+session or connecting LiveView; this is not a missing-policy fallback.
 
 Widget transport cookies are partitioned by default, independently of connector
 SameSite policy, and require Secure/HTTPS. Only trusted host endpoint configuration
@@ -149,23 +154,30 @@ Instances of one connector share its transport cookie and CSRF state, never user
 identity or conversation state. Initial page responses do not write that cookie.
 Before connecting, the iframe obtains its CSRF token from the same-origin
 `<widget-page-path>/session` endpoint under a connector-path Web Lock. That endpoint
-creates the cookie only when absent/invalid, and otherwise reads the established
+creates fresh transport/CSRF state when the cookie is absent, invalid or bound to
+another widget, and otherwise reads the established
 session without rewriting it. A verification read confirms cookie acceptance;
 blocked cookies and unavailable coordination fail explicitly with bounded work.
+Replacement never copies state or authenticates a user: verified identity tokens
+remain authoritative. Verification and socket requests never initialize cookies.
 The independently signed LiveView page remains the JWT binding identity. Stable
 page, installation and transport URLs do not gain instance IDs or redirects.
 
-Browser locks may be storage-partitioned even where cookies are shared. A bounded
-session-token resynchronization on a rejected transport must cover late concurrent
-cookie establishment across those partitions, without disabling CSRF or repeatedly
-rewriting an established cookie. Cookie policy changes require a fresh bootstrap.
+Browser locks may be storage-partitioned even where cookies are shared. Only the
+initial document bootstrap may initialize a cookie. Subsequent token resynchronization
+is read-only and has a document-lifetime attempt limit. Initial LiveView establishment
+and each transient reconnect have finite deadlines; opening a transport alone does
+not reset them. Failure stops recovery and offers explicit reload, never automatic
+reload or cookie-writing recovery. Cookie policy changes require a fresh page load.
 
 Canonical `config.settings["same_site"]` accepts exactly `"None"`, `"Lax"`,
-`"Strict"`; present nil/blank/invalid values reject runtime construction. Missing
-legacy settings inherit the serving endpoint's declared `:web_widget_session`
-`:same_site` policy (default `"Lax"`), not a new-connector default. Hosts must declare
-their previous effective policy when migrating. ZAQ owns new defaults and edits.
-None requires HTTPS and Secure; HTTP development must explicitly use Lax/Strict.
+`"Strict"`; missing, nil/blank/invalid values reject runtime construction. Every
+registered widget must explicitly supply its policy; no endpoint or package
+fallback exists. Hosts must populate legacy connector settings before upgrading,
+using an explicitly chosen policy. Partial edits preserve the stored value; the
+complete resolved configuration must contain it. ZAQ owns new defaults and edits.
+HTTPS always requires Secure, including unpartitioned Lax/Strict and an endpoint
+`secure: false` setting. None requires HTTPS; HTTP development uses explicit Lax/Strict.
 No implicit downgrade, BO cookie rewrite, second iframe connection, or CSRF bypass
 is allowed. Policy changes require runtime replacement and a page reload before
 reconnecting with a session under the new policy. Third-party-cookie blocking can

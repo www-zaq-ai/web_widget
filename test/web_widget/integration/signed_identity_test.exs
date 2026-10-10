@@ -16,7 +16,11 @@ defmodule WebWidget.Integration.SignedIdentityTest do
     config =
       Map.merge(config, %{
         token: key,
-        settings: %{"identity_issuer" => "parent", "identity_audience" => "widget"}
+        settings: %{
+          "identity_issuer" => "parent",
+          "identity_audience" => "widget",
+          "same_site" => "Lax"
+        }
       })
 
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, options)
@@ -225,7 +229,11 @@ defmodule WebWidget.Integration.SignedIdentityTest do
     config =
       Map.merge(config, %{
         token: ctx.key,
-        settings: %{"identity_issuer" => "other-parent", "identity_audience" => "other-widget"}
+        settings: %{
+          "identity_issuer" => "other-parent",
+          "identity_audience" => "other-widget",
+          "same_site" => "Lax"
+        }
       })
 
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, ctx.options)

@@ -1,5 +1,8 @@
 /** One transport session per connector, independent from every iframe's identity. */
-export async function widgetSessionToken(path: string): Promise<string> {
+export async function widgetSessionToken(
+  path: string,
+  { verifyOnly = false, signal }: { verifyOnly?: boolean; signal?: AbortSignal } = {},
+): Promise<string> {
   const url = new URL(path, location.origin);
   if (url.origin !== location.origin || url.search || url.hash || url.username || url.password) {
     throw new Error("invalid_session_endpoint");
@@ -7,6 +10,9 @@ export async function widgetSessionToken(path: string): Promise<string> {
   if (!navigator.locks) throw new Error("session_coordination_unsupported");
 
   const controller = new AbortController();
+  const abort = () => controller.abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  if (signal?.aborted) controller.abort();
   const timeout = window.setTimeout(() => controller.abort(), 10_000);
   try {
     return await navigator.locks.request(`web-widget-session:${url.pathname}`, {
@@ -29,11 +35,12 @@ export async function widgetSessionToken(path: string): Promise<string> {
         }
         return body.csrf_token;
       };
-      await read(false);
+      if (!verifyOnly) await read(false);
       // Read-only confirmation: blocked cookies must not cause repeated creation.
       return read(true);
     });
   } finally {
     window.clearTimeout(timeout);
+    signal?.removeEventListener("abort", abort);
   }
 }

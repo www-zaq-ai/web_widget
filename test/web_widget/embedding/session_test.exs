@@ -224,10 +224,93 @@ defmodule WebWidget.Embedding.SessionTest do
     assert get_session(second, "web_widget_id") == "strict"
     assert get_session(second, "web_widget_path") == "/widget/strict"
     refute get_session(first, "_csrf_token") == get_session(second, "_csrf_token")
+    assert second.resp_cookies["_web_widget_session"].path == "/widget/strict"
+
+    info =
+      handshake(second, "/widget/strict/live/websocket", json_response(second, 200)["csrf_token"])
+
+    assert {:ok, _} =
+             Socket.connect(
+               %{"widget_id" => "strict"},
+               %Phoenix.Socket{endpoint: @endpoint},
+               info
+             )
+
+    refute Map.has_key?(info.session, "identity_token")
+  end
+
+  test "tampered cookies initialize fresh anonymous state only on bootstrap" do
+    for path <- ["/widget/lax/session", "/support/chat/lax/session"] do
+      conn =
+        build_conn() |> Plug.Test.put_req_cookie("_web_widget_session", "forged") |> get(path)
+
+      assert json_response(conn, 200)["csrf_token"]
+      assert get_session(conn, "web_widget_id") == "lax"
+
+      assert Map.keys(get_session(conn)) |> Enum.sort() ==
+               Enum.sort([
+                 "web_widget_id",
+                 "web_widget_path",
+                 "web_widget_same_site",
+                 "_csrf_token"
+               ])
+
+      verified =
+        build_conn()
+        |> Plug.Test.put_req_cookie("_web_widget_session", "forged")
+        |> get(path <> "?verify=1")
+
+      assert response(verified, 409) == "cookie_unavailable"
+      refute Map.has_key?(verified.resp_cookies, "_web_widget_session")
+    end
+  end
+
+  test "duplicate raw cookies reject pages, bootstrap and both socket transports before parsing" do
+    initialized = get(build_conn(), "https://www.example.com/widget/none/session")
+    valid = initialized.resp_cookies["_web_widget_session"].value
+    csrf = json_response(initialized, 200)["csrf_token"]
+
+    for prefix <- ["/widget", "/support/chat"],
+        suffix <- ["", "/session", "/session?verify=1", "/live/websocket", "/live/longpoll"],
+        values <- [[valid, "forged"], ["forged", valid], [valid, valid]],
+        separate <- [false, true] do
+      path = prefix <> "/none" <> suffix
+
+      path =
+        if String.contains?(suffix, "/live/"),
+          do: path <> "?_csrf_token=" <> URI.encode_www_form(csrf),
+          else: path
+
+      headers = Enum.map(values, &{"cookie", "_web_widget_session=" <> &1})
+
+      headers =
+        if separate, do: headers, else: [{"cookie", Enum.map_join(headers, "; ", &elem(&1, 1))}]
+
+      conn = %{build_conn() | req_headers: headers}
+      rejected = get(conn, "https://www.example.com" <> path)
+      assert response(rejected, 400) == "ambiguous_widget_cookie"
+      refute Map.has_key?(rejected.resp_cookies, "_web_widget_session")
+      assert %Plug.Conn.Unfetched{} = rejected.req_cookies
+    end
+  end
+
+  test "duplicate unrelated cookies and BO paths are not rejected" do
+    conn =
+      build_conn() |> put_req_header("cookie", "other=a; other=b") |> get("/widget/lax/session")
+
+    assert json_response(conn, 200)["csrf_token"]
+
+    bo =
+      build_conn()
+      |> put_req_header("cookie", "_web_widget_session=a; _web_widget_session=b")
+      |> get("/bo-session")
+
+    assert response(bo, 200) == "admin"
   end
 
   test "policy validation distinguishes omission from invalid explicit values" do
-    assert Session.validate_settings(%{}) == {:ok, :inherit}
+    assert Session.validate_settings(%{}) == {:error, :missing_cookie_policy}
+    assert Session.validate_settings(nil) == {:error, :missing_cookie_policy}
 
     for value <- ["None", "Lax", "Strict"] do
       assert Session.validate_settings(%{"same_site" => value}) == {:ok, value}
@@ -238,27 +321,43 @@ defmodule WebWidget.Embedding.SessionTest do
                {:error, :invalid_cookie_policy}
     end
 
-    assert {:ok, %{same_site: "Lax", source: :endpoint}} =
-             Session.effective(%{}, @endpoint, :http)
+    assert {:error, :missing_cookie_policy} = Session.effective(%{}, @endpoint, :http)
   end
 
-  test "legacy policy is explicitly declared by the endpoint, never replaced with None" do
-    endpoint_policy(same_site: "Strict")
+  test "endpoint policy cannot supply a missing widget policy" do
+    for fallback <- ["None", "Lax", "Strict", "invalid"] do
+      endpoint_policy(same_site: fallback, partitioned: false)
+      assert {:error, :missing_cookie_policy} = Session.effective(%{}, @endpoint, :https)
 
-    assert {:ok, %{same_site: "Strict", source: :endpoint}} =
-             Session.effective(%{}, @endpoint, :https)
+      assert {:ok, %{same_site: "None", source: :connector, secure: true}} =
+               Session.effective(%{same_site: "None"}, @endpoint, :https)
+    end
 
-    assert {:ok, %{same_site: "None", source: :connector}} =
-             Session.effective(%{same_site: "None"}, @endpoint, :https)
+    assert {:error, :cookie_policy_unsupported} =
+             Session.effective(%{same_site: :inherit}, @endpoint, :https)
 
-    endpoint_policy(same_site: "None")
-    assert {:ok, %{same_site: "None", secure: true}} = Session.effective(%{}, @endpoint, :https)
-    assert {:error, :https_required} = Session.effective(%{}, @endpoint, :http)
-
-    endpoint_policy(same_site: "invalid")
-    assert {:error, :cookie_policy_unsupported} = Session.effective(%{}, @endpoint, :https)
     endpoint_policy(secure: "true")
-    assert {:error, :secure_cookie_required} = Session.effective(%{}, @endpoint, :https)
+
+    assert {:error, :secure_cookie_required} =
+             Session.effective(%{same_site: "Lax"}, @endpoint, :https)
+  end
+
+  test "HTTPS always forces Secure even when the endpoint disables it" do
+    for partitioned <- [false, true], policy <- ["None", "Lax", "Strict"] do
+      configure(partitioned: partitioned, secure: false)
+      id = String.downcase(policy)
+      conn = get(build_conn(), "https://www.example.com/widget/#{id}/session")
+      assert conn.resp_cookies["_web_widget_session"].secure
+      assert {:ok, %{secure: true}} = Session.effective(%{same_site: policy}, @endpoint, :https)
+    end
+
+    configure(partitioned: false, secure: false)
+
+    for policy <- ["Lax", "Strict"] do
+      assert {:ok, %{secure: false}} = Session.effective(%{same_site: policy}, @endpoint, :http)
+    end
+
+    assert {:error, :https_required} = Session.effective(%{same_site: "None"}, @endpoint, :http)
   end
 
   test "a changed policy rejects the old session and reload issues the replacement" do

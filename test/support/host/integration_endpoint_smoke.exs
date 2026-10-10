@@ -34,7 +34,7 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
     assert WebWidget.Runtime.fetch_widget("demo") == {:error, :not_found}
 
     document =
-      get(build_conn(), "/widget/missing") |> html_response(200) |> LazyHTML.from_document()
+      get(build_conn(), "/widget/missing") |> html_response(404) |> LazyHTML.from_document()
 
     assert document |> LazyHTML.query("#widget-unavailable") |> Enum.count() == 1
     assert byte_size(response(get(build_conn(), "/web_widget/assets/embed.js"), 200)) > 100

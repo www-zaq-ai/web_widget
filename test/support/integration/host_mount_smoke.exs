@@ -18,7 +18,7 @@ defmodule WebWidget.HostMountSmokeTest do
       name: "Mounted widget smoke",
       provider: "web_widget",
       enabled: true,
-      settings: %{"allowed_domains" => ["http://localhost:4010"]}
+      settings: %{"allowed_domains" => ["http://localhost:4010"], "same_site" => "Lax"}
     }
 
     on_exit(fn -> WebBridge.stop_runtime(config) end)
@@ -43,7 +43,7 @@ defmodule WebWidget.HostMountSmokeTest do
 
     assert :ok = WebBridge.stop_runtime(config)
     conn = get(build_conn(), "/widget/#{config.id}")
-    document = conn |> html_response(200) |> LazyHTML.from_document()
+    document = conn |> html_response(404) |> LazyHTML.from_document()
     assert document |> LazyHTML.query("#widget-unavailable") |> Enum.count() == 1
     assert [policy] = Plug.Conn.get_resp_header(conn, "content-security-policy")
     assert policy =~ "frame-ancestors 'none'"

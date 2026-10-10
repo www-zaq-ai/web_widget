@@ -14,7 +14,9 @@ defmodule WebWidget.AdapterTest do
          channel_config_id: id,
          sink_mfa: {__MODULE__, :callback, [self()]},
          pubsub_server: server,
-         widgets: [%{widget_id: id, display_name: "Adapter", allowed_domains: []}]
+         widgets: [
+           %{widget_id: id, same_site: "Lax", display_name: "Adapter", allowed_domains: []}
+         ]
        }}
     )
 

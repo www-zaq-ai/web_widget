@@ -36,6 +36,7 @@ defmodule WebWidget.HostRuntimeSmokeTest do
       provider: "web_widget",
       enabled: false,
       settings: %{
+        "same_site" => "Lax",
         "display_name" => "Support smoke",
         "allowed_domains" => ["http://localhost:4010"]
       }
@@ -62,6 +63,7 @@ defmodule WebWidget.HostRuntimeSmokeTest do
              {:ok,
               %{
                 widget_id: widget_id,
+                same_site: "Lax",
                 display_name: "Support smoke",
                 allowed_domains: ["http://localhost:4010"],
                 stylesheet_url: nil,

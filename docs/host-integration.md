@@ -36,6 +36,20 @@ web_widget_socket("/widget")
 
 Each iframe uses only `/widget/:widget_id/live` (WebSocket or the existing long-poll fallback). Its HttpOnly, host-only `_web_widget_session` cookie has Path `/widget/:widget_id`, and uses package-specific signing options. Signed widget ID and mount path are verified at socket connection and connected page mount. Normal CSRF and socket origin checks remain enabled. Mount `web_widget` outside other authenticated `live_session` blocks; its macro creates its own. `allowed_domains` controls iframe parent origins separately.
 
+`web_widget_socket/1` also wraps endpoint request handling to reject ambiguous
+duplicates of the reserved cookie name before HTTP or socket parsing. Do not bypass
+that wrapper in a custom endpoint `call/2`; delegate through `super/2`.
+The rejection does not affect BO routes or unrelated duplicate cookie names.
+
+Initial bootstrap may replace a single unusable/cross-widget cookie with fresh
+anonymous CSRF state; it never carries over identity or conversation state.
+Verification is read-only. Each iframe document initializes at most once, permits
+at most three read-only resynchronizations, and allows ten seconds for bootstrap
+plus LiveView establishment or each transient reconnect. Transport opens cannot
+reset those limits. Failure shows an unavailable message and requires explicit
+reload; identity renewal and authorized conversation restoration stay separate.
+Backend revocation stops transport recovery without relabeling it as a session failure.
+
 For a nested/custom router mount such as `/support/chat`, register `web_widget_socket("/support/chat")` on the endpoint and set trusted integration `widget_path: "/support/chat"`. The returned `RuntimeBuilder.embed_script/2` snippet includes `data-widget-url="https://PUBLIC-ORIGIN/support/chat/42"`; the loader honors that URL and the iframe renders the corresponding socket URL. All three prefixes must match.
 
 The `web_widget/1` macro serves `/web_widget/assets/*path` directly from the dependency's `priv/static/assets`, using `WebWidget.Static` as a route. Released Git tags include the tracked production bundle. The host needs no Node installation, asset copy/build task, static-path allowlist entry, or endpoint static plug. Do not run a second package endpoint when mounting in the host endpoint.
@@ -44,14 +58,13 @@ The host-mounted topology uses the host endpoint for `/widget/:id`, `/widget/:id
 
 ### Cookie policy and migration
 
-Canonical connector `settings["same_site"]` accepts exactly `"None"`, `"Lax"`, `"Strict"`. Explicit nil, blank and invalid values fail runtime construction. New connector defaults belong to the host. An omitted legacy key inherits the endpoint's declared policy, default Lax:
+Canonical connector `settings["same_site"]` must contain exactly `"None"`, `"Lax"`, or `"Strict"`. Missing, nil, blank and invalid values fail runtime construction. Directly registered runtime widgets must also supply `same_site`. New connector defaults belong to the host; endpoint policy fallbacks are not supported:
 
 ```elixir
-config :zaq, ZaqWeb.Endpoint,
-  web_widget_session: [same_site: "Lax"]
+%{settings: %{"same_site" => "Lax"}}
 ```
 
-Set that legacy policy to the actual previous serving policy before migrating (including None if that was intentionally applied); do not silently adopt the new-connector default. `WebWidget.Embedding.Session.effective(widget, endpoint, scheme)` resolves the installed pipeline's value, Secure flag and source, or a fixed configuration failure. It is not a transport readiness probe: #16 must verify host mounting before reporting a policy as applied; old/unverified adapters remain unknown. None forces Secure and requires HTTPS. HTTP development uses explicit Lax/Strict and does not silently downgrade None. Trust only correctly configured TLS termination/proxy scheme handling.
+Populate every legacy connector's setting before upgrading, explicitly preserving its previous policy or selecting a new one. Partial edits must preserve that stored value. `WebWidget.Embedding.Session.effective(widget, endpoint, scheme)` resolves the widget policy, Secure flag and source, or a fixed configuration failure. It is not a transport readiness probe: #16 must verify host mounting before reporting a policy as applied; old/unverified adapters remain unknown. HTTPS forces Secure for every policy, including when partitioning is disabled and `secure: false` is configured. None requires HTTPS. HTTP development uses explicit Lax/Strict and does not silently downgrade None. Trust only correctly configured TLS termination/proxy scheme handling.
 
 Widget transport cookies carry `Partitioned` by default for all SameSite policies.
 Partitioning forces Secure and requires HTTPS, even if the host specifies `secure: false`.

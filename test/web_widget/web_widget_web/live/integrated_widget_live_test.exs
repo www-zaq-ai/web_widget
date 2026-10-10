@@ -26,7 +26,11 @@ defmodule WebWidgetWeb.IntegratedWidgetLiveTest do
           id: id,
           provider: "web_widget",
           token: key,
-          settings: %{"identity_issuer" => "parent", "identity_audience" => "widget"}
+          settings: %{
+            "identity_issuer" => "parent",
+            "identity_audience" => "widget",
+            "same_site" => "Lax"
+          }
         },
         hooks,
         pubsub_server: WebWidget.PubSub,

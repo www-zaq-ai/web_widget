@@ -88,6 +88,35 @@ test("independent policies coexist with an unchanged BO session", async ({ page,
   expect((await context.cookies()).find(cookie => cookie.name === "_host")).toEqual(before);
 });
 
+test("HTTPS long-poll connects and reconnects without cookie-writing recovery", async ({ page, context }) => {
+  const origin = "https://127.0.0.1:4023";
+  let initializations = 0;
+  page.on("request", request => {
+    if (request.url() === origin + "/widget/cookie-none/session") initializations++;
+  });
+  await page.goto(origin + "/widget/cookie-none");
+  await expect(page.locator("[data-phx-main]")).toHaveClass(/phx-connected/);
+  const cookie = (await context.cookies(origin + "/widget/cookie-none"))
+    .find(cookie => cookie.name === "_web_widget_session")!;
+
+  for (const attempt of [0, 1]) {
+    await page.evaluate(() => new Promise<void>(resolve => (window as any).liveSocket.disconnect(resolve)));
+    const poll = page.waitForResponse(response =>
+      response.url().includes("/widget/cookie-none/live/longpoll") && response.status() === 200);
+    await page.evaluate(attempt => {
+      const liveSocket = (window as any).liveSocket;
+      if (attempt === 0) liveSocket.getSocket().replaceTransport(liveSocket.getSocket().getLongPollTransport());
+      liveSocket.connect();
+    }, attempt);
+    expect((await poll).headers()["set-cookie"]).toBeUndefined();
+    await expect(page.locator("[data-phx-main]")).toHaveClass(/phx-connected/);
+    await expect.poll(() => page.evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
+  }
+  expect(initializations).toBe(1);
+  expect((await context.cookies(origin + "/widget/cookie-none"))
+    .find(current => current.name === cookie.name)).toEqual(cookie);
+});
+
 test("same-connector instances share a transport cookie but authenticate different users", async ({ page, context, request }) => {
   const origin = "https://127.0.0.1:4023";
   expect((await request.get(origin + "/widget/421")).ok()).toBe(true);

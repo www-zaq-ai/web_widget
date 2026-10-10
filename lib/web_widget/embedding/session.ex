@@ -2,12 +2,12 @@ defmodule WebWidget.Embedding.Session do
   @moduledoc """
   Widget-only session installation and effective cookie policy.
 
-  Endpoint `:web_widget_session` options declare the legacy `:same_site` policy
-  (default Lax) and optional `:secure` flag. Cookies are partitioned by default;
-  only host endpoint `partitioned: false` disables this. Partitioning and None
-  always require HTTPS/Secure.
+  Every widget explicitly supplies its SameSite policy. Endpoint options control
+  partitioning and optional Secure requirements for HTTP development. HTTPS always
+  forces Secure. Partitioning is enabled by default and, like None, requires HTTPS.
   """
   import Plug.Conn
+  alias WebWidget.Embedding.{CookieGuard, FramePolicy, Unavailable}
 
   @scope_id "web_widget_id"
   @scope_path "web_widget_path"
@@ -19,29 +19,30 @@ defmodule WebWidget.Embedding.Session do
 
   def validate_settings(settings) when is_map(settings) do
     case Map.fetch(settings, "same_site") do
-      :error -> {:ok, :inherit}
+      :error -> {:error, :missing_cookie_policy}
       {:ok, value} when value in ["None", "Lax", "Strict"] -> {:ok, value}
       _ -> {:error, :invalid_cookie_policy}
     end
   end
 
-  def validate_settings(nil), do: {:ok, :inherit}
+  def validate_settings(nil), do: {:error, :missing_cookie_policy}
   def validate_settings(_), do: {:error, :invalid_cookie_policy}
 
   @doc "Resolves the installed widget pipeline's cookie policy; not a transport readiness probe."
   def effective(widget, endpoint, scheme) do
     opts = endpoint.config(:web_widget_session, [])
-    desired = Map.get(widget, :same_site, :inherit)
-    value = if desired == :inherit, do: Keyword.get(opts, :same_site, "Lax"), else: desired
-    secure = value == "None" or Keyword.get(opts, :secure, scheme in [:https, "https"])
-    source = if desired == :inherit, do: :endpoint, else: :connector
+    value = Map.get(widget, :same_site)
+    secure = Keyword.get(opts, :secure, false)
     partitioned = Keyword.get(opts, :partitioned, true)
 
-    resolve_policy(value, secure, partitioned, source, scheme)
+    resolve_policy(value, secure, partitioned, :connector, scheme)
   end
 
   defp resolve_policy(value, secure, partitioned, source, scheme) do
     cond do
+      is_nil(value) ->
+        {:error, :missing_cookie_policy}
+
       value not in ["None", "Lax", "Strict"] ->
         {:error, :cookie_policy_unsupported}
 
@@ -51,23 +52,34 @@ defmodule WebWidget.Embedding.Session do
       not is_boolean(secure) ->
         {:error, :secure_cookie_required}
 
-      (secure or partitioned) and scheme not in [:https, "https"] ->
+      https_required?(value, secure, partitioned) and scheme not in [:https, "https"] ->
         {:error, :https_required}
 
       true ->
         {:ok,
          %{
            same_site: value,
-           secure: secure or partitioned,
+           secure: secure_cookie?(secure, partitioned, scheme),
            partitioned: partitioned,
            source: source
          }}
     end
   end
 
+  defp https_required?(value, secure, partitioned), do: secure or partitioned or value == "None"
+
+  defp secure_cookie?(secure, partitioned, scheme),
+    do: secure or partitioned or scheme in [:https, "https"]
+
   def init(opts), do: opts
 
   def call(conn, _opts) do
+    conn = CookieGuard.call(conn)
+
+    if conn.halted, do: conn, else: install_request(conn)
+  end
+
+  defp install_request(conn) do
     if conn.private[:plug_session_fetch] == :done do
       raise ArgumentError,
             "mount web_widget outside pipelines that fetch the host session"
@@ -77,13 +89,17 @@ defmodule WebWidget.Embedding.Session do
     bootstrap? = conn.private[:web_widget_session_bootstrap] == true
     conn = put_resp_header(conn, "cache-control", "no-store")
 
-    widget =
-      case WebWidget.Runtime.fetch_widget(id) do
-        {:ok, widget} -> widget
-        _ -> %{}
-      end
+    case WebWidget.Runtime.fetch_widget(id) do
+      {:ok, widget} ->
+        install_widget(conn, widget, id, bootstrap?)
 
-    install_widget(conn, widget, id, bootstrap?)
+      _ ->
+        conn
+        |> Phoenix.Controller.put_secure_browser_headers()
+        |> FramePolicy.call([])
+        |> Unavailable.call([])
+        |> halt()
+    end
   end
 
   defp install_widget(conn, widget, id, bootstrap?) do

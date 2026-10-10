@@ -33,7 +33,13 @@ defmodule WebWidget.TestIntegration.Host do
 
   def fixture(opts \\ []) do
     id = System.unique_integer([:positive])
-    config = %{id: id, provider: "web_widget", reply: Keyword.get(opts, :reply)}
+
+    config = %{
+      id: id,
+      provider: "web_widget",
+      settings: %{"same_site" => "Lax"},
+      reply: Keyword.get(opts, :reply)
+    }
 
     hooks = %{
       widget_id: id,

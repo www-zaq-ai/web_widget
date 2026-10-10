@@ -17,12 +17,14 @@ defmodule WebWidget.RuntimeTest do
       widgets: [
         %{
           widget_id: "support-#{id}",
+          same_site: "Lax",
           display_name: "Support Assistant",
           allowed_domains: ["https://customer.com"],
           stylesheet_url: "https://customer.com/widget.css"
         },
         %{
           widget_id: "sales-#{id}",
+          same_site: "Lax",
           display_name: "Sales Assistant",
           allowed_domains: ["https://shop.customer.com"],
           stylesheet_url: nil
@@ -41,6 +43,21 @@ defmodule WebWidget.RuntimeTest do
     end
 
     assert Runtime.fetch_widget("missing") == {:error, :not_found}
+  end
+
+  test "every direct runtime widget requires an explicit valid policy" do
+    config = config()
+    [widget | _] = config.widgets
+
+    for invalid <-
+          [Map.delete(widget, :same_site)] ++
+            Enum.map([nil, :inherit, "", "none", false], &Map.put(widget, :same_site, &1)) do
+      assert {:error, :invalid_runtime_config} = Runtime.prepare(%{config | widgets: [invalid]})
+    end
+
+    for value <- ["None", "Lax", "Strict"] do
+      assert {:ok, _} = Runtime.prepare(%{config | widgets: [Map.put(widget, :same_site, value)]})
+    end
   end
 
   test "discards runtime theme fields and validates stylesheet URLs" do

@@ -37,7 +37,7 @@ Code.require_file("assets/tests/support/control.exs")
   sink_mfa: {WebWidget.E2EHost, :handle_event, []},
   pubsub_server: WebWidget.PubSub,
   widgets: Enum.map([false, true], fn multiple ->
-    %{widget_id: if(multiple, do: "e2e-multi", else: "e2e"), display_name: "Test assistant",
+    %{widget_id: if(multiple, do: "e2e-multi", else: "e2e"), same_site: "Lax", display_name: "Test assistant",
       multiple_conversations: multiple, allowed_domains: ["http://127.0.0.1:4019"]}
   end)
 }})
@@ -89,14 +89,14 @@ Application.put_env(:web_widget, WebWidget.E2EHttpsEndpoint,
   sink_mfa: {WebWidget.MockHost, :handle_event, []},
      pubsub_server: WebWidget.PubSub,
   widgets: [
-    %{widget_id: "42", display_name: "Installed widget", allowed_domains: ["http://127.0.0.1:4019"]},
-    %{widget_id: "theme-light", display_name: "Light assistant", allowed_domains: ["http://127.0.0.1:4019"]},
-    %{widget_id: "theme-dark", display_name: "Dark assistant", multiple_conversations: true, allowed_domains: ["http://127.0.0.1:4019"]},
-    %{widget_id: "theme-custom", display_name: "Custom assistant", stylesheet_url: "/custom-widget.css", allowed_domains: ["http://127.0.0.1:4019"]},
-    %{widget_id: "multi", display_name: "Conversation history", multiple_conversations: true, allowed_domains: ["http://127.0.0.1:4019"]},
-    %{widget_id: "cross-origin", display_name: "Cross origin", allowed_domains: ["http://127.0.0.1:4019"]},
-    %{widget_id: "no-origins", display_name: "Disabled"},
-    %{widget_id: "empty-origins", display_name: "Disabled", allowed_domains: []}
+    %{widget_id: "42", same_site: "Lax", display_name: "Installed widget", allowed_domains: ["http://127.0.0.1:4019"]},
+    %{widget_id: "theme-light", same_site: "Lax", display_name: "Light assistant", allowed_domains: ["http://127.0.0.1:4019"]},
+    %{widget_id: "theme-dark", same_site: "Lax", display_name: "Dark assistant", multiple_conversations: true, allowed_domains: ["http://127.0.0.1:4019"]},
+    %{widget_id: "theme-custom", same_site: "Lax", display_name: "Custom assistant", stylesheet_url: "/custom-widget.css", allowed_domains: ["http://127.0.0.1:4019"]},
+    %{widget_id: "multi", same_site: "Lax", display_name: "Conversation history", multiple_conversations: true, allowed_domains: ["http://127.0.0.1:4019"]},
+    %{widget_id: "cross-origin", same_site: "Lax", display_name: "Cross origin", allowed_domains: ["http://127.0.0.1:4019"]},
+    %{widget_id: "no-origins", same_site: "Lax", display_name: "Disabled"},
+    %{widget_id: "empty-origins", same_site: "Lax", display_name: "Disabled", allowed_domains: []}
   ]
 }})
 
@@ -105,7 +105,7 @@ Application.put_env(:web_widget, WebWidget.E2EHttpsEndpoint,
   sink_mfa: {WebWidget.MockHost, :handle_event, []},
   pubsub_server: WebWidget.PubSub,
   widgets: Enum.map(["en", "fr", "ar"], fn locale ->
-    %{widget_id: "locale-#{locale}", display_name: "Host assistant",
+    %{widget_id: "locale-#{locale}", same_site: "Lax", display_name: "Host assistant",
       multiple_conversations: true, allowed_domains: ["http://127.0.0.1:4019"]}
   end)
 }})
