@@ -6,6 +6,7 @@
   "blocks": [
     "ww-73a.4"
   ],
+  "closed_at": "2026-10-10T21:21:55Z",
   "created": "2026-10-10T20:56:19Z",
   "description": "Lifecycle endpoint discovery, actual listener selection, explicit overrides, local readiness v2 and trusted proxy integration.",
   "id": "ww-73a.3",
@@ -18,8 +19,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Discover widget endpoints and support proxy HTTPS readiness",
   "type": "task",
-  "updated_at": "2026-10-10T21:21:54Z"
+  "updated_at": "2026-10-10T21:21:55Z"
 }
