@@ -36,6 +36,40 @@ hooks, without `%Zaq.*{}` struct literals in the package. ZAQ never constructs
 
 ## Runtime integration
 
+### Explicit infrastructure lifecycle (issue #23)
+
+The embedding host starts `{WebWidget, opts}` once in its supervisor. The OTP
+dependency starts required library applications (including Mnesia), but no widget
+services, endpoint, Repo, or demo runtime. Infrastructure is a singleton per BEAM
+node: its configuration owner, runtime registry and binding store have fixed names.
+Duplicate starts fail; multi-instance startup is not supported.
+
+Init options are the sole source of infrastructure authentication, trusted
+integration and transport/readiness settings. The startup boundary validates and
+normalizes them, applying package defaults. No options are copied into application
+environment. A configuration snapshot belongs to one infrastructure generation;
+stopped or replaced generations cannot authorize sessions or report ready.
+
+Start host PubSub before widget infrastructure, and infrastructure before connector
+runtimes. The host owns endpoints, mounting, TLS, routing, and connector lifecycle.
+Infrastructure references the existing endpoint; it never starts or reconfigures
+it. Connector runtimes monitor the configuration owner and stop when that owner
+stops; the host must restart them after infrastructure is available (for example
+with a host `:rest_for_one` supervisor). Rebuilding uses current trusted options,
+not a retained config from an earlier generation. Infrastructure starts no connector.
+
+Stopping local infrastructure makes binding-store operations fail closed without
+stopping shared Mnesia or deleting tables, revocations, replay entries, or reset
+metadata. Local restart rejoins surviving shared state; quorum and full RAM-loss
+reset semantics remain unchanged. Membership is explicit on distributed nodes;
+the existing non-distributed single-node default is retained.
+
+Standalone/demo and package-endpoint deployments explicitly compose PubSub,
+infrastructure, endpoint and optional demo children in their own supervisor using
+the same API. Legacy automatic-start flags and global authentication/integration
+settings no longer select startup or runtime behavior; migrate them to init
+options. Endpoint configuration remains the endpoint owner's responsibility.
+
 Use the existing channel lifecycle and BridgeSupervisor. The provider entry in
 ZAQ's existing Channels map is:
 
