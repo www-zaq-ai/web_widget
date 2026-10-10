@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [
     "ww-73a.1"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "ww-73a",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Implement restart-safe connector supervision",
   "type": "task",
-  "updated_at": "2026-10-10T20:56:24Z"
+  "updated_at": "2026-10-10T20:57:34Z"
 }
