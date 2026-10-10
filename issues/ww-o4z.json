@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T13:26:52Z",
+  "description": "Implement agreed PR #19 feedback on current branch without commit: duplicate rejection, anonymous replacement semantics, mandatory widget policy, HTTPS Secure, bounded read-only recovery, tests and contract migration.",
+  "id": "ww-o4z",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Harden widget session bootstrap and recovery",
+  "type": "epic",
+  "updated_at": "2026-10-10T13:26:52Z"
+}
