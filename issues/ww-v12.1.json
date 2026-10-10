@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T17:10:47Z",
+  "description": "Record lifecycle decision before implementation; explicit WebWidget supervisor API and immutable config; no automatic OTP widget services.",
+  "id": "ww-v12.1",
+  "labels": [],
+  "parent": "ww-v12",
+  "priority": 2,
+  "status": "open",
+  "title": "Define startup contract and validated infrastructure",
+  "type": "task",
+  "updated_at": "2026-10-10T17:10:47Z"
+}
