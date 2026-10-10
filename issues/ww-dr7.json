@@ -10,11 +10,15 @@
     {
       "text": "Implemented Ubuntu Chromium/Firefox plus separate macos-26 WebKit job, local PostgreSQL16 with bounded pg_ctl readiness/cleanup, platform+arch caches/artifacts and version diagnostics. Playwright retains failure traces/screenshots and HTML report. actionlint v1.7.12, git diff check and tsc pass; macOS focused suite 9 passed/1 CDP-only skip. Next push and hosted-runner CI validation.",
       "timestamp": "2026-10-10T09:53:13Z"
+    },
+    {
+      "text": "Committed/pushed 9ab1807. Manual workflow dispatch denied by PAT permissions (403), but PR event automatically queued E2E run https://github.com/www-zaq-ai/web_widget/actions/runs/38042989091. Watching that run; keep task open pending hosted macOS/PostgreSQL validation.",
+      "timestamp": "2026-10-10T09:53:53Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Run Safari-targeted Playwright CI on macOS",
   "type": "task",
-  "updated_at": "2026-10-10T09:53:13Z"
+  "updated_at": "2026-10-10T09:53:53Z"
 }
