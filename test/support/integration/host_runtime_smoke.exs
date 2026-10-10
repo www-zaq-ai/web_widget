@@ -18,7 +18,9 @@ defmodule WebWidget.HostRuntimeSmokeTest do
              runtime_builder: RuntimeBuilder
            }
 
-    assert Application.fetch_env!(:web_widget, :integration) == [
+    assert {:ok, infrastructure} = WebWidget.Configuration.fetch()
+
+    assert Keyword.take(infrastructure.integration, [:pubsub_server, :identity_verifier]) == [
              pubsub_server: Zaq.PubSub,
              identity_verifier: {UnconfiguredIdentity, :verify, []}
            ]

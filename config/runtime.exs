@@ -1,17 +1,5 @@
 import Config
 
-if config_env() == :dev do
-  if value = System.get_env("WEB_WIDGET_DEMO_MULTIPLE_CONVERSATIONS") do
-    config :web_widget, :demo_multiple_conversations, value == "true"
-  end
-
-  if origins = System.get_env("WEB_WIDGET_DEMO_ALLOWED_DOMAINS") do
-    config :web_widget,
-           :demo_allowed_domains,
-           origins |> String.split(",", trim: true) |> Enum.map(&String.trim/1)
-  end
-end
-
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration
@@ -66,8 +54,6 @@ if config_env() == :prod do
       """
 
   host = System.get_env("PHX_HOST") || "example.com"
-
-  config :web_widget, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :web_widget, WebWidgetWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

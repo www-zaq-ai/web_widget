@@ -13,7 +13,6 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
 
   test "configuration starts the package endpoint without a Repo or demo" do
     Application.put_env(:phoenix, :json_library, Jason)
-    Application.put_env(:web_widget, :start_integration_server, true)
 
     Application.put_env(:web_widget, @endpoint,
       adapter: Bandit.PhoenixAdapter,
@@ -27,6 +26,7 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
     )
 
     {:ok, _} = Application.ensure_all_started(:web_widget)
+    start_supervised!({WebWidget.Standalone, mode: :package})
     assert is_pid(Process.whereis(@endpoint))
     assert is_pid(Process.whereis(WebWidget.PubSub))
     assert Process.whereis(WebWidget.Repo) == nil
@@ -42,6 +42,8 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
     {:ok, {_ip, port}} = @endpoint.server_info(:http)
     base_url = "http://127.0.0.1:#{port}"
     {config, hooks, opts} = Host.fixture()
+    opts = Keyword.put(opts, :pubsub_server, WebWidget.PubSub)
+    replace_infrastructure(opts)
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, opts)
     start_supervised!(spec)
     {:ok, snippet} = Installation.script(config.id, base_url)
@@ -67,12 +69,22 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
       })
 
     opts = [pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key]
-    {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, opts)
+    replace_infrastructure(opts)
+    {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks)
     start_supervised!(spec)
-    # No endpoint override: package mode must resolve its own serving endpoint.
-    Application.put_env(:web_widget, :integration, [])
     assert {:ok, %{status: :ready}} = RuntimeBuilder.status(config.id, [])
     assert :ok = Supervisor.terminate_child(WebWidget.Supervisor, WebWidget.RuntimeRegistry)
     assert {:ok, %{reason: :runtime_not_registered}} = RuntimeBuilder.status(config.id, [])
+  end
+
+  defp replace_infrastructure(opts) do
+    :ok = Supervisor.terminate_child(WebWidget.Standalone, WebWidget)
+    :ok = Supervisor.delete_child(WebWidget.Standalone, WebWidget)
+
+    {:ok, _} =
+      Supervisor.start_child(
+        WebWidget.Standalone,
+        {WebWidget, Keyword.put(opts, :transport, endpoint: @endpoint)}
+      )
   end
 end

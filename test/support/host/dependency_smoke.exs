@@ -15,6 +15,7 @@ defmodule WebWidget.DependencyHostSmokeTest do
     {:ok, _} = Application.ensure_all_started(:web_widget)
 
     start_supervised!({Phoenix.PubSub, name: WebWidget.DependencyHostPubSub})
+    start_supervised!({WebWidget, pubsub_server: WebWidget.DependencyHostPubSub})
 
     Application.put_env(:web_widget, @endpoint,
       secret_key_base: String.duplicate("host", 16),

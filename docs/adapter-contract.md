@@ -90,10 +90,11 @@ dependency; no ZAQ module or test changes are needed for runtime startup.
 Hooks supply `widget_id = config.id`, presentation settings, the shared
 `message`, `command`, `context`, `delivery`, `response` modules, and the
 config-bound `sink_mfa`. They do **not** supply a PubSub server. For this host,
-the adapter receives `Zaq.PubSub` through trusted application configuration.
-`config :web_widget, :integration` supplies `pubsub_server` and `identity_verifier`
-(a trusted MFA or `:connector_key`); `build/3` accepts these options explicitly for
-isolated consumers/tests. Neither connector settings nor browser input may select
+the adapter receives `Zaq.PubSub` through validated infrastructure init options.
+`{WebWidget, opts}` supplies `pubsub_server` and `identity_verifier`
+(a trusted MFA or `:connector_key`); `build/3` remains a construction-only bridge,
+whose child rejects providers differing from the running infrastructure.
+Neither connector settings nor browser input may select
 these providers.
 
 Connector-key verification requires both canonical string keys
@@ -136,8 +137,8 @@ path allowlist, or add `WebWidget.Static` to its endpoint. Its scoped
 `/widget/:widget_id/live` socket serves the iframe; BO authentication does not apply to the widget mount.
 This supersedes the earlier configuration-only choice for this installation.
 
-For hosts retaining configuration-only installation, opt in to
-`start_integration_server: true` to start the package endpoint and its socket
+For hosts retaining package-endpoint installation, explicitly supervise
+`{WebWidget.Standalone, mode: :package, infrastructure: opts}` for the endpoint and its socket
 PubSub once, without the Repo/demo. Connector runtimes remain ZAQ-owned and use
 `Zaq.PubSub` for responses. The iframe uses this endpoint's scoped LiveView
 connection; no additional browser realtime connection is introduced.
@@ -296,7 +297,7 @@ longer than the renewal lead (five minutes by default). Tests may use shorter
 configured intervals. The signing key never enters browser code. A browser JWT
 cannot authorize a backend control operation.
 
-Package authentication configuration uses `config :web_widget, :authentication`
+Package authentication configuration uses infrastructure `authentication:` init options
 with `token_ttl_seconds: 604_800`, `first_binding_window_seconds: 5`,
 `refresh_lead_seconds: 300`, `control_proof_ttl_seconds: 30`, and an explicit
 `replica_nodes` list for the Mnesia cluster. The first-binding window is a

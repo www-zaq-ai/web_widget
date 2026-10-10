@@ -124,7 +124,7 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
       )
 
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, options)
-    {:ok, _} = Supervisor.start_child(WebWidget.Supervisor, spec)
+    {:ok, _} = Supervisor.start_child(WebWidget.TestClusterHost, spec)
 
     {:ok, current_proof} =
       SignedIdentity.sign(key, config.id, %{user_id: "renewing-user"},
@@ -158,9 +158,9 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
         now + 10
       )
 
-    :ok = Application.stop(:web_widget)
+    :ok = Supervisor.stop(WebWidget.TestClusterHost)
     :ok = Application.stop(:mnesia)
-    {:ok, _} = Application.ensure_all_started(:web_widget)
+    configure(node(), nodes)
     [{p1, ^n1}, {p2, ^n2}] = Enum.map(names, &start_peer/1)
     configure(n1, nodes)
     configure(n2, nodes)
@@ -201,11 +201,7 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
   end
 
   defp configure(target, nodes) do
-    :ok =
-      call(target, Application, :put_env, [:web_widget, :authentication, [replica_nodes: nodes]])
-
-    :ok = call(target, Application, :put_env, [:web_widget, :start_web_server, false])
-    {:ok, _} = call(target, Application, :ensure_all_started, [:web_widget])
+    {:ok, _} = call(target, WebWidget.TestClusterHost, :start, [nodes])
   end
 
   defp claims(now) do

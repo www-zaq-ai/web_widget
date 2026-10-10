@@ -93,7 +93,7 @@ Prerequisites:
 
 ```sh
 mix setup
-mix phx.server
+mix demo
 ```
 
 Open `http://localhost:4000/widget-demo`. The demo uses the same `embed.js` installation script to create its iframe, then supplies mock identity and responses. The demo's unsigned bootstrap is for fixtures only; ZAQ integration requires a signed JWT. You can select startup settings with `/widget-demo?theme=dark&language=ar`, or run `zaq.widget.updateSettings(...)` from the parent-page browser console.
@@ -106,7 +106,7 @@ Open `http://localhost:4000/widget-demo`. The demo uses the same `embed.js` inst
 | `fail` | Tool and message failure, followed by the ability to send again. |
 | `slow` | Slower tool and streaming events. |
 
-The demo uses a mock host, not a live ZAQ agent. Enable its conversation sidebar with `WEB_WIDGET_DEMO_MULTIPLE_CONVERSATIONS=true mix phx.server`. To embed the local demo on another origin, set `WEB_WIDGET_DEMO_ALLOWED_DOMAINS` to a comma-separated list of exact allowed origins and restart the server.
+The demo uses a mock host, not a live ZAQ agent. `mix demo` explicitly starts its supervisor; merely starting the dependency or running `mix phx.server` does not start widget services. Enable its conversation sidebar with `WEB_WIDGET_DEMO_MULTIPLE_CONVERSATIONS=true mix demo`. To embed the local demo on another origin, set `WEB_WIDGET_DEMO_ALLOWED_DOMAINS` to a comma-separated list of exact allowed origins and restart the server. These variables belong to the demo script, not the host integration API.
 
 Iframe and embed assets use the built bundle. Run `mix assets.build` after changing them; the Vite development watcher alone does not rebuild those assets. Commit the generated files in `priv/static/assets` with frontend changes. The release workflow runs `npm --prefix assets ci` and `npm --prefix assets run build`, verifies that the tracked output matches, and attaches the bundle to the GitHub Release. Release Please updates `mix.exs`, `CHANGELOG.md`, tags, and releases from conventional commits. Git dependency installs use the assets committed in the release tag; they do not download release attachments.
 
