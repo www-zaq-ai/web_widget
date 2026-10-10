@@ -2,13 +2,14 @@
   "assignee": "",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T21:25:32Z",
   "created": "2026-10-10T20:56:13Z",
   "description": "Implement the approved connector lifecycle, endpoint discovery and proxy HTTPS contract in the current working tree; leave code uncommitted for review.",
   "id": "ww-73a",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "closed",
   "title": "Restart-safe supervised connectors and automatic local readiness",
   "type": "epic",
-  "updated_at": "2026-10-10T20:56:13Z"
+  "updated_at": "2026-10-10T21:25:32Z"
 }
