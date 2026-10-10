@@ -111,3 +111,6 @@ Application.put_env(:web_widget, WebWidget.E2EHttpsEndpoint,
       multiple_conversations: true, allowed_domains: ["http://127.0.0.1:4019"]}
   end)
 }})
+
+# Mix's script evaluator owns the explicit fixture supervisor, not the OTP app.
+Process.sleep(:infinity)

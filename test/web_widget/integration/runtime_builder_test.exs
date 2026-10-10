@@ -1,9 +1,14 @@
 defmodule WebWidget.Integration.RuntimeBuilderTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias WebWidget.Integration.RuntimeBuilder
   alias WebWidget.Runtime
   alias WebWidget.TestIntegration.Host
+
+  setup do
+    {_, _, opts} = Host.fixture()
+    WebWidget.TestInfrastructure.setup(opts)
+  end
 
   test "unconfigured identity permits runtime installation but never authenticates" do
     {config, hooks, opts} = Host.fixture()
@@ -16,6 +21,7 @@ defmodule WebWidget.Integration.RuntimeBuilderTest do
       )
 
     assert {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, opts)
+    WebWidget.TestInfrastructure.replace(opts)
     start_supervised!(spec)
     assert {:ok, _widget} = Runtime.fetch_widget(to_string(config.id))
 

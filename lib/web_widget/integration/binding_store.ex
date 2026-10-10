@@ -21,9 +21,10 @@ defmodule WebWidget.Integration.BindingStore do
   def start_link(opts), do: GenServer.start_link(__MODULE__, opts, name: __MODULE__)
 
   def claim(claims, page_id, now \\ System.system_time(:second)) do
-    with true <- valid_claim?(claims) and valid_page?(page_id) and is_integer(now),
-         :ok <- available?() do
-      transaction(fn -> claim_transaction(claims, page_id, now) end)
+    with {:ok, config} <- Configuration.fetch(),
+         true <- valid_claim?(claims) and valid_page?(page_id) and is_integer(now),
+         :ok <- available?(config) do
+      transaction(fn -> claim_transaction(claims, page_id, now) end, config)
     else
       _ -> {:error, :unavailable_or_invalid}
     end
@@ -63,9 +64,10 @@ defmodule WebWidget.Integration.BindingStore do
     do: iat > reset and iat > revoked and now < exp
 
   def authorized?(claims, page_id, now \\ System.system_time(:second)) do
-    with true <- valid_claim?(claims) and valid_page?(page_id) and is_integer(now),
-         :ok <- available?() do
-      transaction(fn -> authorized_transaction(claims, page_id, now) end)
+    with {:ok, config} <- Configuration.fetch(),
+         true <- valid_claim?(claims) and valid_page?(page_id) and is_integer(now),
+         :ok <- available?(config) do
+      transaction(fn -> authorized_transaction(claims, page_id, now) end, config)
     else
       _ -> {:error, :unavailable_or_invalid}
     end
@@ -89,26 +91,35 @@ defmodule WebWidget.Integration.BindingStore do
   end
 
   def revoked?(claims) do
-    with true <- valid_claim?(claims),
-         :ok <- available?() do
-      transaction(fn ->
-        revocation_cutoff(claims.issuer, claims.widget_id, claims.user_id) >= claims.iat
-      end)
+    with {:ok, config} <- Configuration.fetch(),
+         true <- valid_claim?(claims),
+         :ok <- available?(config) do
+      transaction(
+        fn ->
+          revocation_cutoff(claims.issuer, claims.widget_id, claims.user_id) >= claims.iat
+        end,
+        config
+      )
     else
       _ -> {:error, :unavailable_or_invalid}
     end
   end
 
-  def revoke_user(issuer, widget_id, user_id, request_id, issued_at, now) do
-    with true <-
+  def revoke_user(issuer, widget_id, user_id, request_id, issued_at, now, generation \\ nil) do
+    with {:ok, config} <- Configuration.fetch(),
+         true <- generation in [nil, config.generation],
+         true <-
            valid_identifier?(issuer) and is_integer(widget_id) and widget_id > 0 and
              valid_identifier?(user_id) and valid_identifier?(request_id) and
              is_integer(issued_at) and is_integer(now) and issued_at <= now and
-             now - issued_at < control_ttl(),
-         :ok <- available?() do
-      transaction(fn ->
-        revoke_transaction(issuer, widget_id, user_id, request_id, issued_at, now)
-      end)
+             now - issued_at < config.authentication[:control_proof_ttl_seconds],
+         :ok <- available?(config) do
+      transaction(
+        fn ->
+          revoke_transaction(issuer, widget_id, user_id, request_id, issued_at, now)
+        end,
+        config
+      )
     else
       _ -> {:error, :unavailable_or_invalid}
     end
@@ -139,11 +150,23 @@ defmodule WebWidget.Integration.BindingStore do
   end
 
   def reset_cutoff_value do
-    with :ok <- available?(), do: transaction(&reset_cutoff/0)
+    with {:ok, config} <- Configuration.fetch(),
+         :ok <- available?(config) do
+      transaction(&reset_cutoff/0, config)
+    else
+      _ -> {:error, :unavailable}
+    end
   end
 
   def available? do
-    nodes = replica_nodes()
+    case Configuration.fetch() do
+      {:ok, config} -> available?(config)
+      _ -> {:error, :unavailable}
+    end
+  end
+
+  defp available?(config) do
+    nodes = config.authentication[:replica_nodes]
     quorum = div(length(nodes), 2) + 1
 
     try do
@@ -151,7 +174,8 @@ defmodule WebWidget.Integration.BindingStore do
 
       if is_pid(Process.whereis(__MODULE__)) and nodes != [] and
            length(Enum.filter(nodes, &(&1 in running))) >= quorum and
-           Enum.all?(@tables, &table_ready?(&1, nodes, running, quorum)) do
+           Enum.all?(@tables, &table_ready?(&1, nodes, running, quorum)) and
+           Configuration.current?(config.generation) do
         :ok
       else
         {:error, :unavailable}
@@ -271,19 +295,24 @@ defmodule WebWidget.Integration.BindingStore do
 
   defp transaction(fun) do
     with {:ok, config} <- Configuration.fetch() do
-      case :mnesia.transaction(fn ->
-             if Configuration.current?(config.generation),
-               do: fun.(),
-               else: :mnesia.abort(:unavailable)
-           end) do
-        {:atomic, result} ->
-          if Configuration.current?(config.generation), do: result, else: {:error, :unavailable}
-
-        {:aborted, reason} ->
-          {:error, reason}
-      end
+      transaction(fun, config)
     end
   end
+
+  defp transaction(fun, config) do
+    :mnesia.transaction(fn -> fenced_operation(fun, config.generation) end)
+    |> transaction_result(config.generation)
+  end
+
+  defp fenced_operation(fun, generation) do
+    if Configuration.current?(generation), do: fun.(), else: :mnesia.abort(:unavailable)
+  end
+
+  defp transaction_result({:atomic, result}, generation) do
+    if Configuration.current?(generation), do: result, else: {:error, :unavailable}
+  end
+
+  defp transaction_result({:aborted, reason}, _generation), do: {:error, reason}
 
   defp prune(state) do
     cursors =
@@ -338,7 +367,6 @@ defmodule WebWidget.Integration.BindingStore do
   defp valid_page?(page_id), do: valid_identifier?(page_id)
   defp valid_identifier?(value), do: is_binary(value) and byte_size(value) in 1..255
 
-  defp replica_nodes, do: Configuration.authentication(:replica_nodes) || []
   defp binding_window, do: Configuration.authentication(:first_binding_window_seconds)
   defp control_ttl, do: Configuration.authentication(:control_proof_ttl_seconds)
 end

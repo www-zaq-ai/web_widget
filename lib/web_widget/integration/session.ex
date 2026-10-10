@@ -16,7 +16,8 @@ defmodule WebWidget.Integration.Session do
     :runtime_ref,
     :topic
   ]
-  defstruct @enforce_keys ++ [init: nil, binding_claims: nil, page_id: nil]
+  defstruct @enforce_keys ++
+              [init: nil, binding_claims: nil, page_id: nil, refresh_lead_seconds: nil]
 
   alias WebWidget.Integration.BindingStore
 

@@ -163,8 +163,7 @@ defmodule WebWidget.Integration.Chat do
   def authorization_metadata(chat) do
     expiry = chat.session.expires_at
 
-    lead =
-      WebWidget.Configuration.authentication(:refresh_lead_seconds)
+    lead = chat.session.refresh_lead_seconds
 
     %{
       expires_at: expiry,

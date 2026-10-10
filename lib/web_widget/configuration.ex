@@ -82,6 +82,8 @@ defmodule WebWidget.Configuration do
     end
   end
 
+  def authentication_default(key), do: Keyword.fetch!(@authentication, key)
+
   @impl true
   def init(config) do
     config = %{config | owner: self(), generation: make_ref()}
@@ -101,9 +103,7 @@ defmodule WebWidget.Configuration do
       values = Keyword.merge(@authentication, opts) |> Keyword.put(:replica_nodes, nodes)
 
       cond do
-        not (is_list(nodes) and nodes != [] and node() in nodes and
-               Enum.all?(nodes, &(is_atom(&1) and &1 not in [nil, true, false])) and
-                 nodes == Enum.uniq(nodes)) ->
+        not valid_nodes?(nodes) ->
           invalid(
             :replica_nodes,
             "must be unique node atoms including the local node; distributed membership is required"
@@ -139,6 +139,11 @@ defmodule WebWidget.Configuration do
       false -> invalid(:scheme, "must be :http or :https")
       error -> error
     end
+  end
+
+  defp valid_nodes?(nodes) do
+    is_list(nodes) and nodes != [] and node() in nodes and nodes == Enum.uniq(nodes) and
+      Enum.all?(nodes, &(is_atom(&1) and &1 not in [nil, true, false]))
   end
 
   defp installation(opts, prefix) do
@@ -187,12 +192,14 @@ defmodule WebWidget.Configuration do
 
   defp tls(opts) do
     with :ok <- keywords(opts, [:cacertfile, :cacerts], :tls_options) do
-      if Enum.all?(opts, fn
-           {:cacertfile, file} -> is_binary(file) or is_list(file)
-           {:cacerts, certs} -> is_list(certs) and Enum.all?(certs, &is_binary/1)
-         end), do: :ok, else: invalid(:tls_options, "must contain CA certificates or a CA file")
+      if Enum.all?(opts, &valid_ca?/1),
+        do: :ok,
+        else: invalid(:tls_options, "must contain CA certificates or a CA file")
     end
   end
+
+  defp valid_ca?({:cacertfile, file}), do: is_binary(file) or is_list(file)
+  defp valid_ca?({:cacerts, certs}), do: is_list(certs) and Enum.all?(certs, &is_binary/1)
 
   defp keywords(opts, allowed, field) do
     if is_list(opts) and Keyword.keyword?(opts) and

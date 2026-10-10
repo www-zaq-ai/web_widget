@@ -48,14 +48,18 @@ Init options are the sole source of infrastructure authentication, trusted
 integration and transport/readiness settings. The startup boundary validates and
 normalizes them, applying package defaults. No options are copied into application
 environment. A configuration snapshot belongs to one infrastructure generation;
-stopped or replaced generations cannot authorize sessions or report ready.
+stopped or replaced generations cannot authorize sessions or report ready. The
+infrastructure uses `:one_for_all`: a configuration-owner, registry or binding-store
+crash replaces the local infrastructure generation without resetting shared tables.
 
 Start host PubSub before widget infrastructure, and infrastructure before connector
 runtimes. The host owns endpoints, mounting, TLS, routing, and connector lifecycle.
 Infrastructure references the existing endpoint; it never starts or reconfigures
 it. Connector runtimes monitor the configuration owner and stop when that owner
-stops; the host must restart them after infrastructure is available (for example
-with a host `:rest_for_one` supervisor). Rebuilding uses current trusted options,
+stops; the host must rebuild them after infrastructure is available. A host
+`:rest_for_one` supervisor orders whole infrastructure-supervisor replacements;
+internal generation changes also require the host connector lifecycle manager to
+rebuild its stopped children. Rebuilding uses current trusted options,
 not a retained config from an earlier generation. Infrastructure starts no connector.
 
 Stopping local infrastructure makes binding-store operations fail closed without

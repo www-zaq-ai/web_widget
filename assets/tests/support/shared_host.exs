@@ -6,7 +6,7 @@ defmodule WebWidget.E2ESharedHost do
   def key, do: "e2e-only-connector-key-never-installed-in-production-420"
 
   def start do
-    {:ok, _} = Supervisor.start_child(WebWidget.Supervisor, %{
+    {:ok, _} = Supervisor.start_child(WebWidget.Standalone, %{
       id: @requests,
       start: {Agent, :start_link, [fn -> %{} end, [name: @requests]]}
     })
@@ -19,13 +19,13 @@ defmodule WebWidget.E2ESharedHost do
       %{id: 420, provider: "web_widget", token: key(),
         settings: %{"identity_issuer" => "e2e-parent", "identity_audience" => "e2e-widget", "same_site" => "Lax"}}, hooks,
       pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key)
-    {:ok, _} = Supervisor.start_child(WebWidget.Supervisor, spec)
+    {:ok, _} = Supervisor.start_child(WebWidget.Standalone, spec)
     {:ok, {secure_spec, []}} = WebWidget.Integration.RuntimeBuilder.build(
       %{id: 421, provider: "web_widget", token: key(),
         settings: %{"identity_issuer" => "e2e-parent", "identity_audience" => "e2e-widget", "same_site" => "None"}},
       %{hooks | widget_id: 421, allowed_domains: ["https://localhost:4023", "https://127.0.0.1:4023", "https://127.0.0.1:4022"]},
       pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key)
-    Supervisor.start_child(WebWidget.Supervisor, secure_spec)
+    Supervisor.start_child(WebWidget.Standalone, secure_spec)
   end
 
   def requests(user), do: Agent.get(@requests, &Map.get(&1, {:requests, user}, []))

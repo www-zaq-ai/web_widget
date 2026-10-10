@@ -14,8 +14,8 @@ defmodule WebWidget.Runtime do
 
   use GenServer
 
-  alias WebWidget.Embedding.Origins
   alias WebWidget.Configuration
+  alias WebWidget.Embedding.Origins
   alias WebWidget.Integration.{BindingStore, ControlProof, Protocol, Session}
 
   @widget_fields [
@@ -28,13 +28,18 @@ defmodule WebWidget.Runtime do
   ]
 
   def child_spec(config) do
-    %{id: {__MODULE__, config.channel_config_id}, start: {__MODULE__, :start_link, [config]}}
+    %{
+      id: {__MODULE__, config.channel_config_id},
+      start: {__MODULE__, :start_link, [config]},
+      restart: :transient
+    }
   end
 
   def start_link(config) do
-    with {:ok, infrastructure} <- Configuration.fetch(),
-         :ok <- infrastructure_matches(config, infrastructure),
-         {:ok, config} <- prepare(config) do
+    with {:ok, config} <- prepare(config),
+         {:ok, infrastructure} <- Configuration.fetch(),
+         :ok <- infrastructure_matches(config, infrastructure) do
+      config = Map.put_new(config, :pubsub_server, infrastructure.integration[:pubsub_server])
       GenServer.start_link(__MODULE__, {config, infrastructure})
     end
   end
@@ -78,7 +83,12 @@ defmodule WebWidget.Runtime do
   def disconnect(widget_id, user_id, proof) when is_binary(widget_id) and is_binary(user_id) do
     with {id, ""} <- Integer.parse(widget_id),
          true <- id > 0 and Integer.to_string(id) == widget_id,
-         {:ok, %{integration: %Protocol{} = integration, pubsub_server: pubsub}} <-
+         {:ok,
+          %{
+            integration: %Protocol{} = integration,
+            pubsub_server: pubsub,
+            infrastructure_generation: generation
+          }} <-
            delivery_config(widget_id),
          true <- is_binary(integration.control_key),
          {:ok, %{jti: nonce, iat: issued}} <-
@@ -97,7 +107,8 @@ defmodule WebWidget.Runtime do
              user_id,
              nonce,
              issued,
-             System.system_time(:second)
+             System.system_time(:second),
+             generation
            ),
          :ok <-
            Phoenix.PubSub.broadcast(
@@ -313,7 +324,15 @@ defmodule WebWidget.Runtime do
 
   @impl true
   def handle_call(:delivery_config, _from, config) do
-    fields = [:channel_config_id, :sink_mfa, :pubsub_server, :integration, :runtime_ref]
+    fields = [
+      :channel_config_id,
+      :sink_mfa,
+      :pubsub_server,
+      :integration,
+      :runtime_ref,
+      :infrastructure_generation
+    ]
+
     {:reply, {:ok, Map.take(config, fields)}, config}
   end
 

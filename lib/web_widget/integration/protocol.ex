@@ -80,7 +80,8 @@ defmodule WebWidget.Integration.Protocol do
         do: Map.put(scope, :expected_sender, expected_sender),
         else: scope
 
-    with {:ok, %{sender_id: sender, expires_at: expiry} = verified} <-
+    with {:ok, infrastructure} <- WebWidget.Configuration.fetch(),
+         {:ok, %{sender_id: sender, expires_at: expiry} = verified} <-
            invoke(integration.identity_verifier, [proof, verify_scope]),
          true <- identifier?(sender),
          true <- expected_sender in [nil, sender],
@@ -93,6 +94,7 @@ defmodule WebWidget.Integration.Protocol do
          Map.merge(scope, %{
            sender_id: String.trim(sender),
            expires_at: expiry,
+           refresh_lead_seconds: infrastructure.authentication[:refresh_lead_seconds],
            init: init,
            binding_claims: Map.get(verified, :binding_claims),
            page_id: Map.get(verified, :page_id),

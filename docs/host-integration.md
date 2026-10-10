@@ -37,6 +37,11 @@ connector children. Runtimes stop when their configuration owner stops, and
 sessions/readiness are fenced by generation even before monitor delivery.
 Use host supervisor ordering/rebuild logic so connector runtimes restart only
 after infrastructure; do not keep an old `build/2` child spec across replacement.
+A host `:rest_for_one` supervisor orders whole-supervisor replacements. Internal
+infrastructure-child crashes also replace the generation: the host connector
+lifecycle manager must rebuild those stopped runtimes; widget infrastructure does
+not automatically reinstall connectors. To restart a standalone/demo composition
+including its demo runtime, restart `WebWidget.Standalone`, not just one worker.
 Local shutdown does not stop Mnesia or erase shared authentication state.
 
 | Init option | Default / ownership |

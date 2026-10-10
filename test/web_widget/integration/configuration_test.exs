@@ -7,34 +7,23 @@ defmodule WebWidget.Integration.ConfigurationTest do
   alias WebWidget.Runtime
   alias WebWidget.TestIntegration.Host
 
-  test "build/2 reads server configuration and fails closed when it is absent" do
-    previous = Application.fetch_env(:web_widget, :integration)
+  setup do
+    {_, _, opts} = Host.fixture()
+    WebWidget.TestInfrastructure.setup(opts)
+  end
 
-    on_exit(fn ->
-      case previous do
-        {:ok, value} -> Application.put_env(:web_widget, :integration, value)
-        :error -> Application.delete_env(:web_widget, :integration)
-      end
-    end)
-
+  test "build/2 reads supervised configuration and fails closed when infrastructure is absent" do
     {config, hooks, opts} = Host.fixture()
-    Application.delete_env(:web_widget, :integration)
-    assert RuntimeBuilder.build(config, hooks) == {:error, :invalid_integration_config}
+    :ok = Supervisor.terminate_child(WebWidget.Standalone, WebWidget)
+    assert {:error, :infrastructure_not_started} = RuntimeBuilder.build(config, hooks)
 
-    Application.put_env(:web_widget, :integration, opts)
-    assert RuntimeBuilder.build(config, hooks) == RuntimeBuilder.build(config, hooks, opts)
+    WebWidget.TestInfrastructure.replace(opts)
+    assert {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks)
+    assert {:ok, {preview, []}} = RuntimeBuilder.build(config, hooks, opts)
+    assert integration(spec) == integration(preview)
   end
 
   test "build/2 binds connector settings rather than application identity options" do
-    previous = Application.fetch_env(:web_widget, :integration)
-
-    on_exit(fn ->
-      case previous do
-        {:ok, value} -> Application.put_env(:web_widget, :integration, value)
-        :error -> Application.delete_env(:web_widget, :integration)
-      end
-    end)
-
     {config, hooks, opts} = Host.fixture()
     key = Base.url_encode64(:crypto.strong_rand_bytes(32), padding: false)
 
@@ -45,18 +34,9 @@ defmodule WebWidget.Integration.ConfigurationTest do
     }
 
     config = Map.merge(config, %{token: key, settings: settings})
-
-    opts =
-      Keyword.merge(opts,
-        identity_verifier: :connector_key,
-        identity_issuer: "ignored",
-        identity_audience: "ignored"
-      )
-
-    Application.put_env(:web_widget, :integration, opts)
-
+    opts = Keyword.put(opts, :identity_verifier, :connector_key)
+    WebWidget.TestInfrastructure.replace(opts)
     assert {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks)
-    assert RuntimeBuilder.build(config, hooks, opts) == {:ok, {spec, []}}
     integration = integration(spec)
 
     assert integration.identity_verifier ==
@@ -155,6 +135,7 @@ defmodule WebWidget.Integration.ConfigurationTest do
         })
 
       opts = Keyword.put(opts, :pubsub_server, server)
+      WebWidget.TestInfrastructure.replace(opts)
       assert {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, opts)
       start_supervised!(spec)
       assert Runtime.pubsub_server(to_string(config.id)) == {:ok, server}

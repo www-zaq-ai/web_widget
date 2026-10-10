@@ -17,13 +17,17 @@ defmodule WebWidget.Integration.SignedIdentity do
 
   def sign(key, widget_id, init, opts) do
     now = System.system_time(:second)
-    ttl = Keyword.get(opts, :ttl, configured_max_age())
+
+    max_age =
+      configured_max_age() || WebWidget.Configuration.authentication_default(:token_ttl_seconds)
+
+    ttl = Keyword.get(opts, :ttl, max_age)
 
     with true <- is_map(init) and Map.keys(init) == [:user_id],
          {:ok, init} <- InitClaims.normalize(init),
          true <-
            valid_key?(key) and is_integer(widget_id) and widget_id > 0 and
-             is_integer(ttl) and ttl in 1..configured_max_age() and
+             is_integer(ttl) and ttl in 1..max_age and
              identifier?(opts[:issuer]) and identifier?(opts[:audience]) do
       claims = %{
         "widget_id" => widget_id,
@@ -50,7 +54,8 @@ defmodule WebWidget.Integration.SignedIdentity do
   def verify(key, issuer, audience, proof, scope) when is_binary(proof) do
     now = System.system_time(:second)
 
-    with true <- valid_key?(key) and byte_size(proof) <= @max_proof_bytes,
+    with {:ok, infrastructure} <- WebWidget.Configuration.fetch(),
+         true <- valid_key?(key) and byte_size(proof) <= @max_proof_bytes,
          {true, payload, %JOSE.JWS{fields: header, b64: :undefined}} <-
            JOSE.JWS.verify_strict(JOSE.JWK.from_oct(key), ["HS256"], proof),
          true <- header == %{"typ" => "JWT"},
@@ -69,7 +74,14 @@ defmodule WebWidget.Integration.SignedIdentity do
            InitClaims.normalize(%{user_id: sender}),
          true <- Map.get(scope, :expected_sender) in [nil, init.user_id],
          true <- is_integer(id) and id > 0 and id == scope.channel_config_id,
-         true <- valid_times?(issued, expiry, Map.get(claims, "nbf", issued), now),
+         true <-
+           valid_times?(
+             issued,
+             expiry,
+             Map.get(claims, "nbf", issued),
+             now,
+             infrastructure.authentication[:token_ttl_seconds]
+           ),
          true <- identifier?(nonce) and byte_size(nonce) >= 16,
          true <- identifier?(Map.get(scope, :page_id)) do
       binding = %{
@@ -82,9 +94,12 @@ defmodule WebWidget.Integration.SignedIdentity do
         exp: expiry
       }
 
-      if expiry > now,
-        do: claim_binding(binding, scope.page_id, now, sender, expiry, init),
-        else: revoked_error(binding)
+      result =
+        if expiry > now,
+          do: claim_binding(binding, scope.page_id, now, sender, expiry, init),
+          else: revoked_error(binding)
+
+      fenced_result(result, infrastructure.generation)
     else
       _ -> {:error, :unauthorized}
     end
@@ -125,11 +140,17 @@ defmodule WebWidget.Integration.SignedIdentity do
     end
   end
 
-  defp valid_times?(issued, expiry, not_before, now) do
-    is_integer(configured_max_age()) and
+  defp valid_times?(issued, expiry, not_before, now, maximum) do
+    is_integer(maximum) and
       is_integer(issued) and is_integer(expiry) and is_integer(not_before) and
       issued <= now and not_before <= now and not_before < expiry and
-      expiry > issued and expiry - issued <= configured_max_age()
+      expiry > issued and expiry - issued <= maximum
+  end
+
+  defp fenced_result(result, generation) do
+    if WebWidget.Configuration.current?(generation),
+      do: result,
+      else: {:error, :store_unavailable}
   end
 
   defp configured_max_age do

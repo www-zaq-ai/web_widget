@@ -11,14 +11,18 @@ defmodule WebWidget.Integration.ControlProof do
 
   def sign(key, widget_id, user_id, opts) do
     now = System.system_time(:second)
-    ttl = Keyword.get(opts, :ttl, lifetime())
+
+    max_age =
+      lifetime() || WebWidget.Configuration.authentication_default(:control_proof_ttl_seconds)
+
+    ttl = Keyword.get(opts, :ttl, max_age)
 
     with true <- SignedIdentity.valid_key?(key),
          true <- is_integer(widget_id) and widget_id > 0,
          true <-
            identifier?(user_id) and identifier?(opts[:issuer]) and
              control_audience?(opts[:audience]),
-         true <- is_integer(ttl) and ttl in 1..lifetime() do
+         true <- is_integer(ttl) and ttl in 1..max_age do
       claims = %{
         "iss" => opts[:issuer],
         "aud" => opts[:audience],
@@ -63,7 +67,7 @@ defmodule WebWidget.Integration.ControlProof do
          } <- claims,
          true <- identifier?(user_id) and identifier?(nonce) and byte_size(nonce) >= 16,
          true <- is_integer(issued) and is_integer(expiry) and issued <= now and expiry > now,
-         true <- is_integer(lifetime()) and expiry > issued and expiry - issued <= lifetime() do
+         true <- valid_lifetime?(issued, expiry) do
       {:ok, %{jti: nonce, iat: issued}}
     else
       _ -> {:error, :unauthorized}
@@ -73,6 +77,11 @@ defmodule WebWidget.Integration.ControlProof do
   end
 
   def verify(_, _, _, _, _, _), do: {:error, :unauthorized}
+
+  defp valid_lifetime?(issued, expiry) do
+    maximum = lifetime()
+    is_integer(maximum) and expiry > issued and expiry - issued <= maximum
+  end
 
   defp control_audience?(value) when is_binary(value) do
     suffix = ":control"

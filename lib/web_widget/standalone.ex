@@ -40,7 +40,13 @@ defmodule WebWidget.Standalone do
         []
 
       demo when is_list(demo) ->
-        [WebWidget.MockHost, {WebWidget.Runtime, demo_config(demo)}]
+        server =
+          Keyword.get(Keyword.get(opts, :infrastructure, []), :pubsub_server, WebWidget.PubSub)
+
+        [
+          WebWidget.MockHost,
+          {WebWidget.Runtime, demo_config(Keyword.put(demo, :pubsub_server, server))}
+        ]
     end
   end
 

@@ -76,6 +76,25 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
 
     {:error, :stale_or_revoked} = BindingStore.claim(claims, "page-a", now + 9)
 
+    # A local widget infrastructure restart must rejoin, not reset shared RAM state.
+    :ok = call(n2, Supervisor, :terminate_child, [WebWidget.TestClusterHost, WebWidget])
+    {:error, :unavailable} = call(n2, BindingStore, :available?, [])
+    {:ok, _} = call(n2, Supervisor, :restart_child, [WebWidget.TestClusterHost, WebWidget])
+    await(fn -> call(n2, BindingStore, :available?, []) == :ok end)
+    ^reset = call(n2, BindingStore, :reset_cutoff_value, [])
+
+    {:ok, ^cutoff, false} =
+      call(n2, BindingStore, :revoke_user, [
+        claims.issuer,
+        claims.widget_id,
+        claims.user_id,
+        request_id,
+        now + 8,
+        now + 9
+      ])
+
+    {:error, :stale_or_revoked} = call(n2, BindingStore, :claim, [claims, "page-a", now + 9])
+
     racing_user = claims(now + 10)
 
     claim_task =
@@ -164,7 +183,7 @@ defmodule WebWidget.Integration.BindingStoreClusterCheck do
     [{p1, ^n1}, {p2, ^n2}] = Enum.map(names, &start_peer/1)
     configure(n1, nodes)
     configure(n2, nodes)
-    await(fn -> BindingStore.available?() == :ok end)
+    await(fn -> Enum.all?(nodes, &(call(&1, BindingStore, :available?, []) == :ok)) end)
     new_reset = BindingStore.reset_cutoff_value()
     true = new_reset >= reset
     {:error, :stale_or_revoked} = BindingStore.claim(claims, "page-a", now)

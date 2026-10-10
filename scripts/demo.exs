@@ -10,3 +10,6 @@ demo = [
 
 {:ok, _} = WebWidget.Standalone.start_link(demo: demo,
   dns_cluster_query: System.get_env("DNS_CLUSTER_QUERY") || :ignore)
+
+# Keep the explicit host supervisor's parent alive for the demo lifetime.
+Process.sleep(:infinity)
