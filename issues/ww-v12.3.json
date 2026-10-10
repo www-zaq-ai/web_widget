@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [
     "ww-v12.2"
   ],
@@ -12,8 +12,8 @@
   "labels": [],
   "parent": "ww-v12",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Migrate explicit startup compositions and docs",
   "type": "task",
-  "updated_at": "2026-10-10T17:11:13Z"
+  "updated_at": "2026-10-10T17:16:12Z"
 }
