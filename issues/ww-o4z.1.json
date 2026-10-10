@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T13:27:11Z",
+  "description": "Docs first; duplicate guard, anonymous bootstrap tests, required policy, HTTPS Secure",
+  "id": "ww-o4z.1",
+  "labels": [],
+  "parent": "ww-o4z",
+  "priority": 2,
+  "status": "open",
+  "title": "Enforce cookie and runtime policy contract",
+  "type": "task",
+  "updated_at": "2026-10-10T13:27:11Z"
+}
