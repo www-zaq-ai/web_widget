@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T13:27:11Z",
+  "description": "Focused and integration validation, explicit fixtures, docs, precommit",
+  "id": "ww-o4z.3",
+  "labels": [],
+  "parent": "ww-o4z",
+  "priority": 2,
+  "status": "open",
+  "title": "Validate session feedback and migration",
+  "type": "task",
+  "updated_at": "2026-10-10T13:27:11Z"
+}
