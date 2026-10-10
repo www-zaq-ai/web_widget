@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "ww-v12.1"
+  ],
   "blocks": [],
   "created": "2026-10-10T17:10:57Z",
   "description": "Replace global authentication/integration reads; generation fence runtime and readiness; preserve Mnesia state and security semantics.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "Migrate config consumers and lifecycle fencing",
   "type": "task",
-  "updated_at": "2026-10-10T17:10:57Z"
+  "updated_at": "2026-10-10T17:11:08Z"
 }
