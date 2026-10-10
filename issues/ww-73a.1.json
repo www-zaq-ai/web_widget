@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [
     "ww-73a.2",
@@ -11,7 +11,7 @@
   "labels": [],
   "parent": "ww-73a",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Define connector recovery and readiness v2 contract",
   "type": "task",
   "updated_at": "2026-10-10T20:56:24Z"
