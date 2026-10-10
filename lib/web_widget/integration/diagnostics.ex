@@ -8,8 +8,8 @@ defmodule WebWidget.Integration.Diagnostics do
   @states ~w(running started updated completed failed)a
 
   def log(outcome, response) do
-    case Application.get_env(:web_widget, :response_diagnostics, false) do
-      true ->
+    case WebWidget.Configuration.fetch() do
+      {:ok, %{response_diagnostics: true}} ->
         Logger.info(fn ->
           "[web_widget.response] " <>
             inspect(%{outcome: outcome, response: response},
@@ -20,7 +20,7 @@ defmodule WebWidget.Integration.Diagnostics do
             )
         end)
 
-      :summary ->
+      {:ok, %{response_diagnostics: :summary}} ->
         Logger.info(fn ->
           "[web_widget.response] " <> inspect(Map.put(summary(response), :outcome, outcome))
         end)

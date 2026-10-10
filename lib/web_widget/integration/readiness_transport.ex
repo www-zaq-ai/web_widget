@@ -24,44 +24,12 @@ defmodule WebWidget.Integration.ReadinessTransport do
   end
 
   defp deployment do
-    integration = Application.get_env(:web_widget, :integration, [])
-    opts = Keyword.get(integration, :readiness, [])
-
-    endpoint =
-      Keyword.get(opts, :endpoint) ||
-        if Application.get_env(:web_widget, :start_integration_server, false),
-          do: WebWidgetWeb.Endpoint
-
-    prefix = Keyword.get(integration, :widget_path, "/widget")
-    scheme = Keyword.get(opts, :scheme, :http)
-
-    if valid_endpoint?(endpoint) and scheme in [:http, :https] and valid_prefix?(prefix) and
-         valid_tls_options?(Keyword.get(opts, :tls_options, [])) do
-      {:ok,
-       %{
-         endpoint: endpoint,
-         prefix: prefix,
-         scheme: scheme,
-         tls_options: Keyword.get(opts, :tls_options, [])
-       }}
+    with {:ok, config} <- WebWidget.Configuration.fetch(),
+         true <- not is_nil(config.transport.endpoint) do
+      {:ok, Map.put(config.transport, :generation, config.generation)}
     else
-      {:error, :transport_unverifiable}
+      _ -> {:error, :transport_unverifiable}
     end
-  end
-
-  defp valid_endpoint?(endpoint) do
-    is_atom(endpoint) and not is_nil(endpoint) and Code.ensure_loaded?(endpoint) and
-      function_exported?(endpoint, :server_info, 1)
-  end
-
-  defp valid_prefix?(prefix) do
-    is_binary(prefix) and byte_size(prefix) <= 1_024 and
-      Regex.match?(~r/\A(?:\/[a-zA-Z0-9][a-zA-Z0-9_-]*)+\z/, prefix)
-  end
-
-  defp valid_tls_options?(opts) do
-    is_list(opts) and Keyword.keyword?(opts) and
-      Enum.all?(Keyword.keys(opts), &(&1 in [:cacertfile, :cacerts]))
   end
 
   defp listener(deployment) do
@@ -138,7 +106,7 @@ defmodule WebWidget.Integration.ReadinessTransport do
   defp current_deployment(target) do
     case deployment() do
       {:ok, current} ->
-        if current == Map.take(target, [:endpoint, :prefix, :scheme, :tls_options]),
+        if current == Map.take(target, [:endpoint, :prefix, :scheme, :tls_options, :generation]),
           do: :ok,
           else: {:error, :transport_unverifiable}
 

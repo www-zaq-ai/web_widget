@@ -15,6 +15,7 @@ defmodule WebWidget.Runtime do
   use GenServer
 
   alias WebWidget.Embedding.Origins
+  alias WebWidget.Configuration
   alias WebWidget.Integration.{BindingStore, ControlProof, Protocol, Session}
 
   @widget_fields [
@@ -31,8 +32,10 @@ defmodule WebWidget.Runtime do
   end
 
   def start_link(config) do
-    with {:ok, config} <- prepare(config) do
-      GenServer.start_link(__MODULE__, config)
+    with {:ok, infrastructure} <- Configuration.fetch(),
+         :ok <- infrastructure_matches(config, infrastructure),
+         {:ok, config} <- prepare(config) do
+      GenServer.start_link(__MODULE__, {config, infrastructure})
     end
   end
 
@@ -44,9 +47,15 @@ defmodule WebWidget.Runtime do
   @doc false
   def readiness_snapshot(widget_id, timeout)
       when is_binary(widget_id) and is_integer(timeout) and timeout > 0 do
-    case Registry.lookup(WebWidget.RuntimeRegistry, widget_id) do
-      [{pid, _}] -> GenServer.call(pid, {:readiness_snapshot, widget_id}, timeout)
-      [] -> {:error, :runtime_not_registered}
+    with {:ok, infrastructure} <- Configuration.fetch(),
+         [{pid, _}] <- Registry.lookup(WebWidget.RuntimeRegistry, widget_id),
+         {:ok, snapshot} <- GenServer.call(pid, {:readiness_snapshot, widget_id}, timeout),
+         true <-
+           snapshot.infrastructure_generation == infrastructure.generation and
+             Configuration.current?(infrastructure.generation) do
+      {:ok, snapshot}
+    else
+      _ -> {:error, :runtime_not_registered}
     end
   rescue
     _ -> {:error, :runtime_not_registered}
@@ -248,24 +257,55 @@ defmodule WebWidget.Runtime do
   defp delivery_config(widget_id), do: call_widget(widget_id, :delivery_config)
 
   defp call_widget(widget_id, request) do
-    case Registry.lookup(WebWidget.RuntimeRegistry, widget_id) do
-      [{pid, _}] -> GenServer.call(pid, request)
-      [] -> {:error, :not_found}
+    with {:ok, infrastructure} <- Configuration.fetch(),
+         [{pid, generation}] <- Registry.lookup(WebWidget.RuntimeRegistry, widget_id),
+         true <- generation == infrastructure.generation,
+         result <- GenServer.call(pid, request),
+         true <- Configuration.current?(generation) do
+      result
+    else
+      _ -> {:error, :not_found}
     end
+  rescue
+    ArgumentError -> {:error, :not_found}
   catch
     :exit, _ -> {:error, :not_found}
   end
 
   @impl true
-  def init(config) do
-    config = Map.put(config, :runtime_ref, make_ref())
+  def init({config, infrastructure}) do
+    config =
+      config
+      |> Map.put(:runtime_ref, make_ref())
+      |> Map.put(:infrastructure_generation, infrastructure.generation)
+      |> Map.put(:infrastructure_monitor, Process.monitor(infrastructure.owner))
 
     Enum.reduce_while(config.widgets, {:ok, config}, fn widget, acc ->
-      case Registry.register(WebWidget.RuntimeRegistry, widget.widget_id, nil) do
+      case Registry.register(
+             WebWidget.RuntimeRegistry,
+             widget.widget_id,
+             infrastructure.generation
+           ) do
         {:ok, _} -> {:cont, acc}
         {:error, {:already_registered, _}} -> {:halt, {:stop, :widget_id_already_registered}}
       end
     end)
+  end
+
+  @impl true
+  def handle_info({:DOWN, ref, :process, _pid, _reason}, %{infrastructure_monitor: ref} = config),
+    do: {:stop, :shutdown, config}
+
+  defp infrastructure_matches(config, infrastructure) do
+    generation = Map.get(config, :infrastructure_generation, infrastructure.generation)
+    providers = Map.get(config, :infrastructure_providers, [])
+    pubsub = Map.get(config, :pubsub_server, infrastructure.integration[:pubsub_server])
+
+    if generation == infrastructure.generation and
+         pubsub == infrastructure.integration[:pubsub_server] and
+         Enum.all?(providers, fn {key, value} -> infrastructure.integration[key] == value end),
+       do: :ok,
+       else: {:error, :infrastructure_configuration_mismatch}
   end
 
   @impl true
@@ -289,6 +329,7 @@ defmodule WebWidget.Runtime do
     snapshot = %{
       widget: widget,
       runtime_ref: config.runtime_ref,
+      infrastructure_generation: config.infrastructure_generation,
       pubsub_server: Map.get(config, :pubsub_server),
       identity: identity
     }
@@ -345,7 +386,13 @@ defmodule WebWidget.Runtime do
          length(Enum.uniq_by(widgets, & &1.widget_id)) == length(widgets) do
       {:ok,
        config
-       |> Map.take([:channel_config_id, :sink_mfa, :pubsub_server])
+       |> Map.take([
+         :channel_config_id,
+         :sink_mfa,
+         :pubsub_server,
+         :infrastructure_generation,
+         :infrastructure_providers
+       ])
        |> Map.put(:widgets, Enum.map(normalized, &elem(&1, 1)))}
     else
       {:error, :invalid_runtime_config}

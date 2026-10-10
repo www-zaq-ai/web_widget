@@ -36,7 +36,7 @@ defmodule WebWidget.Configuration do
          {:ok, authentication} <- normalize_authentication(Keyword.get(opts, :authentication, [])),
          {:ok, transport} <- transport(Keyword.get(opts, :transport, [])),
          :ok <- installation(opts, transport.prefix),
-         true <- is_boolean(Keyword.get(opts, :response_diagnostics, false)) do
+         true <- Keyword.get(opts, :response_diagnostics, false) in [false, true, :summary] do
       integration =
         [
           pubsub_server: opts[:pubsub_server],
@@ -52,7 +52,7 @@ defmodule WebWidget.Configuration do
          response_diagnostics: Keyword.get(opts, :response_diagnostics, false)
        }}
     else
-      false -> invalid(:response_diagnostics, "must be a boolean")
+      false -> invalid(:response_diagnostics, "must be false, true, or :summary")
       error -> error
     end
   end

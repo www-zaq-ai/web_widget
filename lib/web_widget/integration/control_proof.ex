@@ -63,7 +63,7 @@ defmodule WebWidget.Integration.ControlProof do
          } <- claims,
          true <- identifier?(user_id) and identifier?(nonce) and byte_size(nonce) >= 16,
          true <- is_integer(issued) and is_integer(expiry) and issued <= now and expiry > now,
-         true <- expiry > issued and expiry - issued <= lifetime() do
+         true <- is_integer(lifetime()) and expiry > issued and expiry - issued <= lifetime() do
       {:ok, %{jti: nonce, iat: issued}}
     else
       _ -> {:error, :unauthorized}
@@ -94,8 +94,6 @@ defmodule WebWidget.Integration.ControlProof do
         byte_size(value) in 1..255
 
   defp lifetime do
-    :web_widget
-    |> Application.get_env(:authentication, [])
-    |> Keyword.get(:control_proof_ttl_seconds, 30)
+    WebWidget.Configuration.authentication(:control_proof_ttl_seconds)
   end
 end

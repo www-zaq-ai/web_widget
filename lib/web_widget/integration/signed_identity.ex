@@ -13,7 +13,6 @@ defmodule WebWidget.Integration.SignedIdentity do
   alias WebWidget.Integration.{BindingStore, InitClaims}
 
   @claim_keys ~w(widget_id user_id iss aud iat exp jti nbf)
-  @default_age 604_800
   @max_proof_bytes 200_000
 
   def sign(key, widget_id, init, opts) do
@@ -127,15 +126,14 @@ defmodule WebWidget.Integration.SignedIdentity do
   end
 
   defp valid_times?(issued, expiry, not_before, now) do
-    is_integer(issued) and is_integer(expiry) and is_integer(not_before) and
+    is_integer(configured_max_age()) and
+      is_integer(issued) and is_integer(expiry) and is_integer(not_before) and
       issued <= now and not_before <= now and not_before < expiry and
       expiry > issued and expiry - issued <= configured_max_age()
   end
 
   defp configured_max_age do
-    :web_widget
-    |> Application.get_env(:authentication, [])
-    |> Keyword.get(:token_ttl_seconds, @default_age)
+    WebWidget.Configuration.authentication(:token_ttl_seconds)
   end
 
   def valid_key?(key) when is_binary(key),

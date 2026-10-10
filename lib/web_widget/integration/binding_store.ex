@@ -8,6 +8,8 @@ defmodule WebWidget.Integration.BindingStore do
 
   use GenServer
 
+  alias WebWidget.Configuration
+
   @bindings :web_widget_token_bindings
   @revocations :web_widget_user_revocations
   @controls :web_widget_control_requests
@@ -147,7 +149,8 @@ defmodule WebWidget.Integration.BindingStore do
     try do
       running = :mnesia.system_info(:running_db_nodes)
 
-      if valid_config?(nodes) and length(Enum.filter(nodes, &(&1 in running))) >= quorum and
+      if is_pid(Process.whereis(__MODULE__)) and nodes != [] and
+           length(Enum.filter(nodes, &(&1 in running))) >= quorum and
            Enum.all?(@tables, &table_ready?(&1, nodes, running, quorum)) do
         :ok
       else
@@ -161,20 +164,14 @@ defmodule WebWidget.Integration.BindingStore do
   end
 
   @impl true
-  def init(_opts) do
-    nodes = replica_nodes()
+  def init(opts) do
+    case Application.ensure_all_started(:mnesia) do
+      {:ok, _} ->
+        send(self(), :reconcile)
+        {:ok, %{cursors: %{}, nodes: Keyword.fetch!(opts, :replica_nodes)}}
 
-    if valid_config?(nodes) do
-      case Application.ensure_all_started(:mnesia) do
-        {:ok, _} ->
-          send(self(), :reconcile)
-          {:ok, %{cursors: %{}, nodes: nodes}}
-
-        error ->
-          {:stop, error}
-      end
-    else
-      {:stop, :invalid_authentication_config}
+      error ->
+        {:stop, error}
     end
   end
 
@@ -273,9 +270,18 @@ defmodule WebWidget.Integration.BindingStore do
   end
 
   defp transaction(fun) do
-    case :mnesia.transaction(fun) do
-      {:atomic, result} -> result
-      {:aborted, reason} -> {:error, reason}
+    with {:ok, config} <- Configuration.fetch() do
+      case :mnesia.transaction(fn ->
+             if Configuration.current?(config.generation),
+               do: fun.(),
+               else: :mnesia.abort(:unavailable)
+           end) do
+        {:atomic, result} ->
+          if Configuration.current?(config.generation), do: result, else: {:error, :unavailable}
+
+        {:aborted, reason} ->
+          {:error, reason}
+      end
     end
   end
 
@@ -332,41 +338,7 @@ defmodule WebWidget.Integration.BindingStore do
   defp valid_page?(page_id), do: valid_identifier?(page_id)
   defp valid_identifier?(value), do: is_binary(value) and byte_size(value) in 1..255
 
-  defp replica_nodes do
-    :web_widget
-    |> Application.get_env(:authentication, [])
-    |> Keyword.get(:replica_nodes, if(node() == :nonode@nohost, do: [node()], else: []))
-  end
-
-  defp valid_config?(nodes) do
-    opts = Application.get_env(:web_widget, :authentication, [])
-    lifetime = Keyword.get(opts, :token_ttl_seconds, 604_800)
-    lead = Keyword.get(opts, :refresh_lead_seconds, 300)
-    window = Keyword.get(opts, :first_binding_window_seconds, 5)
-    control = Keyword.get(opts, :control_proof_ttl_seconds, 30)
-
-    valid_nodes?(nodes) and valid_timings?(lifetime, lead, window, control)
-  end
-
-  defp valid_nodes?(nodes),
-    do:
-      is_list(nodes) and nodes != [] and nodes == Enum.uniq(nodes) and
-        node() in nodes and Enum.all?(nodes, &is_atom/1)
-
-  defp valid_timings?(lifetime, lead, window, control),
-    do:
-      is_integer(lifetime) and is_integer(lead) and lead > 0 and lifetime > lead and
-        is_integer(window) and window > 0 and is_integer(control) and control > 0
-
-  defp binding_window do
-    :web_widget
-    |> Application.get_env(:authentication, [])
-    |> Keyword.get(:first_binding_window_seconds, 5)
-  end
-
-  defp control_ttl do
-    :web_widget
-    |> Application.get_env(:authentication, [])
-    |> Keyword.get(:control_proof_ttl_seconds, 30)
-  end
+  defp replica_nodes, do: Configuration.authentication(:replica_nodes) || []
+  defp binding_window, do: Configuration.authentication(:first_binding_window_seconds)
+  defp control_ttl, do: Configuration.authentication(:control_proof_ttl_seconds)
 end

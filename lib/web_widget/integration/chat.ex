@@ -164,9 +164,7 @@ defmodule WebWidget.Integration.Chat do
     expiry = chat.session.expires_at
 
     lead =
-      :web_widget
-      |> Application.get_env(:authentication, [])
-      |> Keyword.get(:refresh_lead_seconds, 300)
+      WebWidget.Configuration.authentication(:refresh_lead_seconds)
 
     %{
       expires_at: expiry,
