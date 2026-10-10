@@ -6,9 +6,15 @@
   "description": "Correct rebased readiness probe and stale fixtures for mandatory SameSite, default partitioning and page-cookie suppression. Probe anonymous /session then verify=1, use verified JSON CSRF and cookie for actual WebSocket upgrade, check Partitioned attribute, update outdated policy tests/docs, run focused/full and browser regression suites. Retain existing readiness branch/worktree as requested delivery mode.",
   "id": "ww-99x",
   "labels": [],
+  "comments": [
+    {
+      "text": "Corrected readiness to validate cookie-free page paths, initialize /session, verify=1 without cookie writes, and use verified JSON CSRF for the actual WebSocket. Added Partitioned attribute checking and closed-reason mapping for invalid partition configuration; deadlines span all HTTP stages. Fixtures now explicitly disable partitioning only for HTTP development, preserve mandatory SameSite, and reject omission instead of inheritance. Regressions cover forged page/initial/verified CSRF, missing cookies, malformed/cacheable/non-JSON verification, unexpected cookie writes, partition mismatch and blocked bootstrap/verification. Validation: mix precommit clean, 230 tests passed; Chromium cookie-policy suite 8 passed; git diff --check clean. Production session/HTTPS/partitioning protections unchanged.",
+      "timestamp": "2026-10-10T14:51:54Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Adapt readiness to current session bootstrap (#16)",
   "type": "bug",
-  "updated_at": "2026-10-10T14:35:13Z"
+  "updated_at": "2026-10-10T14:51:54Z"
 }
