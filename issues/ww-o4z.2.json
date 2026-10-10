@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T13:27:11Z",
+  "description": "One initialization per document; read-only resync; readiness deadlines; tests",
+  "id": "ww-o4z.2",
+  "labels": [],
+  "parent": "ww-o4z",
+  "priority": 2,
+  "status": "open",
+  "title": "Bound read-only browser recovery",
+  "type": "task",
+  "updated_at": "2026-10-10T13:27:11Z"
+}
