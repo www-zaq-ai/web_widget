@@ -3,7 +3,9 @@
   "blocked_by": [
     "ww-73a.1"
   ],
-  "blocks": [],
+  "blocks": [
+    "ww-73a.4"
+  ],
   "created": "2026-10-10T20:56:19Z",
   "description": "Lifecycle endpoint discovery, actual listener selection, explicit overrides, local readiness v2 and trusted proxy integration.",
   "id": "ww-73a.3",
