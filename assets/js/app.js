@@ -51,13 +51,16 @@ const liveSocket = new LiveSocket(socketPath, WidgetTransportSocket, {
 })
 
 // Show progress bar on live navigation and form submits
-topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
-window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
+topbar.config({className: "widget-progress", barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+let sessionFailed = false
+window.addEventListener("phx:page-loading-start", _info => { if (!sessionFailed) topbar.show(300) })
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 const sessionPath = document.querySelector("meta[name='web-widget-session']")?.getAttribute("content")
 document.getElementById("widget-session-retry")?.addEventListener("click", () => window.location.reload())
 const sessionFailure = error => {
+  sessionFailed = true
+  topbar.hide()
   const alert = document.getElementById("widget-session-error")
   if (alert) { alert.hidden = false; alert.dataset.reason = error.message || "session_bootstrap_failed" }
 }
