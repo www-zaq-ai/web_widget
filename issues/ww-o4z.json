@@ -8,9 +8,15 @@
   "description": "Implement agreed PR #19 feedback on current branch without commit: duplicate rejection, anonymous replacement semantics, mandatory widget policy, HTTPS Secure, bounded read-only recovery, tests and contract migration.",
   "id": "ww-o4z",
   "labels": [],
+  "comments": [
+    {
+      "text": "User authorized commit/push after review. Implementation committed as 9d47554 (fix: harden widget session initialization and recovery) and pushed to origin/ww-323/widget-session-isolation, updating PR #19. Prior full validations remain applicable; git diff --check passed before commit.",
+      "timestamp": "2026-10-10T14:05:45Z"
+    }
+  ],
   "priority": 2,
   "status": "closed",
   "title": "Harden widget session bootstrap and recovery",
   "type": "epic",
-  "updated_at": "2026-10-10T14:01:47Z"
+  "updated_at": "2026-10-10T14:05:45Z"
 }
