@@ -14,11 +14,15 @@
     {
       "text": "Approved updated plan: partitioned default-on for all widget SameSite policies, only host endpoint override (no connector option), Secure/HTTPS mandatory unless partitioning disabled. No migration or old-browser compatibility. Fix Firefox route.fetch encoding, update partition isolation/blocked cookie regressions and run all suites.",
       "timestamp": "2026-10-10T08:31:06Z"
+    },
+    {
+      "text": "Implemented default-on Partitioned for all SameSite policies, host endpoint override only; Secure/HTTPS enforced; HTTP fixtures opt out. Firefox page replay now requests identity encoding. Partition test uses real browser requests (avoids APIRequestContext corrupting cookie partition ownership), verifies two distinct cookies across parent sites. Focused auth/race checks pass across browsers; mix precommit 197 tests no Credo findings, asset build and tsc pass. Full browser suite running; no migration/legacy fallback added.",
+      "timestamp": "2026-10-10T08:58:56Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Coordinate shared connector session bootstrap (#12, #19)",
   "type": "task",
-  "updated_at": "2026-10-10T08:31:06Z"
+  "updated_at": "2026-10-10T08:58:56Z"
 }
