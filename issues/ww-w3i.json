@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T11:16:47Z",
   "created": "2026-10-10T11:09:41Z",
   "description": "User requests rerun observations only at current9ab1807 after machine contention resolved: stylesheet remove across Chromium/Firefox/WebKit and Chromium WebSocket reconnect, 10 repetitions traceoff/on, same assertions/reporters/one worker. Isolate outputs, classify exact failures vs setup/auth timeouts. No source edits.",
   "id": "ww-w3i",
@@ -17,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Repeat isolated tracing comparison after contention resolved",
   "type": "task",
-  "updated_at": "2026-10-10T11:16:45Z"
+  "updated_at": "2026-10-10T11:16:47Z"
 }
