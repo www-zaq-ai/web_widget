@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T12:26:43Z",
+  "description": "Separate hosted Elixir CI failure at0d5d890 https://github.com/www-zaq-ai/web_widget/actions/runs/38051184746 job114210471623.197unit tests and compile/format/Credo passed. test/support/integration/binding_store_cluster.exs:186 expected {:error,:replayed} from restarted peer n2 for conflicting page, received {:error,:unavailable_or_invalid}. Local root fresh claim184 and samepage peer n1 claim185 succeeded. Availability barrier163 checks root only; possible peer readiness/recovery race not yet proven. No production/OTP changes made. Browser suite361pass2skip at same commit.",
+  "id": "ww-cye",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Investigate Mnesia replay check failure after cluster restart",
+  "type": "bug",
+  "updated_at": "2026-10-10T12:26:43Z"
+}
