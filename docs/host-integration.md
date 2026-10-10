@@ -53,7 +53,23 @@ config :zaq, ZaqWeb.Endpoint,
 
 Set that legacy policy to the actual previous serving policy before migrating (including None if that was intentionally applied); do not silently adopt the new-connector default. `WebWidget.Embedding.Session.effective(widget, endpoint, scheme)` resolves the installed pipeline's value, Secure flag and source, or a fixed configuration failure. It is not a transport readiness probe: #16 must verify host mounting before reporting a policy as applied; old/unverified adapters remain unknown. None forces Secure and requires HTTPS. HTTP development uses explicit Lax/Strict and does not silently downgrade None. Trust only correctly configured TLS termination/proxy scheme handling.
 
-Install the package, endpoint mount, router pipeline, proxy rules and updated generated snippet together. Existing iframe documents using `/live` require reload; changing a connector policy requires runtime replacement and page reload. No BO cookie is rewritten by widget routes. Independently scoped widgets cannot overwrite one another's cookie attributes. None does not bypass browser third-party-cookie blocking; Lax/Strict do not support normal cross-site iframe sessions.
+Widget transport cookies carry `Partitioned` by default for all SameSite policies.
+Partitioning forces Secure and requires HTTPS, even if the host specifies `secure: false`.
+This technical option belongs only to the host endpoint, not connector settings:
+
+```elixir
+# HTTP development only; retain normal Secure/SameSite rules when disabled.
+config :my_host, MyHostWeb.Endpoint,
+  web_widget_session: [partitioned: false]
+```
+
+Initial widget pages do not write cookies. Before connecting, each iframe uses
+`<widget-page-path>/session` under a connector-path Web Lock, then performs a
+read-only cookie acceptance check. Multiple instances share one transport cookie
+within a top-level site; different parent sites use separate partitions. JWT/page
+authorization and conversations remain independent. Blocked cookies fail explicitly.
+
+Install the package, endpoint mount, router pipeline, proxy rules and updated generated snippet together. Existing iframe documents using `/live` require reload; changing a connector policy requires runtime replacement and page reload. No BO cookie is rewritten by widget routes. Independently scoped widgets cannot overwrite one another's cookie attributes. Partitioned None supports cross-site embedding on supported browsers even when ordinary third-party cookies are blocked; Lax/Strict still do not support normal cross-site iframe sessions.
 
 ## Runtime builder and shared protocol
 

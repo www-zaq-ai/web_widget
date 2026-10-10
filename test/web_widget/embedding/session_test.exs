@@ -3,12 +3,14 @@ defmodule WebWidget.Embedding.SessionTest do
   import Phoenix.ConnTest
   import Plug.Conn
 
+  alias Phoenix.LiveView.Session, as: LiveViewSession
   alias Phoenix.Socket.Transport
   alias Phoenix.Transports.WebSocket
-  alias Phoenix.LiveView.Session, as: LiveViewSession
   alias WebWidget.Embedding.Session
   alias WebWidget.Embedding.Socket
   @endpoint WebWidget.TestHost.Endpoint
+
+  defp configure(opts), do: :ets.insert(@endpoint, {:web_widget_session, opts})
 
   setup do
     previous = Application.get_env(:web_widget, @endpoint)
@@ -18,7 +20,8 @@ defmodule WebWidget.Embedding.SessionTest do
       live_view: [signing_salt: "host-live"],
       pubsub_server: WebWidget.PubSub,
       check_origin: false,
-      server: false
+      server: false,
+      web_widget_session: [partitioned: false]
     )
 
     start_supervised!(@endpoint)
@@ -90,6 +93,38 @@ defmodule WebWidget.Embedding.SessionTest do
       assert Session.page_scope?(info.session, "none", info.uri)
       refute Session.page_scope?(info.session, "none", wrong_path.uri)
     end
+  end
+
+  test "partitioning defaults on for every SameSite policy and requires HTTPS" do
+    configure([])
+
+    for id <- ["none", "lax", "strict"] do
+      conn = get(build_conn(), "https://www.example.com/widget/#{id}/session")
+      cookie = conn.resp_cookies["_web_widget_session"]
+      assert cookie.extra == "Partitioned"
+      assert cookie.secure
+      assert cookie.http_only
+
+      assert get_resp_header(conn, "set-cookie")
+             |> Enum.any?(&String.contains?(&1, "; Partitioned"))
+
+      assert response(get(build_conn(), "/widget/#{id}/session"), 503) == "https_required"
+    end
+
+    configure(partitioned: true, secure: false)
+
+    assert {:ok, %{secure: true, partitioned: true}} =
+             Session.effective(%{same_site: "Lax"}, @endpoint, :https)
+
+    configure(partitioned: "true")
+
+    assert response(get(build_conn(), "https://www.example.com/widget/lax/session"), 503) ==
+             "invalid_partitioned_policy"
+
+    configure(partitioned: false)
+    conn = get(build_conn(), "/widget/lax/session")
+    refute conn.resp_cookies["_web_widget_session"].secure
+    refute Map.has_key?(conn.resp_cookies["_web_widget_session"], :extra)
   end
 
   test "widget pages neither consume nor rewrite the BO cookie" do

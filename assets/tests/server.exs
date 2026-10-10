@@ -19,7 +19,7 @@ config =
     watchers: [],
     live_reload: [patterns: []],
     check_origin: ["//127.0.0.1:4019", "//127.0.0.1:4022"],
-    https: [ip: {127, 0, 0, 1}, port: 4022, keyfile: keyfile, certfile: certfile],
+    web_widget_session: [partitioned: false],
     http: [ip: {127, 0, 0, 1}, port: 4019]
   )
 
@@ -45,6 +45,7 @@ Code.require_file("assets/tests/support/control.exs")
 Code.require_file("test/support/host/session_probe.ex")
 Code.require_file("test/support/host/router.ex")
 Code.require_file("test/support/host/endpoint.ex")
+Code.require_file("assets/tests/support/http_endpoint.exs")
 
 Application.put_env(:web_widget, WebWidget.TestHost.Endpoint,
   adapter: Bandit.PhoenixAdapter,
@@ -53,11 +54,25 @@ Application.put_env(:web_widget, WebWidget.TestHost.Endpoint,
   pubsub_server: WebWidget.PubSub,
   check_origin: ["//127.0.0.1:4020", "//127.0.0.1:4023"],
   https: [ip: {127, 0, 0, 1}, port: 4023, keyfile: keyfile, certfile: certfile],
-  http: [ip: {127, 0, 0, 1}, port: 4020],
   server: true
 )
 
 {:ok, _} = Supervisor.start_child(WebWidget.Supervisor, WebWidget.TestHost.Endpoint)
+
+secret_key_base = WebWidget.TestHost.Endpoint.config(:secret_key_base)
+Application.put_env(:web_widget, WebWidget.E2EHttpEndpoint,
+  adapter: Bandit.PhoenixAdapter,
+  secret_key_base: secret_key_base, live_view: [signing_salt: "host-live"],
+  pubsub_server: WebWidget.PubSub, check_origin: ["//127.0.0.1:4020"],
+  web_widget_session: [partitioned: false], server: true,
+  http: [ip: {127, 0, 0, 1}, port: 4020])
+{:ok, _} = Supervisor.start_child(WebWidget.Supervisor, WebWidget.E2EHttpEndpoint)
+Application.put_env(:web_widget, WebWidget.E2EHttpsEndpoint,
+  adapter: Bandit.PhoenixAdapter,
+  secret_key_base: secret_key_base, live_view: [signing_salt: "host-live"],
+  pubsub_server: WebWidget.PubSub, check_origin: ["//127.0.0.1:4022"], server: true,
+  https: [ip: {127, 0, 0, 1}, port: 4022, keyfile: keyfile, certfile: certfile])
+{:ok, _} = Supervisor.start_child(WebWidget.Supervisor, WebWidget.E2EHttpsEndpoint)
 
 {:ok, _} = Supervisor.start_child(WebWidget.Supervisor, {WebWidget.Runtime, %{
   channel_config_id: :cookie_e2e,

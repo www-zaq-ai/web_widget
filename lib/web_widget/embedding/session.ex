@@ -3,7 +3,9 @@ defmodule WebWidget.Embedding.Session do
   Widget-only session installation and effective cookie policy.
 
   Endpoint `:web_widget_session` options declare the legacy `:same_site` policy
-  (default Lax) and optional `:secure` flag. None always requires HTTPS/Secure.
+  (default Lax) and optional `:secure` flag. Cookies are partitioned by default;
+  only host endpoint `partitioned: false` disables this. Partitioning and None
+  always require HTTPS/Secure.
   """
   import Plug.Conn
 
@@ -33,12 +35,33 @@ defmodule WebWidget.Embedding.Session do
     value = if desired == :inherit, do: Keyword.get(opts, :same_site, "Lax"), else: desired
     secure = value == "None" or Keyword.get(opts, :secure, scheme in [:https, "https"])
     source = if desired == :inherit, do: :endpoint, else: :connector
+    partitioned = Keyword.get(opts, :partitioned, true)
 
+    resolve_policy(value, secure, partitioned, source, scheme)
+  end
+
+  defp resolve_policy(value, secure, partitioned, source, scheme) do
     cond do
-      value not in ["None", "Lax", "Strict"] -> {:error, :cookie_policy_unsupported}
-      not is_boolean(secure) -> {:error, :secure_cookie_required}
-      secure and scheme not in [:https, "https"] -> {:error, :https_required}
-      true -> {:ok, %{same_site: value, secure: secure, source: source}}
+      value not in ["None", "Lax", "Strict"] ->
+        {:error, :cookie_policy_unsupported}
+
+      not is_boolean(partitioned) ->
+        {:error, :invalid_partitioned_policy}
+
+      not is_boolean(secure) ->
+        {:error, :secure_cookie_required}
+
+      (secure or partitioned) and scheme not in [:https, "https"] ->
+        {:error, :https_required}
+
+      true ->
+        {:ok,
+         %{
+           same_site: value,
+           secure: secure or partitioned,
+           partitioned: partitioned,
+           source: source
+         }}
     end
   end
 
@@ -60,6 +83,10 @@ defmodule WebWidget.Embedding.Session do
         _ -> %{}
       end
 
+    install_widget(conn, widget, id, bootstrap?)
+  end
+
+  defp install_widget(conn, widget, id, bootstrap?) do
     cond do
       bootstrap? and not same_origin?(conn) ->
         conn |> send_resp(403, "session_bootstrap_forbidden") |> halt()
@@ -89,15 +116,12 @@ defmodule WebWidget.Embedding.Session do
 
     opts =
       options() ++
-        [path: path, same_site: policy.same_site, secure: policy.secure, http_only: true]
+        [path: path, same_site: policy.same_site, secure: policy.secure, http_only: true] ++
+        if(policy.partitioned, do: [extra: "Partitioned"], else: [])
 
     conn = conn |> Plug.Session.call(Plug.Session.init(opts)) |> fetch_session()
 
-    established? =
-      get_session(conn, @scope_id) == id and
-        get_session(conn, @scope_path) == path and
-        get_session(conn, @policy) == policy.same_site and
-        is_binary(get_session(conn, "_csrf_token"))
+    established? = established?(conn, id, path, policy)
 
     if bootstrap? and fetch_query_params(conn).query_params["verify"] == "1" and not established? do
       conn |> send_resp(409, "cookie_unavailable") |> halt()
@@ -109,6 +133,12 @@ defmodule WebWidget.Embedding.Session do
       |> assign(:web_widget_socket_path, path <> "/live")
       |> assign(:web_widget_session_path, path <> "/session")
     end
+  end
+
+  defp established?(conn, id, path, policy) do
+    get_session(conn, @scope_id) == id and get_session(conn, @scope_path) == path and
+      get_session(conn, @policy) == policy.same_site and
+      is_binary(get_session(conn, "_csrf_token"))
   end
 
   defp new_scope(conn, id, path, policy) do

@@ -19,6 +19,7 @@ config :web_widget, WebWidget.Repo,
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
 config :web_widget, WebWidgetWeb.Endpoint,
+  web_widget_session: [partitioned: false],
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}],

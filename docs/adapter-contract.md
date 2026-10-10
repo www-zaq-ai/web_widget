@@ -138,6 +138,13 @@ session. It installs its own session before flash/CSRF handling. Signing salts a
 package-specific; signed widget ID and mount path are checked against the socket
 request URI and page session. Cookie paths are not authorization boundaries.
 
+Widget transport cookies are partitioned by default, independently of connector
+SameSite policy, and require Secure/HTTPS. Only trusted host endpoint configuration
+may disable partitioning (`web_widget_session: [partitioned: false]`), for example
+for HTTP development. Instances share a connector cookie within one top-level site;
+different parent sites have separate partitions. Lax/Strict still prohibit cross-site
+iframe transport. Host/BO cookies are unchanged.
+
 Instances of one connector share its transport cookie and CSRF state, never user
 identity or conversation state. Initial page responses do not write that cookie.
 Before connecting, the iframe obtains its CSRF token from the same-origin

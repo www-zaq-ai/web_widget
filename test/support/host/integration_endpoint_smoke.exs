@@ -22,7 +22,8 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
       secret_key_base: String.duplicate("isolated-test", 8),
       live_view: [signing_salt: "isolated-test"],
       pubsub_server: WebWidget.PubSub,
-      server: true
+      server: true,
+      web_widget_session: [partitioned: false]
     )
 
     {:ok, _} = Application.ensure_all_started(:web_widget)

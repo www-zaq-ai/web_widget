@@ -156,7 +156,7 @@ test("Lax and Strict cannot authorize a cross-site iframe transport", async ({ p
   }
 });
 
-test("None does not bypass browser third-party-cookie blocking", async ({ page, context, browserName }) => {
+test("partitioned None works with ordinary third-party cookies blocked", async ({ page, context, browserName }) => {
   test.skip(browserName !== "chromium", "Explicit cookie controls use Chromium CDP.");
   const cdp = await context.newCDPSession(page);
   await cdp.send("Network.enable");
@@ -177,8 +177,22 @@ test("None does not bypass browser third-party-cookie blocking", async ({ page, 
     iframe.src = "https://127.0.0.1:4023/widget/cookie-none";
     document.body.append(iframe);
   });
-  expect((await rejected).status()).toBe(409);
-  await expect(page.frameLocator("#blocked-widget").locator("#widget-session-error")).toHaveAttribute("data-reason", "cookie_unavailable");
-  expect(await page.frameLocator("#blocked-widget").locator("body").evaluate(() =>
+  expect((await rejected).status()).toBe(200);
+  await expect.poll(() => page.frameLocator("#blocked-widget").locator("body").evaluate(() =>
+    (window as any).liveSocket.isConnected())).toBe(true);
+});
+
+test("discarding the partitioned session cookie fails explicitly", async ({ page, context }) => {
+  await context.route("**/widget/cookie-none/session", async route => {
+    const response = await route.fetch({ headers: { ...route.request().headers(), "accept-encoding": "identity" } });
+    const headers = response.headers();
+    delete headers["set-cookie"];
+    // APIRequestContext also populates the context cookie jar while fetching.
+    await context.clearCookies();
+    await route.fulfill({ response, headers });
+  });
+  await page.goto("https://127.0.0.1:4023/widget/cookie-none");
+  await expect(page.locator("#widget-session-error")).toHaveAttribute("data-reason", "cookie_unavailable");
+  expect(await page.locator("body").evaluate(() =>
     (window as any).liveSocket.isConnected())).toBe(false);
 });

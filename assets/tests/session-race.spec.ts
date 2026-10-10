@@ -63,7 +63,9 @@ test("concurrent first loads of the same widget both retain a valid LiveView ses
       expect((await route.request().allHeaders()).cookie || "").not.toContain("_web_widget_session=");
     }
 
-    const responses = await Promise.all(routes.map(route => route.fetch()));
+    const responses = await Promise.all(routes.map(route => route.fetch({ headers: {
+      ...route.request().headers(), "accept-encoding": "identity",
+    } })));
     for (const [index, response] of responses.entries()) {
       expect(response.status()).toBe(200);
       expect(response.headers()["set-cookie"] || "").not.toContain("_web_widget_session=");
@@ -117,7 +119,7 @@ test("concurrent first loads of the same widget both retain a valid LiveView ses
 test.describe("cookie sharing across parent storage partitions", () => {
   test.use({ ignoreHTTPSErrors: true });
 
-  test("a late connector cookie from another parent does not strand an existing instance", async ({ context, browserName }, testInfo) => {
+  test("different parent sites initialize independent cookie partitions", async ({ context, browserName }, testInfo) => {
     if (browserName !== "webkit") await context.grantPermissions(["local-network-access"]);
     const pages = await Promise.all([context.newPage(), context.newPage()]);
     const origin = "https://127.0.0.1:4023";
@@ -159,15 +161,14 @@ test.describe("cookie sharing across parent storage partitions", () => {
     if (partitioned) {
       await secondRequest;
       for (const route of routes) expect((await route.request().allHeaders()).cookie || "").not.toContain("_web_widget_session=");
-      const responses = await Promise.all(routes.map(route => route.fetch()));
-      await routes[0].fulfill({ response: responses[0] });
+      await routes[0].continue();
       await expect.poll(() => frames[0].evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
-      // Deliver a real second Set-Cookie only after the first transport has joined.
-      await routes[1].fulfill({ response: responses[1] });
+      // The second parent establishes its own partition after the first connects.
+      await routes[1].continue();
     } else {
-      await routes[0].fulfill({ response: await routes[0].fetch() });
+      await routes[0].continue();
       await secondRequest;
-      await routes[1].fulfill({ response: await routes[1].fetch() });
+      await routes[1].continue();
     }
 
     for (const frame of frames) await expect.poll(() => frame.evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
@@ -175,6 +176,16 @@ test.describe("cookie sharing across parent storage partitions", () => {
       (window as any).partitionClient.init({ user_id: "partition-" + index }), index)));
     const before = (await context.cookies(origin + "/widget/cookie-none"))
       .find(cookie => cookie.name === "_web_widget_session")!;
+    const verifyCookies = await Promise.all(frames.map(frame => frame.evaluate(async () => {
+      const url = document.querySelector<HTMLMetaElement>("meta[name='web-widget-session']")!.content;
+      const response = await fetch(url + "?verify=1");
+      return { status: response.status, token: (await response.json()).csrf_token as string };
+    })));
+    expect(verifyCookies.map(result => result.status)).toEqual([200, 200]);
+    const partitionCookies = (await context.cookies(origin + "/widget/cookie-none"))
+      .filter(cookie => cookie.name === "_web_widget_session" && cookie.path === "/widget/cookie-none");
+    expect(partitionCookies).toHaveLength(2);
+    expect(new Set(partitionCookies.map(cookie => cookie.value)).size).toBe(2);
     for (const frame of frames) {
       await frame.evaluate(() => new Promise<void>(resolve => (window as any).liveSocket.disconnect(resolve)));
       await frame.evaluate(() => (window as any).liveSocket.connect());

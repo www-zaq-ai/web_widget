@@ -20,7 +20,8 @@ defmodule WebWidget.DependencyHostSmokeTest do
       secret_key_base: String.duplicate("host", 16),
       live_view: [signing_salt: "host-live"],
       pubsub_server: WebWidget.DependencyHostPubSub,
-      server: false
+      server: false,
+      web_widget_session: [partitioned: false]
     )
 
     start_supervised!(@endpoint)
