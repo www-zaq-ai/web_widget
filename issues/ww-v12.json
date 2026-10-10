@@ -11,11 +11,15 @@
     {
       "text": "Implemented explicit startup API, immutable ETS-owned config and generation fences, explicit standalone/package/demo compositions, and migrated fixtures. Baseline distributed suite passed; post-refactor suite also passed, including local infra restart/rejoin and preserved replay/revocation/idempotency assertions. Full precommit currently passes: 235 tests. Assets build passed. Browser startup smoke passes after keeping Mix script evaluator (host supervisor parent) alive; full three-browser suite running. build/3 retained only as construction compatibility; installed providers must match infrastructure. Internal supervisor uses one_for_all so any child crash changes configuration generation and fences orphan runtimes.",
       "timestamp": "2026-10-10T18:07:58Z"
+    },
+    {
+      "text": "Delivery complete locally; all validation passed and all child tasks closed. bw sync attempted as required but failed pushing the beadwork tracking branch: git@github.com Permission denied (publickey). Implementation branch remains local and clean; no PR was created and GitHub issue #23 remains open pending merge.",
+      "timestamp": "2026-10-10T18:26:39Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "Explicit host-supervised widget infrastructure (#23)",
   "type": "epic",
-  "updated_at": "2026-10-10T18:26:16Z"
+  "updated_at": "2026-10-10T18:26:39Z"
 }
