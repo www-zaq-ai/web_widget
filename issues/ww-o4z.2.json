@@ -13,11 +13,15 @@
     {
       "text": "Focused browser checks pass on Chromium, Firefox and macOS Safari-targeted WebKit: 52 passed, 2 Chromium-only skips. Recovery initializes once and rejects missing cookies through read-only verification; explicit reload starts a new attempt.",
       "timestamp": "2026-10-10T13:37:52Z"
+    },
+    {
+      "text": "Completed locally, uncommitted. One initialization per document; at most three read-only resyncs; ten-second bootstrap/LiveView and reconnect deadlines not reset by socket opens. Abort guards late results; explicit reload button; backend revocation cancels recovery without generic failure. Deterministic tests plus real browser deadline, missing-cookie reload, concurrency and long-poll checks pass.",
+      "timestamp": "2026-10-10T14:01:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bound read-only browser recovery",
   "type": "task",
-  "updated_at": "2026-10-10T13:37:52Z"
+  "updated_at": "2026-10-10T14:01:47Z"
 }
