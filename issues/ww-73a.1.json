@@ -5,14 +5,15 @@
     "ww-73a.2",
     "ww-73a.3"
   ],
+  "closed_at": "2026-10-10T20:57:34Z",
   "created": "2026-10-10T20:56:19Z",
   "description": "Update configuration ownership, supervised connector API, local readiness evidence and trusted proxy HTTPS contract before implementation.",
   "id": "ww-73a.1",
   "labels": [],
   "parent": "ww-73a",
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Define connector recovery and readiness v2 contract",
   "type": "task",
-  "updated_at": "2026-10-10T20:56:24Z"
+  "updated_at": "2026-10-10T20:57:34Z"
 }
