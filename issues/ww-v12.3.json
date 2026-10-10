@@ -1,6 +1,8 @@
 {
   "assignee": "",
-  "blocked_by": [],
+  "blocked_by": [
+    "ww-v12.2"
+  ],
   "blocks": [],
   "created": "2026-10-10T17:11:03Z",
   "description": "Standalone/demo/package endpoint, host fixtures, browser server, generic host docs and migration.",
@@ -11,5 +13,5 @@
   "status": "open",
   "title": "Migrate explicit startup compositions and docs",
   "type": "task",
-  "updated_at": "2026-10-10T17:11:03Z"
+  "updated_at": "2026-10-10T17:11:11Z"
 }
