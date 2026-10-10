@@ -13,11 +13,15 @@
     {
       "text": "Implementation committed as 7ce1d49 on ww-v12/explicit-host-startup (current worktree). Final precommit passes: format, strict Credo, warnings-as-errors compile, 237 tests. Final distributed suite passes after per-operation generation fencing; earlier 3 repeat runs also passed. Assets build passed with no tracked asset diffs. Browser startup smoke passed. Full browser suite is running in background sh_126fd9c39001USuV1DhC1CMU3A; wait for notification (do not poll). Log: /private/var/folders/9p/mdzhcqxx7hs8bw_10vwjvfp00000gn/T/opencode/ww-v12-e2e-final.log. Once complete, summarize via Context Mode, run final assets build/focused browser tests on final sources if needed, close ww-v12.4 and epic, bw sync. User requested branch in current worktree; no PR or push requested.",
       "timestamp": "2026-10-10T18:20:45Z"
+    },
+    {
+      "text": "Completed validation: full browser suite 400 passed / 2 skipped (Chromium, Firefox, WebKit). Final assets build passed with no tracked generated changes. Fresh final-source bootstrap/renewal and scoped idempotent backend-disconnect browser checks also passed (6 tests across 3 browsers). Final Elixir precommit 237 tests passed; distributed authentication suite passed after final generation fencing. Clean branch ww-v12/explicit-host-startup, commits 0fe485e, 26cd437, aec4a77, 7ce1d49. No push or PR requested.",
+      "timestamp": "2026-10-10T18:26:09Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Validate lifecycle and security parity",
   "type": "task",
-  "updated_at": "2026-10-10T18:20:45Z"
+  "updated_at": "2026-10-10T18:26:09Z"
 }
