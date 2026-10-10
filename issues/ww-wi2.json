@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-10T11:46:49Z",
   "created": "2026-10-10T11:26:16Z",
   "description": "Approved on existing PR19 branch: acknowledge readiness probe while CSS pending before removal/renewal, retain exactly-one transition assertions and explicitly cover already-ready probe replay. Reconnect trace confirmed empty sessions passed notToBe(oldpid); require replacement session and client ready with advancing browser timers, preserve topic/conversation/draft/delivery checks. Test-only edits; validate repeats traceoff/on and full CI.",
   "id": "ww-wi2",
@@ -25,8 +26,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Synchronize stylesheet readiness and reconnect E2E tests",
   "type": "task",
-  "updated_at": "2026-10-10T11:46:46Z"
+  "updated_at": "2026-10-10T11:46:49Z"
 }
