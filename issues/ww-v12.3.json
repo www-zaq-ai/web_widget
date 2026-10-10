@@ -1,0 +1,15 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-10T17:11:03Z",
+  "description": "Standalone/demo/package endpoint, host fixtures, browser server, generic host docs and migration.",
+  "id": "ww-v12.3",
+  "labels": [],
+  "parent": "ww-v12",
+  "priority": 2,
+  "status": "open",
+  "title": "Migrate explicit startup compositions and docs",
+  "type": "task",
+  "updated_at": "2026-10-10T17:11:03Z"
+}
