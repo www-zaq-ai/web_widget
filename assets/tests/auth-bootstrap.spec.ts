@@ -1116,20 +1116,32 @@ for (const failure of ["expiry", "store", "reset"] as const) {
     const user = `resume-${failure}-${crypto.randomUUID()}`;
     let tokens = 0;
     let offline = false;
+    let recovering = false;
     let expiry = 0;
+    let initialCredential = "";
     await page.route("**/api/widget-token", async route => {
-      if (offline) return route.fulfill({ status: 503, body: "offline" });
+      // Do not let proactive renewal replace the token whose expiry we test.
+      if (offline || (failure === "expiry" && tokens > 0 && !recovering)) {
+        return route.fulfill({ status: 503, body: "offline" });
+      }
       const response = await request.get(`${control}/identity`, { params: {
         user_id: user, ...(tokens === 0 && failure === "expiry" ? { ttl: "8" } : {}),
       } });
       const { identity_token } = await response.json();
-      expiry = JSON.parse(Buffer.from(identity_token.split(".")[1], "base64url").toString()).exp;
+      if (tokens === 0) {
+        const claims = JSON.parse(Buffer.from(identity_token.split(".")[1], "base64url").toString());
+        expiry = claims.exp;
+        initialCredential = claims.jti;
+      }
       tokens++;
       await route.fulfill({ headers: { "cache-control": "no-store" }, json: { identity_token } });
     });
     const requests = async (): Promise<any[]> => (await request.get(`${control}/requests/${user}`)).json();
     await installTokenWidget(page);
     const widget = page.frameLocator("#zaq-widget");
+    await expect.poll(() => tokens).toBe(1);
+    await expect(widget.locator("#widget-context")).toHaveAttribute("data-auth-credential-id", initialCredential);
+    await expect(widget.locator("#widget-context")).toHaveAttribute("data-auth-expires-at", String(expiry));
     const input = widget.getByRole("textbox", { name: "Message", exact: true });
     await input.fill("reconnect first");
     await input.press("Enter");
@@ -1161,8 +1173,11 @@ for (const failure of ["expiry", "store", "reset"] as const) {
         const { cutoff } = await (await request.get(`${control}/auth-state`)).json();
         await expect.poll(async () => (await (await request.get(`${control}/auth-state`)).json()).now).toBeGreaterThan(cutoff);
       }
+      expect(tokens).toBe(1);
+      recovering = true;
       offline = false;
       await expect(widget.locator("#widget-context")).toHaveAttribute("data-authorized", "true", { timeout: 10_000 });
+      await expect(widget.locator("#widget-context")).not.toHaveAttribute("data-auth-credential-id", initialCredential);
       await expect(widget.locator(".zaq-widget")).toHaveAttribute("data-reconnecting", "false");
       await expect(widget.getByText("Answer to reconnect first", { exact: true })).toBeVisible();
       await input.fill("reconnect second");
