@@ -2,19 +2,14 @@
 
 ## Host setup
 
-Mount `web_widget("/widget")` in the host browser pipeline and `web_widget_api("/widget-api")` in a separate backend API scope. Serve the installed assets before the router and expose the existing LiveView socket at `/live`. Configure connector-key verification, issuer, audience, host PubSub, and explicit Mnesia replica membership. See [host integration](host-integration.md) for the complete mount.
+Mount `web_widget("/widget")` outside the host browser/authentication pipeline and `web_widget_api("/widget-api")` in a separate backend API scope. Add `web_widget_socket("/widget")` to the host endpoint for the scoped `/widget/:widget_id/live` socket; the router serves dependency assets. Explicitly supervise infrastructure before connector runtimes. See [host integration](host-integration.md) for the complete mount and migration.
 
 ```elixir
-config :web_widget, :integration,
-  pubsub_server: Zaq.PubSub,
-  identity_verifier: :connector_key
-
-config :web_widget, :authentication,
-  token_ttl_seconds: 604_800,
-  first_binding_window_seconds: 5,
-  refresh_lead_seconds: 300,
-  control_proof_ttl_seconds: 30,
-  replica_nodes: [:"node1@host", :"node2@host", :"node3@host"]
+{WebWidget,
+  pubsub_server: MyHost.PubSub,
+  identity_verifier: :connector_key,
+  authentication: [replica_nodes: [:"node1@host", :"node2@host", :"node3@host"]],
+  transport: [endpoint: MyHostWeb.Endpoint, scheme: :https]}
 ```
 
 Use your real node names and keep the same membership on every node. The package stores JWT page bindings, user revocation cutoffs, control request results, and reset metadata in replicated Mnesia `ram_copies` with majority reads/writes. It requires a configured quorum to create or recover the tables. A minority fails closed. A node that restarts rejoins surviving RAM state; complete RAM loss establishes a reset cutoff at quorum. Tokens issued at or before that cutoff cannot bind; with integer-second timestamps, issue a new token in a later second. No host SQL migration is needed. The token lifetime must exceed the renewal lead.
@@ -77,4 +72,4 @@ A new token issued in the cutoff second may need to be issued again in the next 
 
 Check a fresh mount, first question, live response, saved conversation resume, renewal during streaming, expiry recovery, and backend disconnect. Confirm other users and widget IDs remain active after a targeted disconnect. Browser coverage lives in `assets/tests/auth-bootstrap.spec.ts` and `assets/tests/shared-widget.spec.ts`; the integration tests exercise scope, proof rejection, replay, and cutoff races. The constructor smoke loads the sibling ZAQ contract without a live agent/model.
 
-For response diagnostics, set `Application.put_env(:web_widget, :response_diagnostics, :summary)` in ZAQ's IEx session. Logs show field presence and outcome without payload values. `true` logs complete responses and may include private content; use it only briefly while debugging, then restore `false`. ZAQ currently reduces tool status to generic activity steps; the widget cannot infer real tool calls without an agreed public tool event contract.
+For response diagnostics, pass `response_diagnostics: :summary` in the explicit infrastructure child. Logs show field presence and outcome without payload values. `true` logs complete responses and may include private content; use it only briefly while debugging, then restart/rebuild with `false`. Running options are immutable; IEx application-environment edits do not change diagnostics. ZAQ currently reduces tool status to generic activity steps; the widget cannot infer real tool calls without an agreed public tool event contract.

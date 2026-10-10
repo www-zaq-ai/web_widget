@@ -1,5 +1,5 @@
 defmodule WebWidget.AdapterTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias WebWidget.Adapter
   alias WebWidget.Runtime
 
@@ -7,6 +7,7 @@ defmodule WebWidget.AdapterTest do
     id = "adapter-#{System.unique_integer([:positive])}"
     server = Module.concat(__MODULE__, "PubSub#{System.unique_integer([:positive])}")
     start_supervised!({Phoenix.PubSub, name: server})
+    WebWidget.TestInfrastructure.setup(pubsub_server: server)
 
     start_supervised!(
       {Runtime,

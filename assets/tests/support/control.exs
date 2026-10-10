@@ -41,14 +41,9 @@ defmodule WebWidget.E2EControl do
   post "/auth-store/:action" do
     case action do
       "unavailable" ->
-        :sys.suspend(WebWidget.Integration.BindingStore)
-        options = Application.get_env(:web_widget, :authentication, [])
-        Application.put_env(:web_widget, :e2e_auth_options, options)
-        Application.put_env(:web_widget, :authentication, Keyword.put(options, :replica_nodes,
-          [node(), :"missing_a@localhost", :"missing_b@localhost"]))
+        :ok = Supervisor.terminate_child(WebWidget.Supervisor, WebWidget.Integration.BindingStore)
       "restore" ->
-        Application.put_env(:web_widget, :authentication, Application.fetch_env!(:web_widget, :e2e_auth_options))
-        :sys.resume(WebWidget.Integration.BindingStore)
+        {:ok, _} = Supervisor.restart_child(WebWidget.Supervisor, WebWidget.Integration.BindingStore)
       "reset" ->
         :ok = Supervisor.terminate_child(WebWidget.Supervisor, WebWidget.Integration.BindingStore)
         :stopped = :mnesia.stop()

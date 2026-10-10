@@ -10,7 +10,6 @@ import Config
 config :phoenix, :filter_parameters, ["password", "token", "secret"]
 
 config :web_widget,
-  start_web_server: true,
   ecto_repos: [WebWidget.Repo],
   generators: [timestamp_type: :utc_datetime]
 

@@ -7,7 +7,6 @@ for file <- ~w(validation stylesheet message command response delivery context) 
   Code.require_file(Path.join([host_root, "lib/zaq/channels/web", file <> ".ex"]))
 end
 
-Application.put_env(:web_widget, :start_web_server, false)
 {:ok, _} = Application.ensure_all_started(:web_widget)
 ExUnit.start()
 
@@ -19,6 +18,14 @@ defmodule WebWidget.SharedProtocolSmokeTest do
   alias WebWidget.Integration.RuntimeBuilder
   alias WebWidget.Runtime
   alias Zaq.Channels.Web.{Command, Context, Delivery, Message, Response}
+
+  setup do
+    start_supervised!(
+      {WebWidget, pubsub_server: __MODULE__.PubSub, identity_verifier: {__MODULE__, :verify, []}}
+    )
+
+    :ok
+  end
 
   def verify(:fixture_session, %{channel_config_id: 42}),
     do:

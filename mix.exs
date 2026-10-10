@@ -21,7 +21,6 @@ defmodule WebWidget.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {WebWidget.Application, []},
       extra_applications: [:logger, :runtime_tools, :mnesia]
     ]
   end
@@ -90,6 +89,7 @@ defmodule WebWidget.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      demo: ["run --no-start --no-halt scripts/demo.exs"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],

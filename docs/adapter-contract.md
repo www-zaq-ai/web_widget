@@ -36,6 +36,44 @@ hooks, without `%Zaq.*{}` struct literals in the package. ZAQ never constructs
 
 ## Runtime integration
 
+### Explicit infrastructure lifecycle (issue #23)
+
+The embedding host starts `{WebWidget, opts}` once in its supervisor. The OTP
+dependency starts required library applications (including Mnesia), but no widget
+services, endpoint, Repo, or demo runtime. Infrastructure is a singleton per BEAM
+node: its configuration owner, runtime registry and binding store have fixed names.
+Duplicate starts fail; multi-instance startup is not supported.
+
+Init options are the sole source of infrastructure authentication, trusted
+integration and transport/readiness settings. The startup boundary validates and
+normalizes them, applying package defaults. No options are copied into application
+environment. A configuration snapshot belongs to one infrastructure generation;
+stopped or replaced generations cannot authorize sessions or report ready. The
+infrastructure uses `:one_for_all`: a configuration-owner, registry or binding-store
+crash replaces the local infrastructure generation without resetting shared tables.
+
+Start host PubSub before widget infrastructure, and infrastructure before connector
+runtimes. The host owns endpoints, mounting, TLS, routing, and connector lifecycle.
+Infrastructure references the existing endpoint; it never starts or reconfigures
+it. Connector runtimes monitor the configuration owner and stop when that owner
+stops; the host must rebuild them after infrastructure is available. A host
+`:rest_for_one` supervisor orders whole infrastructure-supervisor replacements;
+internal generation changes also require the host connector lifecycle manager to
+rebuild its stopped children. Rebuilding uses current trusted options,
+not a retained config from an earlier generation. Infrastructure starts no connector.
+
+Stopping local infrastructure makes binding-store operations fail closed without
+stopping shared Mnesia or deleting tables, revocations, replay entries, or reset
+metadata. Local restart rejoins surviving shared state; quorum and full RAM-loss
+reset semantics remain unchanged. Membership is explicit on distributed nodes;
+the existing non-distributed single-node default is retained.
+
+Standalone/demo and package-endpoint deployments explicitly compose PubSub,
+infrastructure, endpoint and optional demo children in their own supervisor using
+the same API. Legacy automatic-start flags and global authentication/integration
+settings no longer select startup or runtime behavior; migrate them to init
+options. Endpoint configuration remains the endpoint owner's responsibility.
+
 Use the existing channel lifecycle and BridgeSupervisor. The provider entry in
 ZAQ's existing Channels map is:
 
@@ -56,10 +94,11 @@ dependency; no ZAQ module or test changes are needed for runtime startup.
 Hooks supply `widget_id = config.id`, presentation settings, the shared
 `message`, `command`, `context`, `delivery`, `response` modules, and the
 config-bound `sink_mfa`. They do **not** supply a PubSub server. For this host,
-the adapter receives `Zaq.PubSub` through trusted application configuration.
-`config :web_widget, :integration` supplies `pubsub_server` and `identity_verifier`
-(a trusted MFA or `:connector_key`); `build/3` accepts these options explicitly for
-isolated consumers/tests. Neither connector settings nor browser input may select
+the adapter receives `Zaq.PubSub` through validated infrastructure init options.
+`{WebWidget, opts}` supplies `pubsub_server` and `identity_verifier`
+(a trusted MFA or `:connector_key`); `build/3` remains a construction-only bridge,
+whose child rejects providers differing from the running infrastructure.
+Neither connector settings nor browser input may select
 these providers.
 
 Connector-key verification requires both canonical string keys
@@ -102,8 +141,8 @@ path allowlist, or add `WebWidget.Static` to its endpoint. Its scoped
 `/widget/:widget_id/live` socket serves the iframe; BO authentication does not apply to the widget mount.
 This supersedes the earlier configuration-only choice for this installation.
 
-For hosts retaining configuration-only installation, opt in to
-`start_integration_server: true` to start the package endpoint and its socket
+For hosts retaining package-endpoint installation, explicitly supervise
+`{WebWidget.Standalone, mode: :package, infrastructure: opts}` for the endpoint and its socket
 PubSub once, without the Repo/demo. Connector runtimes remain ZAQ-owned and use
 `Zaq.PubSub` for responses. The iframe uses this endpoint's scoped LiveView
 connection; no additional browser realtime connection is introduced.
@@ -262,7 +301,7 @@ longer than the renewal lead (five minutes by default). Tests may use shorter
 configured intervals. The signing key never enters browser code. A browser JWT
 cannot authorize a backend control operation.
 
-Package authentication configuration uses `config :web_widget, :authentication`
+Package authentication configuration uses infrastructure `authentication:` init options
 with `token_ttl_seconds: 604_800`, `first_binding_window_seconds: 5`,
 `refresh_lead_seconds: 300`, `control_proof_ttl_seconds: 30`, and an explicit
 `replica_nodes` list for the Mnesia cluster. The first-binding window is a

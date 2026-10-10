@@ -2,7 +2,91 @@
 
 `web_widget` is a dependency of the host application. The host supplies connector configuration, trusted shared-protocol constructors, a config-bound sink callback, its PubSub server, and the serving endpoint with the package's scoped LiveView socket. ZAQ owns routing, permissions, identity resolution, and durable conversations. The package owns iframe delivery, signed identity verification, page binding, browser state, and host response delivery to the correct widget. It has no compile-time ZAQ dependency.
 
-## Routes and assets
+## Explicit supervision and configuration
+
+The OTP dependency starts required libraries, including Mnesia, but **no widget
+processes or listeners**. Do not disable its dependencies with `runtime: false` or
+`app: false`. Add this child to your host supervisor before connector runtimes:
+
+```elixir
+children = [
+  {Phoenix.PubSub, name: MyHost.PubSub},
+  {WebWidget,
+   pubsub_server: MyHost.PubSub,
+   authentication: [replica_nodes: [node()]],
+   transport: [endpoint: MyHostWeb.Endpoint, widget_path: "/widget", scheme: :https]},
+  MyHost.ConnectorSupervisor,
+  MyHostWeb.Endpoint
+]
+
+Supervisor.start_link(children, strategy: :rest_for_one, name: MyHost.Supervisor)
+```
+
+Declare the same intended replica list on every distributed node, including the
+local node; `[node()]` above is a single-node deployment example, not cluster
+discovery. Multi-node deployments pass all intended node atoms. Environment
+variable naming/parsing is entirely the host's choice. The endpoint can start
+after infrastructure; readiness stays non-green until it is actually serving.
+
+There is one infrastructure instance per BEAM node. Duplicate starts fail with
+`{:already_started, pid}`. Init options are validated before children start and
+invalid input returns `{:invalid_widget_configuration, field, explanation}`.
+Configuration is immutable for that running instance, never copied into global
+application environment. Replace infrastructure to change it, then rebuild
+connector children. Runtimes stop when their configuration owner stops, and
+sessions/readiness are fenced by generation even before monitor delivery.
+Use host supervisor ordering/rebuild logic so connector runtimes restart only
+after infrastructure; do not keep an old `build/2` child spec across replacement.
+A host `:rest_for_one` supervisor orders whole-supervisor replacements. Internal
+infrastructure-child crashes also replace the generation: the host connector
+lifecycle manager must rebuild those stopped runtimes; widget infrastructure does
+not automatically reinstall connectors. To restart a standalone/demo composition
+including its demo runtime, restart `WebWidget.Standalone`, not just one worker.
+Local shutdown does not stop Mnesia or erase shared authentication state.
+
+| Init option | Default / ownership |
+| --- | --- |
+| `pubsub_server` | Required host-owned response PubSub name; never started by infrastructure |
+| `identity_verifier` | `:connector_key`, or a trusted verifier MFA |
+| `authentication.token_ttl_seconds` | `604_800` |
+| `authentication.refresh_lead_seconds` | `300`; must be less than token lifetime |
+| `authentication.first_binding_window_seconds` | `5` |
+| `authentication.control_proof_ttl_seconds` | `30` |
+| `authentication.replica_nodes` | Required on distributed nodes; `[node()]` only when non-distributed |
+| `transport.endpoint` | Unset; readiness remains unverifiable until configured |
+| `transport.widget_path` | `"/widget"`; must match router/socket mounts |
+| `transport.scheme` | `:http`; selects an actual local listener, not a public proxy scheme |
+| `transport.tls_options` | `[]`; only verified `cacertfile` / `cacerts` |
+| `public_url` / `token_url` | Optional public origin / authenticated same-origin token path |
+| `response_diagnostics` | `false`; `true` or `:summary` opt in |
+
+All authentication timings are positive integer seconds. Membership must be
+nonempty, unique node atoms containing the local node. Startup configures no
+host endpoint, TLS certificates, routes, cookie policy, connector, or listener.
+
+### Migration from automatic startup
+
+- Replace `start_web_server` / `start_integration_server` with explicit children.
+- Move `config :web_widget, :authentication` into `authentication:` init options.
+- Move trusted `:integration` values into init options; move nested `readiness:`
+  and `widget_path` into `transport:`. Global settings no longer affect consumers.
+- Use `RuntimeBuilder.build/2` and `embed_script/2` against running infrastructure.
+  `build/3` remains an explicit construction-only compatibility bridge; it never
+  changes running options. Installing its child rejects providers that differ from
+  the running infrastructure. It is not a per-connector configuration override.
+- Keep ordinary Phoenix endpoint configuration (including `web_widget_session`,
+  PubSub for sockets, listener addresses, TLS, and signing secrets) with its owner.
+- For the local demo use `mix demo`, which explicitly starts `WebWidget.Standalone`.
+- For package-endpoint deployments explicitly supervise
+  `{WebWidget.Standalone, mode: :package, infrastructure: widget_opts}`. This starts
+  the package endpoint and local socket PubSub, but no Repo or demo. Set
+  `transport: [endpoint: WebWidgetWeb.Endpoint, ...]` in `widget_opts` if overriding
+  transport defaults. Response PubSub may still reference the existing host server.
+- Standalone without a mock runtime can explicitly supervise
+  `{WebWidget.Standalone, infrastructure: widget_opts}`; development/test demos
+  add `demo: [allowed_domains: [...], multiple_conversations: false]`.
+
+### Routes and assets
 
 Add a released Git tag to the host's Mix dependencies and run `mix deps.get`:
 
@@ -92,20 +176,19 @@ node through its existing NodeRouter action. Configure the serving endpoint expl
 in host-mounted mode, retaining the other integration options:
 
 ```elixir
-config :web_widget, :integration,
-  pubsub_server: Zaq.PubSub,
+{WebWidget,
+  pubsub_server: MyHost.PubSub,
   identity_verifier: :connector_key,
-  widget_path: "/widget",
-  readiness: [endpoint: ZaqWeb.Endpoint, scheme: :https]
+  transport: [endpoint: MyHostWeb.Endpoint, widget_path: "/widget", scheme: :https]}
 ```
 
-In package-endpoint mode (`start_integration_server: true`), omitting `endpoint`
-selects `WebWidgetWeb.Endpoint`. Scheme selects an **actual local listener**, default
+In explicit package-endpoint composition, the default transport references
+`WebWidgetWeb.Endpoint`. Scheme selects an **actual local listener**, default
 `:http`; use `:https` for direct TLS. Listener address/port come from the configured
 endpoint, not a caller URL. Wildcard addresses are probed through loopback. The
 endpoint's `url: [host: ...]` supplies Host, Origin and the verified TLS hostname;
 normal socket origin checks stay enabled. Private CAs may be supplied through
-`readiness: [tls_options: [cacertfile: "/trusted/widget-ca.pem"]]` (or `cacerts`).
+`transport: [tls_options: [cacertfile: "/trusted/widget-ca.pem"]]` (or `cacerts`).
 Disabling TLS verification is not supported. The probe uses Req for the cookie-free
 page, `/session` initialization, and a read-only `/session?verify=1` round trip with
 its anonymous cookie. It uses the verified JSON CSRF token, not the page meta token,
@@ -159,10 +242,10 @@ old sessions and rejects tokens with old claims.
 Register `WebWidget.Integration.RuntimeBuilder` as the `web_widget` channel runtime builder. The host's existing supervisor owns its child lifecycle. One enabled connector corresponds to one package runtime and a positive integer connector ID. The string form is the public widget route ID. The builder reads the host's resolved connector key privately; no key appears in public widget configuration or the installation snippet.
 
 ```elixir
-config :web_widget, :integration,
-  pubsub_server: Zaq.PubSub,
+{WebWidget,
+  pubsub_server: MyHost.PubSub,
   identity_verifier: :connector_key,
-  token_url: "/api/widget-token"
+  token_url: "/api/widget-token"}
 ```
 
 The package also accepts a trusted custom verifier MFA for browser identity, but the signed backend disconnect route is available only with connector-key verification. The verifier receives `(proof, %{widget_id: string_id, channel_config_id: integer_id, page_id: signed_socket_id})` after any configured prefix arguments and returns `{:ok, %{sender_id: external_id, expires_at: unix_seconds}}` or an error. Conversation and prompt metadata are supplied later through `zaq.widget.updateContext`, never through JWT identity or verifier output.
@@ -181,7 +264,7 @@ For an integrated connector, the installer emits a public script containing the 
 
 ## Authentication state and deployment
 
-Set `config :web_widget, :authentication` with a seven-day `token_ttl_seconds` (or another value longer than renewal lead), five-second `first_binding_window_seconds`, five-minute `refresh_lead_seconds`, 30-second `control_proof_ttl_seconds`, and explicit `replica_nodes`. Each configured node must agree on membership. The package uses replicated majority-protected Mnesia RAM tables for page bindings, control idempotency, user revocation cutoffs, and reset metadata. A minority fails closed. A restart rejoins surviving state; complete RAM loss establishes a new cutoff only at quorum. No host SQL migration is needed. Tokens issued in the reset/cutoff second may need retry in the next second.
+Set infrastructure `authentication:` init options with a seven-day `token_ttl_seconds` (or another value longer than renewal lead), five-second `first_binding_window_seconds`, five-minute `refresh_lead_seconds`, 30-second `control_proof_ttl_seconds`, and explicit `replica_nodes`. Each configured node must agree on membership. The package uses replicated majority-protected Mnesia RAM tables for page bindings, control idempotency, user revocation cutoffs, and reset metadata. A minority fails closed. A restart rejoins surviving state; complete RAM loss establishes a new cutoff only at quorum. No host SQL migration is needed. Tokens issued in the reset/cutoff second may need retry in the next second.
 
 The initial JWT is bound to the signed Phoenix `socket.id` before conversation initialization. Subsequent checks gate dispatch and response application. In-place renewal preserves the same sender, widget, page, subscription, active stream, draft, and settings. A normal LiveView reconnect uses the same bound token. A full iframe reload needs a new token. The parent client fetches fresh tokens and schedules renewal from server metadata. On store unavailability it waits for authority to recover; backend disconnect is terminal for that iframe.
 
@@ -191,10 +274,10 @@ Exact allowed HTTP(S) parent origins determine the CSP `frame-ancestors` policy 
 
 ## Build and release assets
 
-Dependency configuration files are not imported by Phoenix. The application
-starts only its runtime registry by default, without the standalone endpoint,
-Repo or demo runtime. Do not enable `config :web_widget, start_web_server: true`
-in the host. Widget rendering explicitly disables React SSR; no Node SSR service
+Dependency configuration files are not imported by Phoenix. Starting the OTP
+dependency starts no widget services. Explicitly supervise the infrastructure
+child as described above; do not enable legacy startup flags.
+Widget rendering explicitly disables React SSR; no Node SSR service
 or global LiveReact setting is needed.
 
 Release Please opens a version and changelog PR from conventional commits. Merging

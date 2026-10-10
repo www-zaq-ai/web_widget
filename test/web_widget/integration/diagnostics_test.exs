@@ -6,22 +6,20 @@ defmodule WebWidget.Integration.DiagnosticsTest do
   setup do
     previous_level = Logger.level()
     Logger.configure(level: :info)
-    previous = Application.fetch_env(:web_widget, :response_diagnostics)
+    WebWidget.TestInfrastructure.setup(pubsub_server: WebWidget.PubSub)
 
     on_exit(fn ->
       Logger.configure(level: previous_level)
-
-      case previous do
-        {:ok, value} -> Application.put_env(:web_widget, :response_diagnostics, value)
-        :error -> Application.delete_env(:web_widget, :response_diagnostics)
-      end
     end)
 
     :ok
   end
 
   test "summary mode shows response shape and disposition without private values" do
-    Application.put_env(:web_widget, :response_diagnostics, :summary)
+    WebWidget.TestInfrastructure.replace(
+      pubsub_server: WebWidget.PubSub,
+      response_diagnostics: :summary
+    )
 
     response = %{
       type: :message_step,
@@ -46,12 +44,20 @@ defmodule WebWidget.Integration.DiagnosticsTest do
     refute log =~ "private-"
     refute log =~ "identity_token"
 
-    Application.put_env(:web_widget, :response_diagnostics, false)
+    WebWidget.TestInfrastructure.replace(
+      pubsub_server: WebWidget.PubSub,
+      response_diagnostics: false
+    )
+
     assert capture_log(fn -> Diagnostics.log(:applied, response) end) == ""
   end
 
   test "enabled diagnostics include the complete received payload and unknown nested fields" do
-    Application.put_env(:web_widget, :response_diagnostics, true)
+    WebWidget.TestInfrastructure.replace(
+      pubsub_server: WebWidget.PubSub,
+      response_diagnostics: true
+    )
+
     body = String.duplicate("x", 5_000) <> "END-OF-BODY"
 
     response = %{

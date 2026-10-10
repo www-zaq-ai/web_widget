@@ -2,8 +2,9 @@ defmodule WebWidget.Integration.RuntimeBuilder do
   @moduledoc """
   Builds a package runtime from host-owned shared-protocol hooks.
 
-  `build/2` reads `config :web_widget, :integration` with `:pubsub_server` and
-  `:identity_verifier` (an MFA or `:connector_key`). `build/3` accepts the same options explicitly.
+  `build/2` reads the validated configuration of the explicitly started `WebWidget`.
+  `build/3` is a construction-only compatibility API: the resulting child can only
+  be installed when its trusted providers match running infrastructure options.
   Connector-key verification requires string-keyed `identity_issuer` and
   `identity_audience` in `config.settings`, with no fallback or adapter defaults;
   the key is read privately from the resolved host `config.token`.
@@ -21,19 +22,32 @@ defmodule WebWidget.Integration.RuntimeBuilder do
   alias WebWidget.Integration.SignedIdentity
   alias WebWidget.Runtime
 
-  def build(config, hooks),
-    do: build(config, hooks, Application.get_env(:web_widget, :integration, []))
+  def build(config, hooks) do
+    with {:ok, infrastructure} <- WebWidget.Configuration.fetch(),
+         {:ok, {spec, []}} <- build(config, hooks, infrastructure.integration) do
+      {module, function, [runtime]} = spec.start
+      runtime = Map.put(runtime, :infrastructure_generation, infrastructure.generation)
+      {:ok, {%{spec | start: {module, function, [runtime]}}, []}}
+    end
+  end
 
   @doc "Returns version-1 local readiness without authenticating a visitor."
   def status(widget_id, opts), do: Readiness.status(widget_id, opts)
 
   @doc "Returns secret-free installation markup for the configured public widget origin."
-  def embed_script(widget_id, base_url),
-    do:
-      Installation.script(widget_id, base_url, Application.get_env(:web_widget, :integration, []))
+  def embed_script(widget_id, base_url) do
+    with {:ok, infrastructure} <- WebWidget.Configuration.fetch() do
+      Installation.script(widget_id, base_url, infrastructure.integration)
+    end
+  end
 
   def build(%{id: id, provider: provider} = host_config, %{widget_id: id} = hooks, opts)
       when is_integer(id) and id > 0 and provider in [:web_widget, "web_widget"] do
+    providers =
+      if is_list(opts) and Keyword.keyword?(opts),
+        do: Keyword.take(opts, [:pubsub_server, :identity_verifier]),
+        else: []
+
     with {:ok, opts} <- verification_options(host_config, opts),
          {:ok, same_site} <-
            Session.validate_settings(Map.get(host_config, :settings)),
@@ -42,6 +56,7 @@ defmodule WebWidget.Integration.RuntimeBuilder do
          {:ok, config} <-
            Runtime.prepare(%{
              channel_config_id: id,
+             infrastructure_providers: providers,
              integration: integration,
              pubsub_server: integration.pubsub_server,
              widgets: [

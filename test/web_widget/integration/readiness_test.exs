@@ -9,18 +9,21 @@ defmodule WebWidget.Integration.ReadinessTest do
   @pubsub WebWidget.TestIntegration.PubSub
 
   setup do
-    previous = Application.get_env(:web_widget, :integration)
     previous_endpoint = Application.get_env(:web_widget, @endpoint)
 
     on_exit(fn ->
-      restore(:integration, previous)
       restore(@endpoint, previous_endpoint)
     end)
 
     start_supervised!(Supervisor.child_spec({Phoenix.PubSub, name: @pubsub}, id: @pubsub))
     configure_endpoint()
     start_supervised!(@endpoint)
-    integration(readiness: [endpoint: @endpoint])
+
+    WebWidget.TestInfrastructure.setup(
+      pubsub_server: @pubsub,
+      transport: [endpoint: @endpoint]
+    )
+
     :ok
   end
 
@@ -329,8 +332,9 @@ defmodule WebWidget.Integration.ReadinessTest do
     integration(widget_path: "/support/chat", readiness: [endpoint: @endpoint])
     send(page, :release_readiness_page)
     assert {:ok, result} = Task.await(task)
-    assert result.status == :unknown
-    assert result.reason == :transport_unverifiable
+    assert result.status == :unavailable
+    assert result.reason == :runtime_not_registered
+    assert result.checks.transport == %{status: :unknown, reason: :transport_unverifiable}
   end
 
   test "missing serving configuration is unknown, not the package or BO endpoint" do
@@ -342,12 +346,19 @@ defmodule WebWidget.Integration.ReadinessTest do
     assert result.effective_settings.same_site == Readiness.unresolved()
   end
 
-  test "invalid trusted configuration returns fixed failures without private terms" do
+  test "invalid trusted configuration fails at startup without private terms or changing readiness" do
     {id, _} = install()
-    integration(readiness: %{secret: "private-deployment-value"})
+
+    assert {:error, {:invalid_widget_configuration, :transport, message}} =
+             WebWidget.start_link(
+               pubsub_server: @pubsub,
+               transport: %{secret: "private-deployment-value"}
+             )
+
+    refute message =~ "private-deployment-value"
     assert {:ok, result} = RuntimeBuilder.status(id, [])
-    assert result.status == :unknown
-    assert result.reason == :check_failed
+    assert result.status == :ready
+    assert result.reason == nil
     refute inspect(result) =~ "private-deployment-value"
   end
 
@@ -478,12 +489,17 @@ defmodule WebWidget.Integration.ReadinessTest do
     endpoint_options(web_widget_session: [partitioned: false])
     assert {:ok, %{status: :ready}} = RuntimeBuilder.status(id, [])
 
-    integration(
-      readiness: [endpoint: @endpoint, scheme: :https, tls_options: [verify: :verify_none]]
-    )
+    assert {:error, {:invalid_widget_configuration, :tls_options, _}} =
+             WebWidget.start_link(
+               pubsub_server: @pubsub,
+               transport: [
+                 endpoint: @endpoint,
+                 scheme: :https,
+                 tls_options: [verify: :verify_none]
+               ]
+             )
 
-    assert {:ok, %{status: :unknown, reason: :transport_unverifiable}} =
-             RuntimeBuilder.status(id, [])
+    assert {:ok, %{status: :ready}} = RuntimeBuilder.status(id, [])
   end
 
   test "policy is connector-owned and omission is rejected, not inherited" do
@@ -500,6 +516,12 @@ defmodule WebWidget.Integration.ReadinessTest do
   test "custom verifier is never invoked or represented as provable connector identity" do
     {config, hooks, opts} = Host.fixture()
     opts = Keyword.put(opts, :identity_source, :connector)
+
+    integration(
+      Keyword.take(opts, [:pubsub_server, :identity_verifier]) ++
+        [readiness: [endpoint: @endpoint]]
+    )
+
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, opts)
     start_supervised!(spec)
     warm(config.id)
@@ -573,7 +595,22 @@ defmodule WebWidget.Integration.ReadinessTest do
     )
   end
 
-  defp integration(opts), do: Application.put_env(:web_widget, :integration, opts)
+  defp integration(opts) do
+    {:ok, supervisor} = ExUnit.fetch_test_supervisor()
+
+    specs =
+      for {{Runtime, _} = id, _, _, _} <- Supervisor.which_children(supervisor) do
+        {:ok, spec} = :supervisor.get_childspec(supervisor, id)
+        stop_supervised!(id)
+        spec
+      end
+
+    WebWidget.TestInfrastructure.replace(
+      Keyword.merge([pubsub_server: @pubsub, identity_verifier: :connector_key], opts)
+    )
+
+    Enum.each(specs, &start_supervised!/1)
+  end
 
   defp gate_pages do
     endpoint_options(readiness_test_gate: self())

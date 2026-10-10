@@ -10,6 +10,7 @@ defmodule WebWidget.Integration.SignedIdentityTest do
 
     options =
       Keyword.merge(options,
+        pubsub_server: WebWidget.PubSub,
         identity_verifier: :connector_key
       )
 
@@ -23,6 +24,7 @@ defmodule WebWidget.Integration.SignedIdentityTest do
         }
       })
 
+    WebWidget.TestInfrastructure.setup(options)
     {:ok, {spec, []}} = RuntimeBuilder.build(config, hooks, options)
     start_supervised!(spec)
     reset = await_reset()
@@ -120,20 +122,9 @@ defmodule WebWidget.Integration.SignedIdentityTest do
                now
              )
 
-    config = Application.get_env(:web_widget, :authentication, [])
-    :sys.suspend(BindingStore)
+    :ok = Supervisor.terminate_child(WebWidget.Supervisor, BindingStore)
 
     try do
-      Application.put_env(
-        :web_widget,
-        :authentication,
-        Keyword.put(config, :replica_nodes, [
-          node(),
-          :unavailable_a@localhost,
-          :unavailable_b@localhost
-        ])
-      )
-
       for times <- [%{"iat" => now, "exp" => now + 300}, %{"iat" => now - 20, "exp" => now - 1}] do
         proof = jwt(ctx.key, Map.merge(claims(ctx), times))
         assert {:error, :store_unavailable} = authenticate(ctx, proof)
@@ -141,8 +132,7 @@ defmodule WebWidget.Integration.SignedIdentityTest do
 
       assert {:error, :unauthorized} = authenticate(ctx, "untrusted")
     after
-      Application.put_env(:web_widget, :authentication, config)
-      :sys.resume(BindingStore)
+      {:ok, _} = Supervisor.restart_child(WebWidget.Supervisor, BindingStore)
     end
   end
 
