@@ -59,10 +59,11 @@ defmodule WebWidget.IntegrationEndpointSmokeTest do
     config =
       Map.merge(config, %{
         token: String.duplicate("package-readiness-key", 3),
-        settings: %{
-          "identity_issuer" => "package-issuer",
-          "identity_audience" => "package-audience"
-        }
+        settings:
+          Map.merge(config.settings, %{
+            "identity_issuer" => "package-issuer",
+            "identity_audience" => "package-audience"
+          })
       })
 
     opts = [pubsub_server: WebWidget.PubSub, identity_verifier: :connector_key]

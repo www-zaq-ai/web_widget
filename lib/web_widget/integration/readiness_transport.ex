@@ -123,7 +123,8 @@ defmodule WebWidget.Integration.ReadinessTransport do
     path = target.prefix <> "/" <> widget.widget_id
 
     with {:ok, response} <- page(target, path, deadline),
-         {:ok, cookie, csrf} <- page_session(response, path, policy),
+         :ok <- page_paths(response, path),
+         {:ok, cookie, csrf} <- bootstrap(target, path, policy, deadline),
          :ok <- upgrade(target, path, cookie, csrf, deadline),
          :ok <- current_deployment(target),
          :ok <- current_listener(target),
@@ -164,10 +165,12 @@ defmodule WebWidget.Integration.ReadinessTransport do
     end
   end
 
-  defp page(target, path, deadline) do
+  defp page(target, path, deadline), do: request(target, path, deadline, [])
+
+  defp request(target, path, deadline, headers) do
     # Stable connection options share Req's pools; the outer worker bounds the whole probe.
     Req.get(target.url <> path,
-      headers: [{"host", URI.parse(target.origin).authority || target.host}],
+      headers: [{"host", URI.parse(target.origin).authority || target.host} | headers],
       retry: false,
       redirect: false,
       decode_body: false,
@@ -187,22 +190,83 @@ defmodule WebWidget.Integration.ReadinessTransport do
     )
   end
 
-  defp page_session(%{status: 200, body: body} = response, path, policy) when is_binary(body) do
-    cookies = Req.Response.get_header(response, "set-cookie")
-
-    with [cookie] <- Enum.filter(cookies, &String.starts_with?(&1, "_web_widget_session=")),
-         true <- cookie_matches?(cookie, path, policy),
-         csrf when is_binary(csrf) <- meta(body, "csrf-token"),
-         socket_path when socket_path == path <> "/live" <- meta(body, "web-widget-socket") do
-      {:ok, hd(String.split(cookie, ";")), csrf}
+  defp page_paths(%{status: 200, body: body} = response, path) when is_binary(body) do
+    with [] <- widget_cookies(response),
+         socket_path when socket_path == path <> "/live" <- meta(body, "web-widget-socket"),
+         session_path when session_path == path <> "/session" <- meta(body, "web-widget-session") do
+      :ok
     else
-      false -> {:error, :cookie_policy_mismatch}
       _ -> {:error, :transport_unverifiable}
     end
   end
 
-  defp page_session(%{status: 503, body: "https_required"}, _, _), do: {:error, :https_required}
-  defp page_session(_, _, _), do: {:error, :transport_unverifiable}
+  defp page_paths(%{status: 503, body: "https_required"}, _), do: {:error, :https_required}
+  defp page_paths(_, _), do: {:error, :transport_unverifiable}
+
+  defp bootstrap(target, path, policy, deadline) do
+    headers = [{"accept", "application/json"}, {"origin", target.origin}]
+
+    with {:ok, response} <- request(target, path <> "/session", deadline, headers),
+         {:ok, _csrf} <- session_token(response),
+         {:ok, cookie} <- session_cookie(response, path, policy),
+         {:ok, verified} <-
+           request(target, path <> "/session?verify=1", deadline, [{"cookie", cookie} | headers]),
+         [] <- widget_cookies(verified),
+         {:ok, csrf} <- session_token(verified) do
+      {:ok, cookie, csrf}
+    else
+      {:error, reason} -> {:error, reason}
+      _ -> {:error, :cookie_policy_unsupported}
+    end
+  end
+
+  defp session_cookie(response, path, policy) do
+    case widget_cookies(response) do
+      [cookie] ->
+        if cookie_matches?(cookie, path, policy),
+          do: {:ok, hd(String.split(cookie, ";"))},
+          else: {:error, :cookie_policy_mismatch}
+
+      _ ->
+        {:error, :cookie_policy_unsupported}
+    end
+  end
+
+  defp session_token(%{status: 200, body: body} = response) when is_binary(body) do
+    with true <- no_store?(response),
+         true <- json?(response),
+         {:ok, %{"csrf_token" => token}} <- Jason.decode(body),
+         true <- is_binary(token) and byte_size(token) in 1..4_096 do
+      {:ok, token}
+    else
+      _ -> {:error, :transport_unverifiable}
+    end
+  end
+
+  defp session_token(%{status: 409}), do: {:error, :cookie_policy_unsupported}
+  defp session_token(%{status: 503, body: "https_required"}), do: {:error, :https_required}
+  defp session_token(_), do: {:error, :transport_unverifiable}
+
+  defp widget_cookies(response) do
+    response
+    |> Req.Response.get_header("set-cookie")
+    |> Enum.filter(&String.starts_with?(&1, "_web_widget_session="))
+  end
+
+  defp no_store?(response) do
+    response
+    |> Req.Response.get_header("cache-control")
+    |> Enum.any?(fn value -> "no-store" in String.split(String.downcase(value), ~r/\s*,\s*/) end)
+  end
+
+  defp json?(response) do
+    response
+    |> Req.Response.get_header("content-type")
+    |> Enum.any?(fn value ->
+      value |> String.split(";", parts: 2) |> hd() |> String.trim() |> String.downcase() ==
+        "application/json"
+    end)
+  end
 
   defp cookie_matches?(cookie, path, policy) do
     attrs = cookie |> String.split(";") |> tl() |> Enum.map(&String.trim/1)
@@ -211,6 +275,7 @@ defmodule WebWidget.Integration.ReadinessTransport do
       Enum.member?(attrs, "SameSite=" <> policy.same_site) and
       Enum.member?(attrs, "HttpOnly") and
       Enum.member?(attrs, "secure") == policy.secure and
+      Enum.member?(attrs, "Partitioned") == policy.partitioned and
       not Enum.any?(attrs, &String.starts_with?(String.downcase(&1), "domain="))
   end
 
@@ -312,9 +377,9 @@ defmodule WebWidget.Integration.ReadinessTransport do
         {Readiness.check(:unavailable, reason),
          Readiness.check(:unknown, :cookie_policy_unsupported), Readiness.unresolved()}
 
-      reason == :cookie_policy_unsupported ->
-        {Readiness.check(:unknown, :transport_unverifiable), Readiness.check(:unknown, reason),
-         Readiness.unresolved()}
+      reason in [:cookie_policy_unsupported, :missing_cookie_policy, :invalid_partitioned_policy] ->
+        {Readiness.check(:unknown, :transport_unverifiable),
+         Readiness.check(:unknown, :cookie_policy_unsupported), Readiness.unresolved()}
 
       true ->
         {Readiness.check(

@@ -60,6 +60,74 @@ defmodule WebWidget.Integration.ReadinessTest do
     assert result.status != :ready
   end
 
+  test "page is cookie-free and bootstrap verification precedes the socket, using only session CSRF" do
+    {id, _} = install()
+    warm(id)
+    endpoint_options(readiness_test_observer: self(), readiness_test_fault: :page_csrf)
+    assert {:ok, %{status: :ready}} = RuntimeBuilder.status(id, [])
+    path = "/widget/#{id}"
+    session = path <> "/session"
+    assert_receive {:readiness_request, ^path, "", false}
+    assert_receive {:readiness_response, ^path, "", page_cookie}
+    assert page_cookie == %{}
+    assert_receive {:readiness_request, ^session, "", false}
+    assert_receive {:readiness_response, ^session, "", %{path: ^path, same_site: "Lax"}}
+    assert_receive {:readiness_request, ^session, "verify=1", true}
+    assert_receive {:readiness_response, ^session, "verify=1", verified_cookie}
+    assert verified_cookie == %{}
+    endpoint_options(readiness_test_fault: :initial_csrf)
+    assert {:ok, %{status: :ready}} = RuntimeBuilder.status(id, [])
+  end
+
+  test "failed session bootstrap or verification never falls back to page CSRF or rewrites cookies" do
+    {id, _} = install()
+    warm(id)
+
+    for fault <- [
+          :missing_cookie,
+          :cookie_unavailable,
+          :invalid_session_reply,
+          :verification_cookie_write,
+          :session_path,
+          :cacheable_session,
+          :invalid_content_type
+        ] do
+      endpoint_options(readiness_test_fault: fault)
+      assert {:ok, result} = RuntimeBuilder.status(id, [])
+      assert result.status == :unknown
+      assert result.effective_settings.same_site == Readiness.unresolved()
+    end
+  end
+
+  test "unexpected Partitioned attribute cannot be reported as an unpartitioned HTTP policy" do
+    {id, _} = install()
+    warm(id)
+    endpoint_options(readiness_test_fault: :partitioned_extra)
+    assert {:ok, result} = RuntimeBuilder.status(id, [])
+    assert result.checks.cookie_policy == %{status: :unavailable, reason: :cookie_policy_mismatch}
+  end
+
+  test "invalid partitioning configuration is mapped to the closed readiness reason set" do
+    {id, _} = install()
+    endpoint_options(web_widget_session: [partitioned: "invalid"])
+    assert {:ok, result} = RuntimeBuilder.status(id, [])
+    assert result.checks.cookie_policy == %{status: :unknown, reason: :cookie_policy_unsupported}
+    assert result.effective_settings.same_site == Readiness.unresolved()
+  end
+
+  test "session initialization and verification both obey the original total deadline" do
+    {id, _} = install()
+    warm(id)
+
+    for stage <- [:bootstrap, :verification] do
+      endpoint_options(readiness_test_gate: self(), readiness_test_gate_stage: stage)
+      task = Task.async(fn -> RuntimeBuilder.status(id, timeout_ms: 200) end)
+      assert_receive {:readiness_page, request}
+      assert {:error, :check_timeout} = Task.await(task)
+      send(request, :release_readiness_page)
+    end
+  end
+
   test "concurrent calls report each connector's installed identity, not application defaults" do
     {first, _} = install()
 
@@ -233,8 +301,8 @@ defmodule WebWidget.Integration.ReadinessTest do
     send(page, :release_readiness_page)
   end
 
-  test "an endpoint policy edit during probing is not reported as applied old policy" do
-    {id, _} = install(%{}, false)
+  test "enabling partitioning during probing cannot report the old HTTP policy as ready" do
+    {id, _} = install()
     warm(id)
     gate_pages()
     task = Task.async(fn -> RuntimeBuilder.status(id, []) end)
@@ -242,13 +310,13 @@ defmodule WebWidget.Integration.ReadinessTest do
     config = Application.fetch_env!(:web_widget, @endpoint)
 
     @endpoint.config_change(
-      %{@endpoint => Keyword.put(config, :web_widget_session, same_site: "Strict")},
+      %{@endpoint => Keyword.put(config, :web_widget_session, partitioned: true)},
       []
     )
 
     send(page, :release_readiness_page)
     assert {:ok, result} = Task.await(task)
-    assert result.checks.cookie_policy == %{status: :unavailable, reason: :cookie_policy_mismatch}
+    assert result.checks.cookie_policy == %{status: :unavailable, reason: :https_required}
     assert result.status == :unavailable
   end
 
@@ -382,7 +450,12 @@ defmodule WebWidget.Integration.ReadinessTest do
       )
 
     stop_supervised!(@endpoint)
-    configure_endpoint(https: [ip: {127, 0, 0, 1}, port: 0, keyfile: keyfile, certfile: certfile])
+
+    configure_endpoint(
+      https: [ip: {127, 0, 0, 1}, port: 0, keyfile: keyfile, certfile: certfile],
+      web_widget_session: []
+    )
+
     start_supervised!(@endpoint)
     {id, _} = install(%{"same_site" => "None"})
     integration(readiness: [endpoint: @endpoint, scheme: :https, tls_options: [cacertfile: ca]])
@@ -398,6 +471,13 @@ defmodule WebWidget.Integration.ReadinessTest do
     assert result.status == :ready
     assert result.effective_settings.same_site == %{value: "None", source: :connector}
 
+    endpoint_options(readiness_test_fault: :partitioned_missing)
+    assert {:ok, result} = RuntimeBuilder.status(id, [])
+    assert result.checks.cookie_policy == %{status: :unavailable, reason: :cookie_policy_mismatch}
+
+    endpoint_options(web_widget_session: [partitioned: false])
+    assert {:ok, %{status: :ready}} = RuntimeBuilder.status(id, [])
+
     integration(
       readiness: [endpoint: @endpoint, scheme: :https, tls_options: [verify: :verify_none]]
     )
@@ -406,12 +486,15 @@ defmodule WebWidget.Integration.ReadinessTest do
              RuntimeBuilder.status(id, [])
   end
 
-  test "inherited policy comes from the installed serving endpoint" do
-    {id, _} = install(%{}, false)
+  test "policy is connector-owned and omission is rejected, not inherited" do
+    {config, hooks, opts} = Host.fixture()
+    config = %{config | settings: Map.delete(config.settings, "same_site")}
+    assert {:error, :missing_cookie_policy} = RuntimeBuilder.build(config, hooks, opts)
+    {id, _} = install()
     warm(id)
     assert {:ok, result} = RuntimeBuilder.status(id, [])
     assert result.status == :ready
-    assert result.effective_settings.same_site == %{value: "Lax", source: :endpoint}
+    assert result.effective_settings.same_site == %{value: "Lax", source: :connector}
   end
 
   test "custom verifier is never invoked or represented as provable connector identity" do
@@ -450,7 +533,7 @@ defmodule WebWidget.Integration.ReadinessTest do
     end
   end
 
-  defp install(extra_settings \\ %{}, explicit_policy \\ true) do
+  defp install(extra_settings \\ %{}) do
     {config, hooks, _opts} = Host.fixture()
 
     settings =
@@ -459,7 +542,7 @@ defmodule WebWidget.Integration.ReadinessTest do
         extra_settings
       )
 
-    settings = if explicit_policy, do: Map.put_new(settings, "same_site", "Lax"), else: settings
+    settings = Map.put_new(settings, "same_site", "Lax")
 
     config =
       Map.merge(config, %{token: String.duplicate("private-readiness-key", 3), settings: settings})
@@ -481,6 +564,7 @@ defmodule WebWidget.Integration.ReadinessTest do
           live_view: [signing_salt: "host-live"],
           pubsub_server: WebWidget.PubSub,
           check_origin: ["//localhost"],
+          web_widget_session: [partitioned: false],
           http: [ip: {127, 0, 0, 1}, port: 0],
           server: true
         ],
@@ -492,15 +576,22 @@ defmodule WebWidget.Integration.ReadinessTest do
   defp integration(opts), do: Application.put_env(:web_widget, :integration, opts)
 
   defp gate_pages do
+    endpoint_options(readiness_test_gate: self())
+  end
+
+  defp endpoint_options(opts) do
     config = Application.fetch_env!(:web_widget, @endpoint)
-    @endpoint.config_change(%{@endpoint => Keyword.put(config, :readiness_test_gate, self())}, [])
+    @endpoint.config_change(%{@endpoint => Keyword.merge(config, opts)}, [])
   end
 
   defp warm(id, prefix \\ "/widget") do
     {:ok, {_ip, port}} = @endpoint.server_info(:http)
 
     assert %{status: 200} =
-             Req.get!("http://127.0.0.1:#{port}#{prefix}/#{id}", headers: [host: "localhost"])
+             Req.get!("http://127.0.0.1:#{port}#{prefix}/#{id}",
+               headers: [host: "localhost"],
+               retry: false
+             )
   end
 
   defp restore(key, nil), do: Application.delete_env(:web_widget, key)

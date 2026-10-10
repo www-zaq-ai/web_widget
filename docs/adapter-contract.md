@@ -220,7 +220,8 @@ reasons mean unavailable. Callback failures are
 
 Effective settings contain only `identity_issuer`, `identity_audience`, and
 `same_site`, each `%{value: value, source: source}`. Connector-key identifiers
-are connector-owned; legacy SameSite inherits the serving endpoint's policy.
+and SameSite are connector-owned; missing legacy policy must be populated by the
+host before upgrading, not inferred from endpoint defaults.
 Sources allowed by the protocol are connector/application/default, plus endpoint
 for SameSite. Unresolved is `%{value: nil, source: :unresolved}` and cannot be
 ready. Custom verifiers without provable effective identity settings are not green.
@@ -228,8 +229,13 @@ ZAQ owns comparison against current desired settings, disabled state, NodeRouter
 invocation and refresh of both BO surfaces after lifecycle changes.
 
 Readiness checks the configured serving host endpoint in mounted mode or the
-package endpoint in package mode. It obtains an anonymous page cookie and CSRF
-token, verifies widget-only attributes, and upgrades the widget-scoped WebSocket.
+package endpoint in package mode. It checks the cookie-free page's socket/session
+paths, initializes an isolated anonymous cookie via `<widget-page-path>/session`,
+and verifies that cookie with `/session?verify=1` without rewriting it. The verified
+JSON CSRF token authorizes the widget-scoped WebSocket upgrade; the page's CSRF
+meta token is not used. Cookie attributes include the installed Partitioned policy,
+which requires HTTPS even for Lax/Strict; explicit unpartitioned HTTP development
+is supported without changing connector SameSite or weakening Secure requirements.
 It does not join a LiveView channel, authenticate a user, consume a JWT, create a
 conversation, require visitors, or start a listener. These ephemeral probe values
 never appear in results. A healthy BO `/live` or long-poll transport is insufficient.
@@ -238,7 +244,7 @@ and are not retained across calls, avoiding stale green after lifecycle changes.
 
 This proves local listener/session/transport readiness only. It does not prove
 public proxy routing, TLS termination, real-user authentication or browser cookie
-acceptance. None requires an actually verified HTTPS session path; an unverifiable
+acceptance. Partitioning and None require an actually verified HTTPS session path; an unverifiable
 TLS-terminating topology must stay unknown rather than trust a public URL string.
 See [host integration](host-integration.md) for trusted readiness configuration.
 

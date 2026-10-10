@@ -106,16 +106,23 @@ endpoint, not a caller URL. Wildcard addresses are probed through loopback. The
 endpoint's `url: [host: ...]` supplies Host, Origin and the verified TLS hostname;
 normal socket origin checks stay enabled. Private CAs may be supplied through
 `readiness: [tls_options: [cacertfile: "/trusted/widget-ca.pem"]]` (or `cacerts`).
-Disabling TLS verification is not supported. The probe uses Req for the page and
-Mint (already used by Req) for the HTTP/1.1 WebSocket upgrade, then closes without
-joining a LiveView or issuing/consuming identity credentials.
+Disabling TLS verification is not supported. The probe uses Req for the cookie-free
+page, `/session` initialization, and a read-only `/session?verify=1` round trip with
+its anonymous cookie. It uses the verified JSON CSRF token, not the page meta token,
+for the Mint (already used by Req) HTTP/1.1 WebSocket upgrade, then closes without
+joining a LiveView or issuing/consuming identity credentials. All steps share the
+original total deadline. No user cookie jar or browser coordination lock is used.
 
 The version-1 response contains five checks and only allowlisted effective settings;
 see [adapter contract](adapter-contract.md#adapter-readiness-version-1). Cookie and
 CSRF probe values, signing keys, callbacks, private configuration and raw failures
 never leave the checker. Connector-key identity reports the installed connector
 values. A custom verifier's opaque identity policy stays unresolved. Effective
-SameSite is reported only after verification of the scoped page cookie and socket.
+SameSite is connector-owned and reported only after verification of the scoped
+bootstrap cookie and socket. Endpoint inheritance is not supported. Partitioned,
+Secure, HttpOnly, host-only and path attributes must match the installed policy;
+neither the page nor the verification read may write a widget cookie. HTTP-only
+development endpoints must explicitly configure `web_widget_session: [partitioned: false]`.
 
 Response-delivery checks cover the installed Phoenix PubSub registry, running
 supervision tree and local PG2 membership, without subscribing or broadcasting.
@@ -132,7 +139,7 @@ an optional 1–2,000 millisecond total timeout.
 
 Readiness is local evidence, not proof that a public reverse proxy forwards widget
 upgrades or that browsers accept third-party cookies. A TLS-terminating proxy with
-only a local HTTP listener cannot obtain a green None/Secure check through an HTTPS
+only a local HTTP listener cannot obtain a green partitioned or None/Secure check through an HTTPS
 `public_url` alone. Until its serving HTTPS/session path can be verified, keep that
 deployment non-ready and verify the external proxy path separately; never spoof
 forwarded headers or weaken CSRF/origin/TLS checks to make the probe pass. Preserve
