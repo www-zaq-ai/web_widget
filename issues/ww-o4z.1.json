@@ -13,11 +13,15 @@
     {
       "text": "Implemented raw-header endpoint guard and explicit runtime policy/HTTPS Secure. Focused 33 tests pass, including real endpoint WebSocket/long-poll duplicate rejection before cookie parsing. User requested uncommitted delivery; no commit will be made. Unknown widgets now return static unavailable without a policy/session.",
       "timestamp": "2026-10-10T13:33:16Z"
+    },
+    {
+      "text": "Completed locally, intentionally uncommitted per user delivery choice. Duplicate CookieGuard wraps endpoint call before socket dispatch; HTTP/WebSocket/longpoll tests prove pre-parsing rejection. Single tampered/cross-widget cookies still receive anonymous initial-bootstrap replacements. Policies are explicit and HTTPS always forces Secure. Unknown IDs render static 404 without session. Contract clarified at https://github.com/www-zaq-ai/web_widget/issues/12#issuecomment-6098181393",
+      "timestamp": "2026-10-10T14:01:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Enforce cookie and runtime policy contract",
   "type": "task",
-  "updated_at": "2026-10-10T13:37:51Z"
+  "updated_at": "2026-10-10T14:01:47Z"
 }
