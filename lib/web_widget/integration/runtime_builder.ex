@@ -17,11 +17,15 @@ defmodule WebWidget.Integration.RuntimeBuilder do
   alias WebWidget.Embedding.Session
   alias WebWidget.Integration.Installation
   alias WebWidget.Integration.Protocol
+  alias WebWidget.Integration.Readiness
   alias WebWidget.Integration.SignedIdentity
   alias WebWidget.Runtime
 
   def build(config, hooks),
     do: build(config, hooks, Application.get_env(:web_widget, :integration, []))
+
+  @doc "Returns version-1 local readiness without authenticating a visitor."
+  def status(widget_id, opts), do: Readiness.status(widget_id, opts)
 
   @doc "Returns secret-free installation markup for the configured public widget origin."
   def embed_script(widget_id, base_url),
@@ -69,6 +73,7 @@ defmodule WebWidget.Integration.RuntimeBuilder do
         {:ok,
          opts
          |> Keyword.put(:identity_verifier, {SignedIdentity, :verify, [key, issuer, audience]})
+         |> Keyword.put(:identity_source, :connector)
          |> Keyword.put(:control_key, key)
          |> Keyword.put(:control_issuer, issuer)
          |> Keyword.put(:control_audience, audience <> ":control")}
@@ -76,7 +81,7 @@ defmodule WebWidget.Integration.RuntimeBuilder do
         {:error, :invalid_identity_config}
       end
     else
-      {:ok, opts}
+      {:ok, Keyword.delete(opts, :identity_source)}
     end
   end
 

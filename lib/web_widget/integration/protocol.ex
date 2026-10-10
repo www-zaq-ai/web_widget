@@ -10,7 +10,13 @@ defmodule WebWidget.Integration.Protocol do
   alias WebWidget.Integration.{InitClaims, Session}
 
   @enforce_keys [:hooks, :pubsub_server, :identity_verifier]
-  defstruct @enforce_keys ++ [control_key: nil, control_issuer: nil, control_audience: nil]
+  defstruct @enforce_keys ++
+              [
+                control_key: nil,
+                control_issuer: nil,
+                control_audience: nil,
+                identity_source: :unresolved
+              ]
 
   @constructors [message: 1, command: 1, context: 2, delivery: 1, response: 1]
   @events %{
@@ -50,7 +56,8 @@ defmodule WebWidget.Integration.Protocol do
          identity_verifier: verifier,
          control_key: Keyword.get(opts, :control_key),
          control_issuer: Keyword.get(opts, :control_issuer),
-         control_audience: Keyword.get(opts, :control_audience)
+         control_audience: Keyword.get(opts, :control_audience),
+         identity_source: Keyword.get(opts, :identity_source, :unresolved)
        }}
     else
       _ -> {:error, :invalid_integration_config}

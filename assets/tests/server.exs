@@ -43,6 +43,7 @@ Code.require_file("assets/tests/support/control.exs")
 }})
 
 Code.require_file("test/support/host/session_probe.ex")
+Code.require_file("test/support/host/readiness_gate.ex")
 Code.require_file("test/support/host/router.ex")
 Code.require_file("test/support/host/endpoint.ex")
 Code.require_file("assets/tests/support/http_endpoint.exs")

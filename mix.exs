@@ -70,6 +70,7 @@ defmodule WebWidget.MixProject do
        compile: false,
        depth: 1},
       {:req, "~> 0.5"},
+      {:mint, "~> 1.8"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 1.0"},

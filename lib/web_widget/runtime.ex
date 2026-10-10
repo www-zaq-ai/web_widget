@@ -41,6 +41,20 @@ defmodule WebWidget.Runtime do
     call_widget(widget_id, {:fetch_widget, widget_id})
   end
 
+  @doc false
+  def readiness_snapshot(widget_id, timeout)
+      when is_binary(widget_id) and is_integer(timeout) and timeout > 0 do
+    case Registry.lookup(WebWidget.RuntimeRegistry, widget_id) do
+      [{pid, _}] -> GenServer.call(pid, {:readiness_snapshot, widget_id}, timeout)
+      [] -> {:error, :runtime_not_registered}
+    end
+  rescue
+    _ -> {:error, :runtime_not_registered}
+  catch
+    :exit, {:timeout, _} -> {:error, :runtime_unresponsive}
+    :exit, _ -> {:error, :runtime_not_registered}
+  end
+
   @doc "Resolves the host-owned PubSub server for a registered widget."
   def pubsub_server(widget_id) do
     with {:ok, config} <- delivery_config(widget_id),
@@ -267,6 +281,33 @@ defmodule WebWidget.Runtime do
     widget = Enum.find(config.widgets, &(&1.widget_id == widget_id))
     {:reply, if(widget, do: {:ok, widget}, else: {:error, :not_found}), config}
   end
+
+  def handle_call({:readiness_snapshot, widget_id}, _from, config) do
+    widget = Enum.find(config.widgets, &(&1.widget_id == widget_id))
+    identity = readiness_identity(Map.get(config, :integration))
+
+    snapshot = %{
+      widget: widget,
+      runtime_ref: config.runtime_ref,
+      pubsub_server: Map.get(config, :pubsub_server),
+      identity: identity
+    }
+
+    {:reply, {:ok, snapshot}, config}
+  end
+
+  defp readiness_identity(%Protocol{
+         identity_source: :connector,
+         identity_verifier:
+           {WebWidget.Integration.SignedIdentity, :verify, [key, issuer, audience]},
+         control_key: key,
+         control_issuer: issuer
+       })
+       when is_binary(key) do
+    %{issuer: issuer, audience: audience}
+  end
+
+  defp readiness_identity(_), do: nil
 
   @doc false
   def prepare(%{integration: %Protocol{} = integration, channel_config_id: id} = config) do

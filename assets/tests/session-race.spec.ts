@@ -119,84 +119,93 @@ test("concurrent first loads of the same widget both retain a valid LiveView ses
 test.describe("cookie sharing across parent storage partitions", () => {
   test.use({ ignoreHTTPSErrors: true });
 
-  test("different parent sites initialize independent cookie partitions", async ({ context, browserName }, testInfo) => {
-    if (browserName !== "webkit") await context.grantPermissions(["local-network-access"]);
-    const pages = await Promise.all([context.newPage(), context.newPage()]);
-    const origin = "https://127.0.0.1:4023";
-    const routes: Route[] = [];
-    let firstRequested!: () => void;
-    let secondRequested!: () => void;
-    const firstRequest = new Promise<void>(resolve => { firstRequested = resolve; });
-    const secondRequest = new Promise<void>(resolve => { secondRequested = resolve; });
-    await context.route("**/partition-parent", route => route.fulfill({
-      contentType: "text/html", body: "<!doctype html><body></body>",
-    }));
-    await context.route(origin + "/widget/cookie-none/session*", route => {
-      if (new URL(route.request().url()).search) return route.continue();
-      routes.push(route);
-      if (routes.length === 1) firstRequested();
-      if (routes.length === 2) secondRequested();
-      if (routes.length > 2) return route.continue();
+  for (const order of [[0, 1], [1, 0]]) {
+    test(`different parent sites initialize independent cookie partitions (arrival ${order.join(" then ")})`, async ({ context, browserName }, testInfo) => {
+      if (browserName !== "webkit") await context.grantPermissions(["local-network-access"]);
+      const pages = await Promise.all([context.newPage(), context.newPage()]);
+      const origin = "https://127.0.0.1:4023";
+      const routes: Route[] = [];
+      let firstRequested!: () => void;
+      let secondRequested!: () => void;
+      const firstRequest = new Promise<void>(resolve => { firstRequested = resolve; });
+      const secondRequest = new Promise<void>(resolve => { secondRequested = resolve; });
+      await context.route("**/partition-parent", route => route.fulfill({
+        contentType: "text/html", body: "<!doctype html><body></body>",
+      }));
+      await context.route(origin + "/widget/cookie-none/session*", route => {
+        if (new URL(route.request().url()).search) return route.continue();
+        routes.push(route);
+        if (routes.length === 1) firstRequested();
+        if (routes.length === 2) secondRequested();
+        if (routes.length > 2) return route.continue();
+      });
+
+      const parents = ["https://localhost:4023", origin];
+      for (const index of order) {
+        const parent = parents[index];
+        await pages[index].goto(parent + "/partition-parent");
+        await pages[index].evaluate(async origin => {
+          const moduleUrl = origin + "/web_widget/assets/widget-client.js";
+          const { createWidgetClient } = await import(moduleUrl);
+          const iframe = document.createElement("iframe");
+          iframe.id = "partition-widget";
+          document.body.append(iframe);
+          (window as any).partitionClient = createWidgetClient(iframe, origin + "/widget/cookie-none");
+        }, origin);
+        if (index === order[0]) await firstRequest;
+      }
+      for (const page of pages) await expect(page.frameLocator("#partition-widget").locator("#widget-context")).toBeAttached();
+      const frames = pages.map(page => page.frames().find(frame => frame.url() === origin + "/widget/cookie-none")!);
+      const locks = await Promise.all(frames.map(frame => frame.evaluate(() => navigator.locks.query())));
+      const firstLock = locks[0].held?.find(lock => lock.name === "web-widget-session:/widget/cookie-none/session");
+      const secondLock = locks[1].held?.find(lock => lock.name === "web-widget-session:/widget/cookie-none/session");
+      const partitioned = firstLock?.clientId !== secondLock?.clientId;
+
+      if (partitioned) {
+        await secondRequest;
+        for (const route of routes) expect((await route.request().allHeaders()).cookie || "").not.toContain("_web_widget_session=");
+        const firstRoute = routes.find(route => route.request().frame() === frames[0])!;
+        const secondRoute = routes.find(route => route.request().frame() === frames[1])!;
+        expect(firstRoute).toBeDefined();
+        expect(secondRoute).toBeDefined();
+        expect(routes[0].request().frame()).toBe(frames[order[0]]);
+        await firstRoute.continue();
+        await expect.poll(() => frames[0].evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
+        // The second parent establishes its own partition after the first connects.
+        await secondRoute.continue();
+      } else {
+        await routes[0].continue();
+        await secondRequest;
+        await routes[1].continue();
+      }
+
+      for (const frame of frames) await expect.poll(() => frame.evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
+      await Promise.all(pages.map((page, index) => page.evaluate(index =>
+        (window as any).partitionClient.init({ user_id: "partition-" + index }), index)));
+      const before = (await context.cookies(origin + "/widget/cookie-none"))
+        .find(cookie => cookie.name === "_web_widget_session")!;
+      const verifyCookies = await Promise.all(frames.map(frame => frame.evaluate(async () => {
+        const url = document.querySelector<HTMLMetaElement>("meta[name='web-widget-session']")!.content;
+        const response = await fetch(url + "?verify=1");
+        return { status: response.status, token: (await response.json()).csrf_token as string };
+      })));
+      expect(verifyCookies.map(result => result.status)).toEqual([200, 200]);
+      const partitionCookies = (await context.cookies(origin + "/widget/cookie-none"))
+        .filter(cookie => cookie.name === "_web_widget_session" && cookie.path === "/widget/cookie-none");
+      expect(partitionCookies).toHaveLength(2);
+      expect(new Set(partitionCookies.map(cookie => cookie.value)).size).toBe(2);
+      for (const frame of frames) {
+        await frame.evaluate(() => new Promise<void>(resolve => (window as any).liveSocket.disconnect(resolve)));
+        await frame.evaluate(() => (window as any).liveSocket.connect());
+        await expect.poll(() => frame.evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
+      }
+      expect((await context.cookies(origin + "/widget/cookie-none"))
+        .find(cookie => cookie.name === "_web_widget_session")).toEqual(before);
+      await testInfo.attach("session-coordination-scope", {
+        contentType: "application/json", body: JSON.stringify({ order, partitioned, bothConnected: true }),
+      });
     });
-
-    for (const [index, parent] of ["https://localhost:4023", origin].entries()) {
-      await pages[index].goto(parent + "/partition-parent");
-      await pages[index].evaluate(async origin => {
-        const moduleUrl = origin + "/web_widget/assets/widget-client.js";
-        const { createWidgetClient } = await import(moduleUrl);
-        const iframe = document.createElement("iframe");
-        iframe.id = "partition-widget";
-        document.body.append(iframe);
-        (window as any).partitionClient = createWidgetClient(iframe, origin + "/widget/cookie-none");
-      }, origin);
-    }
-    await firstRequest;
-    for (const page of pages) await expect(page.frameLocator("#partition-widget").locator("#widget-context")).toBeAttached();
-    const frames = pages.map(page => page.frames().find(frame => frame.url() === origin + "/widget/cookie-none")!);
-    const locks = await Promise.all(frames.map(frame => frame.evaluate(() => navigator.locks.query())));
-    const firstLock = locks[0].held?.find(lock => lock.name === "web-widget-session:/widget/cookie-none/session");
-    const secondLock = locks[1].held?.find(lock => lock.name === "web-widget-session:/widget/cookie-none/session");
-    const partitioned = firstLock?.clientId !== secondLock?.clientId;
-
-    if (partitioned) {
-      await secondRequest;
-      for (const route of routes) expect((await route.request().allHeaders()).cookie || "").not.toContain("_web_widget_session=");
-      await routes[0].continue();
-      await expect.poll(() => frames[0].evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
-      // The second parent establishes its own partition after the first connects.
-      await routes[1].continue();
-    } else {
-      await routes[0].continue();
-      await secondRequest;
-      await routes[1].continue();
-    }
-
-    for (const frame of frames) await expect.poll(() => frame.evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
-    await Promise.all(pages.map((page, index) => page.evaluate(index =>
-      (window as any).partitionClient.init({ user_id: "partition-" + index }), index)));
-    const before = (await context.cookies(origin + "/widget/cookie-none"))
-      .find(cookie => cookie.name === "_web_widget_session")!;
-    const verifyCookies = await Promise.all(frames.map(frame => frame.evaluate(async () => {
-      const url = document.querySelector<HTMLMetaElement>("meta[name='web-widget-session']")!.content;
-      const response = await fetch(url + "?verify=1");
-      return { status: response.status, token: (await response.json()).csrf_token as string };
-    })));
-    expect(verifyCookies.map(result => result.status)).toEqual([200, 200]);
-    const partitionCookies = (await context.cookies(origin + "/widget/cookie-none"))
-      .filter(cookie => cookie.name === "_web_widget_session" && cookie.path === "/widget/cookie-none");
-    expect(partitionCookies).toHaveLength(2);
-    expect(new Set(partitionCookies.map(cookie => cookie.value)).size).toBe(2);
-    for (const frame of frames) {
-      await frame.evaluate(() => new Promise<void>(resolve => (window as any).liveSocket.disconnect(resolve)));
-      await frame.evaluate(() => (window as any).liveSocket.connect());
-      await expect.poll(() => frame.evaluate(() => (window as any).liveSocket.isConnected())).toBe(true);
-    }
-    expect((await context.cookies(origin + "/widget/cookie-none"))
-      .find(cookie => cookie.name === "_web_widget_session")).toEqual(before);
-    await testInfo.attach("session-coordination-scope", {
-      contentType: "application/json", body: JSON.stringify({ partitioned, bothConnected: true }),
-    });
-  });
+  }
 });
 
 test("unsupported session coordination fails explicitly without creating a cookie", async ({ page }) => {
@@ -216,15 +225,36 @@ test("missing cookies during socket recovery fail without another initialization
   });
   await page.goto("/widget/theme-dark");
   await expect.poll(() => page.evaluate(() => (window as any).liveSocket?.isConnected() || false)).toBe(true);
+  await page.evaluate(() => window.dispatchEvent(new Event("phx:page-loading-start")));
+  const progress = page.locator("canvas.widget-progress");
+  await expect(progress).toBeVisible();
+  await expect(progress).toHaveCSS("pointer-events", "none");
   await context.clearCookies({ name: "_web_widget_session" });
   await page.evaluate(() => (window as any).liveSocket.getSocket().onConnError(new Error("probe")));
   await expect(page.locator("#widget-session-error")).toHaveAttribute("data-reason", "cookie_unavailable");
   expect(requests.filter(url => !new URL(url).search)).toHaveLength(1);
   expect(requests.filter(url => new URL(url).searchParams.get("verify") === "1")).toHaveLength(2);
   expect(await page.evaluate(() => (window as any).liveSocket.isConnected())).toBe(false);
+  await expect(progress).toBeHidden();
   await page.getByRole("button", { name: "Reload widget" }).click();
   await expect.poll(() => page.evaluate(() => (window as any).liveSocket?.isConnected() || false)).toBe(true);
   expect(requests.filter(url => !new URL(url).search)).toHaveLength(2);
+});
+
+test("terminal session failure cancels pending progress and ignores later loading events", async ({ page, context }) => {
+  await page.goto("/widget/theme-dark");
+  await expect.poll(() => page.evaluate(() => (window as any).liveSocket?.isConnected() || false)).toBe(true);
+  await page.clock.install();
+  await page.clock.pauseAt(new Date());
+  await context.clearCookies({ name: "_web_widget_session" });
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("phx:page-loading-start"));
+    (window as any).liveSocket.getSocket().onConnError(new Error("probe"));
+  });
+  await expect(page.locator("#widget-session-error")).toHaveAttribute("data-reason", "cookie_unavailable");
+  await page.evaluate(() => window.dispatchEvent(new Event("phx:page-loading-start")));
+  await page.clock.runFor(1_000);
+  await expect(page.locator("canvas.widget-progress")).toBeHidden();
 });
 
 test("an open socket without LiveView establishment reaches the document deadline", async ({ page }) => {
