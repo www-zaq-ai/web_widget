@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [
     "ww-73a.2",
     "ww-73a.3"
@@ -11,8 +11,8 @@
   "labels": [],
   "parent": "ww-73a",
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Migrate builder callers and verify lifecycle acceptance",
   "type": "task",
-  "updated_at": "2026-10-10T20:56:24Z"
+  "updated_at": "2026-10-10T21:21:55Z"
 }
