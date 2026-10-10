@@ -10,11 +10,15 @@
     {
       "text": "Started80 executions at unchanged9ab1807, macOS: stylesheet remove on Chromium/Firefox/WebKit +Chromium reconnect,10 per tracing mode. Serial batches of5 ordered off/on/on/off for each case to reduce time-order bias; one worker/no retries/same JSON reporter, separate temp output directories. Recording per-batch duration and system load averages. No source changes. Waiting for automatic completion notification; do not infer result from contention-affected prior runs.",
       "timestamp": "2026-10-10T11:10:27Z"
+    },
+    {
+      "text": "Completed uncontended rerun requested by user:80 executions over6min,69PASS/11 exact duplicate-ready failures,0setup/auth failures or run errors. Stylesheet fail counts off/on: Chromium2/10 vs2/10; Firefox2/10 vs3/10; WebKit0/10 vs2/10. Chromium reconnect10/10PASS both off/on. Counterbalanced batches off5/on5/on5/off5 per case, same9ab1807/Node22.16/macOS/Playwright1.63/one worker/no retries/json reporter. Load averages remained elevated so do not claim measured zero contention; unlike earlier run no cascading failures. Tracing not necessary for Chromium/Firefox duplicate-ready race; WebKit association merits event-order analysis but n10 cannot establish effect size. CI reconnect still unreproduced. No code changes. Separate reports/traces in approved temp trace-comparison-post-contention-1791630621396.",
+      "timestamp": "2026-10-10T11:16:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Repeat isolated tracing comparison after contention resolved",
   "type": "task",
-  "updated_at": "2026-10-10T11:10:27Z"
+  "updated_at": "2026-10-10T11:16:45Z"
 }
