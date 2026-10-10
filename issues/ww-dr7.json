@@ -6,9 +6,15 @@
   "description": "Approved continuation on existing ww-323 branch for #12/#19: Ubuntu Chromium/Firefox keep PostgreSQL service; WebKit macos-26 local PostgreSQL; preserve assertions and timeouts. Add retained failure traces, screenshots and HTML report, platform-specific artifacts/version diagnostics, OS+architecture cache keys. No production or Selenium changes.",
   "id": "ww-dr7",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented Ubuntu Chromium/Firefox plus separate macos-26 WebKit job, local PostgreSQL16 with bounded pg_ctl readiness/cleanup, platform+arch caches/artifacts and version diagnostics. Playwright retains failure traces/screenshots and HTML report. actionlint v1.7.12, git diff check and tsc pass; macOS focused suite 9 passed/1 CDP-only skip. Next push and hosted-runner CI validation.",
+      "timestamp": "2026-10-10T09:53:13Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Run Safari-targeted Playwright CI on macOS",
   "type": "task",
-  "updated_at": "2026-10-10T09:51:20Z"
+  "updated_at": "2026-10-10T09:53:13Z"
 }
