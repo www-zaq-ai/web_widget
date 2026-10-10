@@ -14,11 +14,15 @@
     {
       "text": "Committed/pushed 9ab1807. Manual workflow dispatch denied by PAT permissions (403), but PR event automatically queued E2E run https://github.com/www-zaq-ai/web_widget/actions/runs/38042989091. Watching that run; keep task open pending hosted macOS/PostgreSQL validation.",
       "timestamp": "2026-10-10T09:53:53Z"
+    },
+    {
+      "text": "Hosted CI validation run38042989091: macOS PostgreSQL/setup/artifact upload succeeded; all four formerly failing WebKit cookie/partition tests PASS. Jobs still red from other assertions: stylesheet pending remove readiness expected1 received2 in all browsers (stylesheet.spec.ts168), plus Chromium reconnecting true at auth-bootstrap.spec.ts730. Failure traces/reports uploaded for all three platforms. CI runner/diagnostics scope complete; do not weaken assertions or claim overall CI green.",
+      "timestamp": "2026-10-10T10:04:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Run Safari-targeted Playwright CI on macOS",
   "type": "task",
-  "updated_at": "2026-10-10T09:53:53Z"
+  "updated_at": "2026-10-10T10:04:58Z"
 }
