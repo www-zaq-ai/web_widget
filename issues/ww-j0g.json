@@ -18,11 +18,15 @@
     {
       "text": "ZAQ acceptance expanded: seed893691 485 tests+11 properties pass; quality passes; public-only host fixtures 16 tests+1 property pass; Chromium real WSS/TLS proxy auth/assistant response/renewal/reconnect/explicit conversation restore/signed disconnect pass with zero browser errors. Separate non-widget BO WebKit timezone beforeEach blank page blocker repeats200/201, tracked zaq-yx7.5, not HostAdapter incompatibility. User reaffirms commit/push after upstream final-source browser gate; no merge/main switch. Await sh_12a87f210001lmNuwmHPIrRNtp completion, do not poll.",
       "timestamp": "2026-10-11T10:43:32Z"
+    },
+    {
+      "text": "Published PR24 candidate commit090f2493914f5cae77c22cb5fb2963d170643440 to origin ww-v12/explicit-host-startup under explicit user authorization. Final-source three-browser gate400passed2skipped; final precommit270tests0failures/quality clean; assets build and distributed binding-store checks pass. Concurrent singleton regression8ordinary DynamicSupervisors exactly1owner7already_started passes. ZAQ acceptance485tests+11properties/real WSS lifecycle green; BO WebKit timezone blocker zaq-yx7.5 separate. Full immutable SHA/API/options/migration/exact27paths sent to concurrent ZAQ session. No merge/main switch. Root-draining startup window addressed but original reported intermittent cause not conclusively reproduced. All task gates complete.",
+      "timestamp": "2026-10-11T10:57:53Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Host-independent adapter and authoritative process policies (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-11T10:43:32Z"
+  "updated_at": "2026-10-11T10:57:53Z"
 }
