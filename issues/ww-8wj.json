@@ -6,9 +6,15 @@
   "description": "Issue #23 follow-up on current ww-v12/explicit-host-startup branch/worktree, per approved plan. Replace removed RuntimeBuilder.build/3 in shared E2E host with WebWidget.Connector children; bounded runtime startup barrier; audit all browser lifecycle controls; startup regression preflight; precommit/assets/full Chromium Firefox WebKit suites; commit and push.",
   "id": "ww-8wj",
   "labels": [],
+  "comments": [
+    {
+      "text": "Migrated shared connectors 420/421 from removed RuntimeBuilder.build/3 to public WebWidget.Connector children. Added bounded shared runtime/store readiness barrier, Playwright readiness URL on test-only control port, and restore/reset barriers. Added isolated shared-fixture regression to mix precommit (startup, child ownership, cookie policies, bounded failure, preserved bindings after restore and invalidated bindings after reset). Audit found no remaining RuntimeBuilder.build, private RuntimeConfig, or global auth/integration overrides in browser fixtures. All 259 Elixir tests and assets build pass; Chromium bootstrap/renewal smoke passes. Full three-browser suite running in background sh_129d94b480012xRxMbtR5OPi3I, log /private/var/folders/9p/mdzhcqxx7hs8bw_10vwjvfp00000gn/T/opencode/ww-8wj-e2e.log; wait for notification, no polling. Commit/push only after browser validation.",
+      "timestamp": "2026-10-11T07:25:15Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Migrate browser fixtures to supervised connector API",
   "type": "task",
-  "updated_at": "2026-10-11T07:18:11Z"
+  "updated_at": "2026-10-11T07:25:15Z"
 }
