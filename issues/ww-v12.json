@@ -15,11 +15,15 @@
     {
       "text": "Delivery complete locally; all validation passed and all child tasks closed. bw sync attempted as required but failed pushing the beadwork tracking branch: git@github.com Permission denied (publickey). Implementation branch remains local and clean; no PR was created and GitHub issue #23 remains open pending merge.",
       "timestamp": "2026-10-10T18:26:39Z"
+    },
+    {
+      "text": "User requested commit and push of current working tree. Additional connector supervision/recovery and trusted-proxy deployment/readiness changes committed as 6c6df55, pushed to origin/ww-v12/explicit-host-startup. Fresh precommit passed: format, strict Credo, warnings-as-errors compile, 258 tests. No PR created.",
+      "timestamp": "2026-10-11T06:34:48Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "Explicit host-supervised widget infrastructure (#23)",
   "type": "epic",
-  "updated_at": "2026-10-10T18:26:39Z"
+  "updated_at": "2026-10-11T06:34:48Z"
 }
