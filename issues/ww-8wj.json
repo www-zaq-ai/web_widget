@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-11T07:18:07Z",
+  "description": "Issue #23 follow-up on current ww-v12/explicit-host-startup branch/worktree, per approved plan. Replace removed RuntimeBuilder.build/3 in shared E2E host with WebWidget.Connector children; bounded runtime startup barrier; audit all browser lifecycle controls; startup regression preflight; precommit/assets/full Chromium Firefox WebKit suites; commit and push.",
+  "id": "ww-8wj",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Migrate browser fixtures to supervised connector API",
+  "type": "task",
+  "updated_at": "2026-10-11T07:18:07Z"
+}
