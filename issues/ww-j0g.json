@@ -6,9 +6,15 @@
   "description": "User authorized upstream cleanup coordinated with ZAQ PR836 session ses_edf46f903ffeHhOV4an4F1sbLh. Work current branch; confirm exact public HostAdapter callbacks/options and commit/push authorization first. Process-owned proxy/session config; adapter readiness/status projection and desired comparison; installation and independent infra/connector specs; unpaused ordinary DynamicSupervisor root-kill recovery; focused/precommit/cluster/browser regressions. No merge or dependency-main switch.",
   "id": "ww-j0g",
   "labels": [],
+  "comments": [
+    {
+      "text": "Contract agreed with ZAQ session ses_edf46f903ffeHhOV4an4F1sbLh: public WebWidget.HostAdapter exact 4 callbacks, six-key generic hooks, scope/presentation derived from config; typed authoritative proxy/session process opts, including unique endpoint session overrides. User subsequently explicitly authorized commit/push validated candidate to current PR24 branch (no merge/main switch). Local host acceptance passed mix q and seed893691 82 tests+3 properties including TLS/WSS and root recovery after signed technical cookie flags. Package validation now 269 tests passes precommit and full repeat seeds893691/76543; cluster passes. One intermediate suite shutdown during infra crashes motivated temporary standalone raw-demo child (demo is not recovered connector; prevent transient raw-runtime restart races). Root drain barrier tested with 20 fresh unpaused DynamicSupervisor scenarios per run and three extra seed runs; do not claim intermittent original root cause conclusively proven. Full browser suite sh_12a7873e50010JWINV58zwCVK2 running for earlier technical-claims source; MUST rerun browser on final source after notification before committing/pushing. Final test-only/demo and internal cookie policy claim refinements already communicated to host. No upstream commit yet.",
+      "timestamp": "2026-10-11T10:31:33Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Host-independent adapter and authoritative process policies (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-11T10:04:04Z"
+  "updated_at": "2026-10-11T10:31:33Z"
 }
