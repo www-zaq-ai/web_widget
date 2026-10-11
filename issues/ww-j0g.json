@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-11T10:04:02Z",
+  "description": "User authorized upstream cleanup coordinated with ZAQ PR836 session ses_edf46f903ffeHhOV4an4F1sbLh. Work current branch; confirm exact public HostAdapter callbacks/options and commit/push authorization first. Process-owned proxy/session config; adapter readiness/status projection and desired comparison; installation and independent infra/connector specs; unpaused ordinary DynamicSupervisor root-kill recovery; focused/precommit/cluster/browser regressions. No merge or dependency-main switch.",
+  "id": "ww-j0g",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Host-independent adapter and authoritative process policies (#24/#23)",
+  "type": "task",
+  "updated_at": "2026-10-11T10:04:02Z"
+}
