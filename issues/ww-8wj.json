@@ -10,11 +10,15 @@
     {
       "text": "Migrated shared connectors 420/421 from removed RuntimeBuilder.build/3 to public WebWidget.Connector children. Added bounded shared runtime/store readiness barrier, Playwright readiness URL on test-only control port, and restore/reset barriers. Added isolated shared-fixture regression to mix precommit (startup, child ownership, cookie policies, bounded failure, preserved bindings after restore and invalidated bindings after reset). Audit found no remaining RuntimeBuilder.build, private RuntimeConfig, or global auth/integration overrides in browser fixtures. All 259 Elixir tests and assets build pass; Chromium bootstrap/renewal smoke passes. Full three-browser suite running in background sh_129d94b480012xRxMbtR5OPi3I, log /private/var/folders/9p/mdzhcqxx7hs8bw_10vwjvfp00000gn/T/opencode/ww-8wj-e2e.log; wait for notification, no polling. Commit/push only after browser validation.",
       "timestamp": "2026-10-11T07:25:15Z"
+    },
+    {
+      "text": "Fix committed locally as 7a2ae84 on ww-v12/explicit-host-startup. Validation complete: mix precommit 259 tests passed; assets build passed; full Chromium/Firefox/WebKit suite 400 passed, 2 skipped (20.2m). Existing browser assertions unchanged. Push blocked: origin SSH denied publickey; attempted HTTPS via authenticated gh credential helper without changing remote config, but GitHub returned 403 permission denied to jfayad. Delivery remains pending valid repository write credentials. Do not rewrite commits or change remotes; retry git push origin HEAD once credentials are fixed.",
+      "timestamp": "2026-10-11T07:45:25Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Migrate browser fixtures to supervised connector API",
   "type": "task",
-  "updated_at": "2026-10-11T07:25:15Z"
+  "updated_at": "2026-10-11T07:45:25Z"
 }
