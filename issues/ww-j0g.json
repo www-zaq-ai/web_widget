@@ -14,11 +14,15 @@
     {
       "text": "Final-source browser gate launched sh_12a87f210001lmNuwmHPIrRNtp. Earlier E2E run explicitly cancelled because it loaded older pre-technical-claim source; its orphaned own server PID3515 was stopped before relaunch (first fresh launch rejected port4021, no test assertion failure). Concurrent singleton audit now has regression with 8 ordinary DynamicSupervisors: exactly one installs infrastructure; seven get already_started; owner/config/Mnesia unaffected. Latest mix precommit 270 tests passes, no quality issues. No production source changes since final browser launch; added concurrency test and documentation clarifications only. Await browser completion notification, do not poll; commit/push only on successful final browser validation.",
       "timestamp": "2026-10-11T10:37:31Z"
+    },
+    {
+      "text": "ZAQ acceptance expanded: seed893691 485 tests+11 properties pass; quality passes; public-only host fixtures 16 tests+1 property pass; Chromium real WSS/TLS proxy auth/assistant response/renewal/reconnect/explicit conversation restore/signed disconnect pass with zero browser errors. Separate non-widget BO WebKit timezone beforeEach blank page blocker repeats200/201, tracked zaq-yx7.5, not HostAdapter incompatibility. User reaffirms commit/push after upstream final-source browser gate; no merge/main switch. Await sh_12a87f210001lmNuwmHPIrRNtp completion, do not poll.",
+      "timestamp": "2026-10-11T10:43:32Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Host-independent adapter and authoritative process policies (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-11T10:37:31Z"
+  "updated_at": "2026-10-11T10:43:32Z"
 }
