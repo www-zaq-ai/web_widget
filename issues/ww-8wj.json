@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-11T07:18:07Z",
@@ -7,8 +7,8 @@
   "id": "ww-8wj",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Migrate browser fixtures to supervised connector API",
   "type": "task",
-  "updated_at": "2026-10-11T07:18:07Z"
+  "updated_at": "2026-10-11T07:18:11Z"
 }
