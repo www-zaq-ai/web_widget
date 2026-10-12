@@ -50,11 +50,15 @@
     {
       "text": "Exact unchanged concurrent-first-loads test diagnostic launched shellsh_12f15e29d001SE0lDRJMyeu7xH:10repetitions perbrowser(30cases),tracealwayson,JSONreport and artifacts in unique approvedtemp ww-1xb-session-race-diagnostic paths. No assertion/source changes or retries, production10secdeadline unchanged. Waiting completion notification; do not poll. Existing test5sec vs app10sec mismatch reproduced in-memory with legal serialized3sec preparations, but original cause still unproven until real trace/frame diagnostic inspection.",
       "timestamp": "2026-10-12T07:50:30Z"
+    },
+    {
+      "text": "Focused real-browser diagnosis complete. Exact unchanged session-race test10repetitions perbrowser=30/30pass, tracealwayson/preserveduniqueartifactdir. Everycase1cookieWrite and no terminalsessionerrors; Firefox/WebKit4WebSocket handshakes+4bootstrapresponses inclreconnect; Chromium WebSocket blocked by ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS, succeeds via existinglongpoll (1WSattempt/7bootstrapresponses). Controlled Firefox/WebKit2repeats each delaying ONLY bootstraprequests1500ms reproduces original5sec assertion failure4/4; atassertion oneconnected/joined true, otherfalse withfailure:null; bothconnected+LiveViewjoined by6907-6940ms withinexisting10sec applicationdeadline,4successfulbootstrapresponses/1cookieWrite. Confirms test false-negative mechanism due unsupported5sec observation cutoff+serializedWebLock, NOT proven forensiccause of originaloverwritten traces. Diagnosticreports approvedtemp ww-1xb-session-race-diagnostic.json and ww-1xb-session-delay-diagnostic.json with preservedartifactdirs. Removedtemporarydelay/finallyinstrumentation; gitdiff session-race.spec.ts empty. Production deadlines/cookie/CSRF guards unchanged, scope candidate stillunpublished. Proposed followup: align ONLY this test observation withdocument10sec budget, preserve allsecurityassertions and add slowserializedbootstrap regression; address localhostbrowserpermission explicitly ratherthan globalsecuritydisable ifneeded. No new fullgate scheduled/no publication.",
+      "timestamp": "2026-10-12T07:58:37Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T07:50:30Z"
+  "updated_at": "2026-10-12T07:58:37Z"
 }
