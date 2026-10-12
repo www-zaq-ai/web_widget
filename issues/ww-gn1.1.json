@@ -11,11 +11,15 @@
     {
       "text": "Implementation separates pending_submission from accepted_requests and per-message stream correlation; receipts require no assistant ID, commands/messages unchanged, widget Delivery explicitly v2. LiveView mailbox preserves pre-receipt event ordering; history refresh explicitly resets React delivery. New nil/absent-ID/no-answer, concurrent stream, error isolation, typing, version rejection and terminal ordering regressions added without removing legacy mock assertions. mix precommit passes 304 tests; actual ZAQ source constructor smoke passes 2 tests including sync ack/terminal no duplicate PubSub. Existing browser suite underway; no new feature E2E cases authored.",
       "timestamp": "2026-10-12T17:17:53Z"
+    },
+    {
+      "text": "Implementation committed and pushed on authorized current-worktree branch feature/submission-message-lifecycle at d7ed897. Final mix precommit: 307 tests, zero failures, Credo clean, format check and warnings-as-errors clean. npm build and actual current ZAQ constructors smoke (2 tests) pass. Browser fixture inspections/assertions migrated from chat.active to streams[transport_id].request_id; watchdog now verifies receipt-unknown send blocking while preserving draft/no resubmit. Updated 402-case browser run is in progress. Do not push main; bw sync would push the separate beadwork branch, so it is not run under the user's explicitly new-feature-branch-only push authorization.",
+      "timestamp": "2026-10-12T17:28:38Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Implement and validate v2 public lifecycle",
   "type": "task",
-  "updated_at": "2026-10-12T17:17:53Z"
+  "updated_at": "2026-10-12T17:28:38Z"
 }
