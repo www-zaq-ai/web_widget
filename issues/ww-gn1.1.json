@@ -7,9 +7,15 @@
   "id": "ww-gn1.1",
   "labels": [],
   "parent": "ww-gn1",
+  "comments": [
+    {
+      "text": "Implementation separates pending_submission from accepted_requests and per-message stream correlation; receipts require no assistant ID, commands/messages unchanged, widget Delivery explicitly v2. LiveView mailbox preserves pre-receipt event ordering; history refresh explicitly resets React delivery. New nil/absent-ID/no-answer, concurrent stream, error isolation, typing, version rejection and terminal ordering regressions added without removing legacy mock assertions. mix precommit passes 304 tests; actual ZAQ source constructor smoke passes 2 tests including sync ack/terminal no duplicate PubSub. Existing browser suite underway; no new feature E2E cases authored.",
+      "timestamp": "2026-10-12T17:17:53Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Implement and validate v2 public lifecycle",
   "type": "task",
-  "updated_at": "2026-10-12T16:57:49Z"
+  "updated_at": "2026-10-12T17:17:53Z"
 }
