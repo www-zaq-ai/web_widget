@@ -34,11 +34,15 @@
     {
       "text": "User explicitly requested full browser gate rerun. Confirmed no widget runner/server active before launch. Fresh full root suite (no max-failures cutoff) then scoped three-browser suite launched sequentially as shell sh_12ecd0fb20018E0LLYH92L0nEB; logs approved temp ww-1xb-full-gate-rerun-{root,scoped}.log. No source/assertion/retry/timeout configuration changes. Await completion notification, do not poll. Publication still gated on both passing; existing commit/push authorization PR24 only, no merge/main switch/no ZAQ edits.",
       "timestamp": "2026-10-12T06:29:23Z"
+    },
+    {
+      "text": "User reports Docker/PostgreSQL container was down and is now restarted. Cancelled only our current gate wrapper/runner/fixture PIDs40613,40680,40728,40729 to begin fresh after service restoration. Verified real dev Repo SELECT1 succeeds (no DB writes). Fresh complete root+scoped three-browser gate (no fail cutoff, assertions/retries/timeouts unchanged) started shellsh_12ef0a9e3001bZhqx4HHI2I248; logsww-1xb-full-gate-pg-up-{root,scoped}.log. Await completion/no polling. Do not claim PG outage proves cause of all prior failures. Publication remains gated on both suites passing, scope source frozen/no ZAQ edits/no merge/main switch.",
+      "timestamp": "2026-10-12T07:08:16Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T06:29:23Z"
+  "updated_at": "2026-10-12T07:08:16Z"
 }
