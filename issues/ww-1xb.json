@@ -14,11 +14,15 @@
     {
       "text": "Implementation/candidate local ready, no publication yet. Baseline tests-first scope suite5failures showed unsupported scope/macros; now scoped and root paths share normalized Mount; process+offline installation, compiled macros metadata, dynamic static/layout assets, HTTP/socket/control fail-closed, readiness generation+asset path checks implemented with sixhooks unchanged. Precommit279tests passed before final extra macro test; scoped Playwright real generated snippet/TLSProxy/WSS/JWT/assistant/cookie/publicreadiness/signeddisconnect3passed allbrowsers. Extra positive/fullprefix/conflict/outer-Phoenix-scope test raises count280. Whole precommit rerun while full browser active hit existing readiness test100ms assert_receive synchronization race (message arrived just after100ms, APIbudget200 unchanged); focused deadline plus allnewscope tests11passed, no assertions weakened. Distributed authstore check passes; whitespace clean. Full root400suite sh_12dff0a75001bCyV59RMlG6OMd pending; final isolated precommit/repeatseed required after browser completes. No production changes since root browser launch, only test/docs. Exact earlyAPI confirmed and localcandidate sent ZAQ for acceptance. Delivery remains authorized commit/push only once validation gates pass, no merge/main switch/no ZAQ edits.",
       "timestamp": "2026-10-12T02:51:54Z"
+    },
+    {
+      "text": "ZAQ scoped local-path acceptance received: trusted/channels processscope via normal provider-runtime/listener construction(no parallelstartup); macroarity2 matched; no hostassets hacks; mixqclean; expanded679tests+12properties seed893691 pass; publicscopedhost18tests+1property passes assets/install/rootURLabsence/offlineinstallation. Rebuilt/restarted realChromium scopedassets-\u003eWSSlocalhost4003/channels/widget/7/live/websocket-\u003eJWT-\u003erealassistant-\u003erenewal-\u003ereconnect-\u003edurableconversationrestore-\u003esignedscopeddisconnect pass,no browsererrors/APIincompatibility. ZAQ remains uncommitted/unpublished. Upstreamrootbrowser sh_12dff0a75001bCyV59RMlG6OMd pending; final isolatedprecommit280tests required after completion; do notpoll. Commit/push authorization remainsPR24 only/no merge/main switch.",
+      "timestamp": "2026-10-12T02:54:15Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T02:51:54Z"
+  "updated_at": "2026-10-12T02:54:15Z"
 }
