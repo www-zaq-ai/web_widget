@@ -6,9 +6,15 @@
   "description": "Extend published090f249 with validated startup scope, coordinated compile-time Endpoint/Router macros, scope-derived widget/session/socket/control/assets/installation/readiness/cookie paths; backward-compatible custom widget_path with conflict rejection. Tests first root/scoped/security and real WSS/readiness; full quality/browser gates; commit/push on existing PR24 branch authorized, no merge/main switch/no ZAQ edits. Dependencies: contract/API agreement -\u003e failing tests -\u003e implementation -\u003e regression -\u003e publication.",
   "id": "ww-1xb",
   "labels": [],
+  "comments": [
+    {
+      "text": "Confirmed with user/ZAQ exact additive API: startup scope:/channels(default/); macro web_widget(/widget,scope:...),web_widget_api(/widget-api,scope:...),web_widget_socket(/widget,scope:...). Nonroot canonical prefixes only; legacy transport.widget_path root supported, nonroot absent/exact derived only. Offline installation scope; online cannot contradict installed scope. Init mismatch with explicit endpoint metadata otherwise fail-closed/non-green. Plan recorded contract -\u003e failing tests -\u003e implementation -\u003e focused/regression/full3browser -\u003e authorized commit/push PR24. Contract decision updated before coding. No callback/hook change/no ZAQ edits.",
+      "timestamp": "2026-10-12T02:28:56Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T02:26:47Z"
+  "updated_at": "2026-10-12T02:28:56Z"
 }
