@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-12T11:02:03Z",
+  "description": "Tests-first exact ngrok header shape on a30116d baseline; allow missing X-Forwarded-Port only for configured root HTTPS443 authority after peer/host/proto validation. Reject explicit conflicts/duplicates/ambiguity, nondefault missing ports; XFF never establishes peer trust. Real isolated scoped HTTPS-proxy/WSS/readiness/cookie regressions, quality and applicable browser gates. API/sixhooks unchanged; no ZAQ edits/user service restarts/rootcause reruns. Validated candidate commit/push to existing PR24 authorized; no merge/main switch. Contract -\u003e redtests -\u003e narrowfix -\u003e isolatedvalidation -\u003e publication.",
+  "id": "ww-a9r",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Accept absent forwarded port for trusted default HTTPS origin (#24)",
+  "type": "task",
+  "updated_at": "2026-10-12T11:02:03Z"
+}
