@@ -58,11 +58,15 @@
     {
       "text": "Approved natural-failure plan resumed. Added temporary opt-in passive per-iframe diagnostic helper (SESSION_RACE_DIAGNOSTICS=1): document/script times, lock request/acquire/release, HTTP statuses/cookie-write bool/CSRF fingerprints, channel/transport/error states and WebSocket join replies; no raw cookies/JWTs/keys recorded. Original test assertions/deadlines preserved, failed result rethrown; observer may retain context through existing app budget without retry/reinitialization. Budget: focused WebKit10 then relevant prefix/full WebKit if needed; baseline090 comparison in isolated temp if natural failure captured. No production changes/test-timeout correction/publication.",
       "timestamp": "2026-10-12T08:25:11Z"
+    },
+    {
+      "text": "Natural diagnostic focused WebKit10/10pass; observer verified prototype wrapping captures lock request/acquire/release and actual joinOK responses. Candidate bundled assets byte-identical to published090. Isolated git-archive baseline prepared approvedtemp ww-1xb-baseline-q5G0SJ with dependency links and identical diagnostic test overlay, mainbranch untouched (not built/run yet). Full ordered WebKit134-case diagnostic launched sh_12f3c8c08001j0GDkMGphDAHbl; original5sec assertion/production10sec deadlines intact, failures observed but retained, unique JSON/artifactdirs. Await completion/no polling. If natural race captured, analyze frame-specific timeline then baseline comparison; if not, one bounded longer-history run only, then report not reproduced rather than changing tests.",
+      "timestamp": "2026-10-12T08:34:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T08:25:11Z"
+  "updated_at": "2026-10-12T08:34:58Z"
 }
