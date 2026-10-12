@@ -54,11 +54,15 @@
     {
       "text": "Focused real-browser diagnosis complete. Exact unchanged session-race test10repetitions perbrowser=30/30pass, tracealwayson/preserveduniqueartifactdir. Everycase1cookieWrite and no terminalsessionerrors; Firefox/WebKit4WebSocket handshakes+4bootstrapresponses inclreconnect; Chromium WebSocket blocked by ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS, succeeds via existinglongpoll (1WSattempt/7bootstrapresponses). Controlled Firefox/WebKit2repeats each delaying ONLY bootstraprequests1500ms reproduces original5sec assertion failure4/4; atassertion oneconnected/joined true, otherfalse withfailure:null; bothconnected+LiveViewjoined by6907-6940ms withinexisting10sec applicationdeadline,4successfulbootstrapresponses/1cookieWrite. Confirms test false-negative mechanism due unsupported5sec observation cutoff+serializedWebLock, NOT proven forensiccause of originaloverwritten traces. Diagnosticreports approvedtemp ww-1xb-session-race-diagnostic.json and ww-1xb-session-delay-diagnostic.json with preservedartifactdirs. Removedtemporarydelay/finallyinstrumentation; gitdiff session-race.spec.ts empty. Production deadlines/cookie/CSRF guards unchanged, scope candidate stillunpublished. Proposed followup: align ONLY this test observation withdocument10sec budget, preserve allsecurityassertions and add slowserializedbootstrap regression; address localhostbrowserpermission explicitly ratherthan globalsecuritydisable ifneeded. No new fullgate scheduled/no publication.",
       "timestamp": "2026-10-12T07:58:37Z"
+    },
+    {
+      "text": "Approved natural-failure plan resumed. Added temporary opt-in passive per-iframe diagnostic helper (SESSION_RACE_DIAGNOSTICS=1): document/script times, lock request/acquire/release, HTTP statuses/cookie-write bool/CSRF fingerprints, channel/transport/error states and WebSocket join replies; no raw cookies/JWTs/keys recorded. Original test assertions/deadlines preserved, failed result rethrown; observer may retain context through existing app budget without retry/reinitialization. Budget: focused WebKit10 then relevant prefix/full WebKit if needed; baseline090 comparison in isolated temp if natural failure captured. No production changes/test-timeout correction/publication.",
+      "timestamp": "2026-10-12T08:25:11Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T07:58:37Z"
+  "updated_at": "2026-10-12T08:25:11Z"
 }
