@@ -6,9 +6,15 @@
   "description": "Tests-first exact ngrok header shape on a30116d baseline; allow missing X-Forwarded-Port only for configured root HTTPS443 authority after peer/host/proto validation. Reject explicit conflicts/duplicates/ambiguity, nondefault missing ports; XFF never establishes peer trust. Real isolated scoped HTTPS-proxy/WSS/readiness/cookie regressions, quality and applicable browser gates. API/sixhooks unchanged; no ZAQ edits/user service restarts/rootcause reruns. Validated candidate commit/push to existing PR24 authorized; no merge/main switch. Contract -\u003e redtests -\u003e narrowfix -\u003e isolatedvalidation -\u003e publication.",
   "id": "ww-a9r",
   "labels": [],
+  "comments": [
+    {
+      "text": "Finalvalidated candidate: tests-first exactngrokshape2redtests beforefix, nowtinyproductiondiff(default443 missingXFPpredicate only). Finalmixprecommit289tests0failuresqualityclean; distributedauthstorepass; scoped3browser3passed; cookie/host3browser28passed2existingSkips. Both realTLS/WSS default443omit and existingexplicitnondefault retain securepartitionedcookie/read-onlyverification,101 upgrade+forgedCSRF403/foreignOrigin403/directHTTP503/localreadiness. Nativecompile-timePhoenixforceSSL test provesconfiguredproxywrapper precedesSSLpipeline,untrustedheadersstrippedHTTPredirect/noCookie andtrustedconflicts400 including socket. AlreadyHTTPSconn doesnotbypasstrustedheaderchecks. Documentedpreconditions externalearlierrewriter enforcepeertrust,proxyblockrequired(widgetfilterdisabledwithoutit),backendingressrestricted. ZAQ49tests+2properties/mixq green andred400 baseline thenlocalpass acknowledged. No frontend/assets/sixhook/startupchanges/noZAQedits/user-services/rootcause reruns. PublicationauthorizedsamePR24branch/no merge/main switch; readycommit8paths.",
+      "timestamp": "2026-10-12T11:26:02Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Accept absent forwarded port for trusted default HTTPS origin (#24)",
   "type": "task",
-  "updated_at": "2026-10-12T11:02:08Z"
+  "updated_at": "2026-10-12T11:26:02Z"
 }
