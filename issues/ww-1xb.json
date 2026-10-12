@@ -74,11 +74,15 @@
     {
       "text": "User explicitly ended rootcause investigation and reauthorized proceeding with scoped candidate publication under priorPR24 permission; contention onlypossible/notproven, no justifiedproductionworkaround. Finalcheck27candidate files allmtime before passing root/scoped gates; session-race.spec.ts HEADdiffempty/tempobserverremoved; frontend/bundleunchanged. Fresh finalmixprecommit qualityclean280tests0failures; freshassetsbuildpasses; SHA256candidate contentsunchangedduringvalidation. Reuse validunchanged production-source latest root400passed2skipped0flaky (passive diagnostic run, assertions unchanged) and scoped3passed; prior distributedauthstorepass. LatestZAQacceptance689tests+12properties,mixqclean,scopedWSSconnector9 fulllifecyclezeroerrors. No blindbrowserreruns/no user services touched/no ZAQedits/no merge/main switch. Readycommit/push ww-v12/explicit-host-startup withww-1xb.",
       "timestamp": "2026-10-12T09:38:45Z"
+    },
+    {
+      "text": "Published scoped candidate a30116d702f9b271e66f4b97f5bfbb4e432d955b to origin ww-v12/explicit-host-startup (PR24), remote ls-remote verified; workingtreeclean. Freshfinalprecommit280tests0failures/qualityclean,assetsbuildpasses/nobundlechanges; reuse unchanged-source latestroot400passed2skipped0flaky andscoped3passed plusdistributedauthstore. FullimmutableSHA/API/options/exact27paths/validation/caveats sentZAQsession. Historical causeNOTPROVEN, contentionpossibleonly; no productionworkaround/no assertiondeadlinechange; temporaryobserversremoved. User explicitlymoveon/publicationauthorized. NoZAQedits/no user services touched/no merge/main switch. Taskcomplete.",
+      "timestamp": "2026-10-12T09:40:28Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T09:38:45Z"
+  "updated_at": "2026-10-12T09:40:28Z"
 }
