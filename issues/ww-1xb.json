@@ -62,11 +62,15 @@
     {
       "text": "Natural diagnostic focused WebKit10/10pass; observer verified prototype wrapping captures lock request/acquire/release and actual joinOK responses. Candidate bundled assets byte-identical to published090. Isolated git-archive baseline prepared approvedtemp ww-1xb-baseline-q5G0SJ with dependency links and identical diagnostic test overlay, mainbranch untouched (not built/run yet). Full ordered WebKit134-case diagnostic launched sh_12f3c8c08001j0GDkMGphDAHbl; original5sec assertion/production10sec deadlines intact, failures observed but retained, unique JSON/artifactdirs. Await completion/no polling. If natural race captured, analyze frame-specific timeline then baseline comparison; if not, one bounded longer-history run only, then report not reproduced rather than changing tests.",
       "timestamp": "2026-10-12T08:34:58Z"
+    },
+    {
+      "text": "Full ordered WebKit diagnostic passed133/134(1skip), natural race also passed: frames lockrequested70/71ms afterrelease, firstjoins201/302ms, allbootstrapHTTP200/1cookieWrite, all4joinreplyOK. Final bounded longer-history run samefixture/all402cases started sh_12f4416d4001kdwqfNNRd9uocn with passive diagnostic env, unchanged5sec assertion/10sec production budgets; unique reportww-1xb-natural-full-history.json/artifacts/log. If natural failurecaptured, classify pending-beforedeadline vs realterminalcookie/CSRF/channel/browserpolicy failure and compare published090 isolatedbaseline. If notcaptured, STOP attempts/reportrootcausenotproven, no speculative production/testfix or publication. Do notpoll.",
+      "timestamp": "2026-10-12T08:39:58Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T08:34:58Z"
+  "updated_at": "2026-10-12T08:39:58Z"
 }
