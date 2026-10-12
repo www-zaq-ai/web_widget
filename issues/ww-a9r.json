@@ -10,11 +10,15 @@
     {
       "text": "Finalvalidated candidate: tests-first exactngrokshape2redtests beforefix, nowtinyproductiondiff(default443 missingXFPpredicate only). Finalmixprecommit289tests0failuresqualityclean; distributedauthstorepass; scoped3browser3passed; cookie/host3browser28passed2existingSkips. Both realTLS/WSS default443omit and existingexplicitnondefault retain securepartitionedcookie/read-onlyverification,101 upgrade+forgedCSRF403/foreignOrigin403/directHTTP503/localreadiness. Nativecompile-timePhoenixforceSSL test provesconfiguredproxywrapper precedesSSLpipeline,untrustedheadersstrippedHTTPredirect/noCookie andtrustedconflicts400 including socket. AlreadyHTTPSconn doesnotbypasstrustedheaderchecks. Documentedpreconditions externalearlierrewriter enforcepeertrust,proxyblockrequired(widgetfilterdisabledwithoutit),backendingressrestricted. ZAQ49tests+2properties/mixq green andred400 baseline thenlocalpass acknowledged. No frontend/assets/sixhook/startupchanges/noZAQedits/user-services/rootcause reruns. PublicationauthorizedsamePR24branch/no merge/main switch; readycommit8paths.",
       "timestamp": "2026-10-12T11:26:02Z"
+    },
+    {
+      "text": "Publishedcommit2559489739a394f9ad57d8263ed4b2cab546f4a3 toexistingoriginww-v12/explicit-host-startup(PR24),remotels-remoteverified/workingtreeclean. Finalquality289tests0failures/distributedpass/scopedbrowser3pass/cookiehostbrowser28pass2existingskips. Actualdefault443missingXFP+explicitnondefaultTLS/WSScookie/CSRF/Origin/directHTTP/readiness/securityseam verified. FullSHA/exact8paths/contracts/seampreconditions/gates sentexistingZAQsessionforimmutablepin. NoZAQedits/services/evalrestarts/rootcause reruns/no merge/main switch. Taskdone.",
+      "timestamp": "2026-10-12T11:27:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Accept absent forwarded port for trusted default HTTPS origin (#24)",
   "type": "task",
-  "updated_at": "2026-10-12T11:26:02Z"
+  "updated_at": "2026-10-12T11:27:23Z"
 }
