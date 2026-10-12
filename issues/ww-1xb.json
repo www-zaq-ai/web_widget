@@ -46,11 +46,15 @@
     {
       "text": "User switched out of Plan mode and authorized focused investigation. Preserve existing uncommitted scope candidate. Begin exact concurrent-first-loads test unchanged, repeat with traces always on and separate approved-temp output/report directories so scoped runs cannot erase evidence. Distinguish5sec assertion cutoff from real10sec application deadline, cookie/CSRF failures and LiveView join errors; no production timeout/guard changes or publication without successful validation.",
       "timestamp": "2026-10-12T07:48:08Z"
+    },
+    {
+      "text": "Exact unchanged concurrent-first-loads test diagnostic launched shellsh_12f15e29d001SE0lDRJMyeu7xH:10repetitions perbrowser(30cases),tracealwayson,JSONreport and artifacts in unique approvedtemp ww-1xb-session-race-diagnostic paths. No assertion/source changes or retries, production10secdeadline unchanged. Waiting completion notification; do not poll. Existing test5sec vs app10sec mismatch reproduced in-memory with legal serialized3sec preparations, but original cause still unproven until real trace/frame diagnostic inspection.",
+      "timestamp": "2026-10-12T07:50:30Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T07:48:08Z"
+  "updated_at": "2026-10-12T07:50:30Z"
 }
