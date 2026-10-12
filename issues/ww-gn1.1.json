@@ -15,11 +15,15 @@
     {
       "text": "Implementation committed and pushed on authorized current-worktree branch feature/submission-message-lifecycle at d7ed897. Final mix precommit: 307 tests, zero failures, Credo clean, format check and warnings-as-errors clean. npm build and actual current ZAQ constructors smoke (2 tests) pass. Browser fixture inspections/assertions migrated from chat.active to streams[transport_id].request_id; watchdog now verifies receipt-unknown send blocking while preserving draft/no resubmit. Updated 402-case browser run is in progress. Do not push main; bw sync would push the separate beadwork branch, so it is not run under the user's explicitly new-feature-branch-only push authorization.",
       "timestamp": "2026-10-12T17:28:38Z"
+    },
+    {
+      "text": "Final full browser run completed: 399 passed, 2 skipped, 1 Firefox composer-bootstrap failure before submission in recovery.spec.ts:175 (none progress). Trace showed only expected parent /widget/missing 404 and no exposed protocol failure. Exact failing existing case rerun with --project=firefox --grep 'none progress uses tool presentation' --repeat-each=3: 3/3 passed. No assertions weakened and no code changes after pushed SHA d7ed897fae3e519ae25ea5155d7c20b5e8f8805d. Report full-suite non-reproduced failure transparently; backend precommit 307, constructor smoke 2, asset build all pass.",
+      "timestamp": "2026-10-12T17:49:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Implement and validate v2 public lifecycle",
   "type": "task",
-  "updated_at": "2026-10-12T17:28:38Z"
+  "updated_at": "2026-10-12T17:49:08Z"
 }
