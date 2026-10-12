@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-12T17:49:14Z",
   "created": "2026-10-12T16:57:35Z",
   "description": "Tests first; migrate constructors, correlation and per-message presentation, update canonical contract, run focused and existing suites, push exact SHA on authorized same-worktree branch.",
   "id": "ww-gn1.1",
@@ -22,8 +23,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Implement and validate v2 public lifecycle",
   "type": "task",
-  "updated_at": "2026-10-12T17:49:08Z"
+  "updated_at": "2026-10-12T17:49:14Z"
 }
