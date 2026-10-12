@@ -10,11 +10,15 @@
     {
       "text": "Final validated localfeed candidate: testsfirst6red failures on2559489 (guardedHTTP/scopedstatus/redirect/gatedprobe). Focused58tests pass; finalmixprecommit297tests0failures/971mods-funsqualityclean; scopedbrowser3pass/cookie-host28pass2existingskips; distributedauthchecks pass; whitespaceclean. Guarded page+session exact503https_required/noCookie or validatedHTTPSredirect proves localfeed without proxy/forceSSLclassification/flags. Stronger directHTTP/TLS handshake + optionalproxy preserved; no actual security assertions removed. New stopped/missing/wrongmount/stale/runtime/auth/policymismatch/arbitrary404/500/503/cookie-write/redirect negatives. Only readiness source+summary productionchanges; no config/API/hooks/assets/guards/ZAQedits/user/evalservices/rootcause reruns. ZAQ38tests+1propertygreen with unchanged baseline-red/local-green host assertions; broadregression next there. Contractdocs clarify liveness versus security, configuredURL neverTLSproof; guarded verification local/not_checked/not_checked. Authorized publish samePR24branch, no merge/main switch.",
       "timestamp": "2026-10-12T12:15:19Z"
+    },
+    {
+      "text": "Published b66645544a0b4d3d0cb4debfe8741bbe3ad3e466 on existing origin ww-v12/explicit-host-startup PR24; git ls-remote verified identical SHA, workingtreeclean. ACTUAL SHA/full evidence/exact8paths sent existingZAQsession for authorizedimmutablepin and its remainingquality checks. Upstream297tests0failures/qualityclean/scoped3/cookie-host28+2skips/distributedauthpass. No ZAQedits/user/evalservices/securityguardchanges/merge/main switch. Optional ghPRmetadata lookup unavailable unauthenticated; push+remoteSHA publication verified. Completed.",
+      "timestamp": "2026-10-12T12:16:04Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Report guarded HTTP feed as locally ready (#24)",
   "type": "task",
-  "updated_at": "2026-10-12T12:15:19Z"
+  "updated_at": "2026-10-12T12:16:04Z"
 }
