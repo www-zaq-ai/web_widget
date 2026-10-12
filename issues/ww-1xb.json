@@ -42,11 +42,15 @@
     {
       "text": "Fresh full gate after confirmed PostgreSQL SELECT1: root398passed2skipped2failed (concurrent first loads of same widget both retain valid LiveView session in Chromium and WebKit; second iframe liveSocket false at5sec assertion). Scoped3browser gate3passed. Restoring Docker/PG did not resolve full gate; cause not established. Publication remains blocked, no commit/push/SHA for scope. No assertions/retries/timeouts changed and no blind rerun scheduled. Request user direction for focused concurrent-session investigation versus pausing candidate. Logs approvedtemp ww-1xb-full-gate-pg-up-{root,scoped}.log; sequential scoped invocation reused default artifact directory so root trace paths may have been overwritten—preserve separate output dirs on any next diagnostic run. Quality280/distributed/ZAQ679+12properties acceptance previously green; scope source unchanged.",
       "timestamp": "2026-10-12T07:31:11Z"
+    },
+    {
+      "text": "User switched out of Plan mode and authorized focused investigation. Preserve existing uncommitted scope candidate. Begin exact concurrent-first-loads test unchanged, repeat with traces always on and separate approved-temp output/report directories so scoped runs cannot erase evidence. Distinguish5sec assertion cutoff from real10sec application deadline, cookie/CSRF failures and LiveView join errors; no production timeout/guard changes or publication without successful validation.",
+      "timestamp": "2026-10-12T07:48:08Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T07:31:11Z"
+  "updated_at": "2026-10-12T07:48:08Z"
 }
