@@ -18,11 +18,15 @@
     {
       "text": "ZAQ scoped local-path acceptance received: trusted/channels processscope via normal provider-runtime/listener construction(no parallelstartup); macroarity2 matched; no hostassets hacks; mixqclean; expanded679tests+12properties seed893691 pass; publicscopedhost18tests+1property passes assets/install/rootURLabsence/offlineinstallation. Rebuilt/restarted realChromium scopedassets-\u003eWSSlocalhost4003/channels/widget/7/live/websocket-\u003eJWT-\u003erealassistant-\u003erenewal-\u003ereconnect-\u003edurableconversationrestore-\u003esignedscopeddisconnect pass,no browsererrors/APIincompatibility. ZAQ remains uncommitted/unpublished. Upstreamrootbrowser sh_12dff0a75001bCyV59RMlG6OMd pending; final isolatedprecommit280tests required after completion; do notpoll. Commit/push authorization remainsPR24 only/no merge/main switch.",
       "timestamp": "2026-10-12T02:54:15Z"
+    },
+    {
+      "text": "Initial full rootgate failed398passed2skipped2Firefox (legacy recovery cumulative snapshot80missed whileDOMadvanced100; nextnone-progress setup5sec mounttimeout withtraceHTTPpage~1.9s/bootstrap~0.6s/verification~0.5s). Diagnostic traces saved approvedtemp ww-1xb-firefox-{deltas,mount}-trace.zip. No scope/auth error observed; no production/assertion/timeout/retry changes made. Both exact failingcases passed5fresh repetitions each10passed1.2m. Finalisolatedprecommit280passedqualityclean, fullElixirseed893691280passed. Fullrootfreshgate sh_12e1a623f001kAo8fsvev6aUXr nowpending; publication stillheld until successfulfullgate. Scoped3browser and ZAQ679+12properties/realWSS acceptancegreen. Do notpoll; source frozen. After notificationreadsummary; ongreencommit/pushPR24branchwithww-1xb, sendfullSHA/exactpaths/validationtoZAQ,close/sync task; no merge/main switch.",
+      "timestamp": "2026-10-12T03:14:27Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T02:54:15Z"
+  "updated_at": "2026-10-12T03:14:27Z"
 }
