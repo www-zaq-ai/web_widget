@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-12T12:06:58Z",
@@ -7,8 +7,8 @@
   "id": "ww-2ou",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Report guarded HTTP feed as locally ready (#24)",
   "type": "task",
-  "updated_at": "2026-10-12T12:06:58Z"
+  "updated_at": "2026-10-12T12:07:01Z"
 }
