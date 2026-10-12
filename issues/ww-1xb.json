@@ -22,11 +22,15 @@
     {
       "text": "Initial full rootgate failed398passed2skipped2Firefox (legacy recovery cumulative snapshot80missed whileDOMadvanced100; nextnone-progress setup5sec mounttimeout withtraceHTTPpage~1.9s/bootstrap~0.6s/verification~0.5s). Diagnostic traces saved approvedtemp ww-1xb-firefox-{deltas,mount}-trace.zip. No scope/auth error observed; no production/assertion/timeout/retry changes made. Both exact failingcases passed5fresh repetitions each10passed1.2m. Finalisolatedprecommit280passedqualityclean, fullElixirseed893691280passed. Fullrootfreshgate sh_12e1a623f001kAo8fsvev6aUXr nowpending; publication stillheld until successfulfullgate. Scoped3browser and ZAQ679+12properties/realWSS acceptancegreen. Do notpoll; source frozen. After notificationreadsummary; ongreencommit/pushPR24branchwithww-1xb, sendfullSHA/exactpaths/validationtoZAQ,close/sync task; no merge/main switch.",
       "timestamp": "2026-10-12T03:14:27Z"
+    },
+    {
+      "text": "Second monolithicroot gate failed differentlegacycases317passed2skipped5failed78unrun: Firefoxauthbootstrap expected3providerfetches saw4afterreconnect; WebKit isolationclick/localesevaluate/fill/Markdown globalcontext/actiontimeouts inclteardown. Original2Firefoxcases passedthisrun. No scope assertionfailure. Observed unrelated Chromehelper processes running~65-100%CPUeach fordays; didnot touchothers. Final diagnostic completeproject runs with freshfixture perbrowser launched sequentially(no test/assertion/retry/timeout changes) sh_12e3231c5001vZsOu1Hj7ijeF1, logsww-1xb-root-isolated-{chromium,firefox,webkit}.log. Publicationstillblocked; do notblindloop or poll. If freshprojectfullgatefails, report unresolvedblocker and request userdirection; do notpublishunderexistingauthorization. Scoped3browser,quality280 and ZAQ679+12properties acceptance remaingreen. No productionchanges sincefirstrootlaunch.",
+      "timestamp": "2026-10-12T03:41:03Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T03:14:27Z"
+  "updated_at": "2026-10-12T03:41:03Z"
 }
