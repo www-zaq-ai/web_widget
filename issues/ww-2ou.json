@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-12T12:16:07Z",
   "created": "2026-10-12T12:06:58Z",
   "description": "User-approved liveness semantics atop2559489: actual HTTP listener/scoped mounts/responding page+session guard or validatedHTTPSredirect suffice without proxy/forceSSLclassification. Preserve requestsecurity and stronger TLS/proxy checks, malformeds/runtime/auth/missing/stale failures; handshake/external not_checked on guardedfeed. Testsfirst/docs/minimalimplementation/quality/applicablegates/publishsamePR24branch authorized. NoZAQedits/userservice/evalrestarts/unrelatedreruns/newstartupflags/signatures/hooks.",
   "id": "ww-2ou",
@@ -17,8 +18,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Report guarded HTTP feed as locally ready (#24)",
   "type": "task",
-  "updated_at": "2026-10-12T12:16:04Z"
+  "updated_at": "2026-10-12T12:16:07Z"
 }
