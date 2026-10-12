@@ -30,11 +30,15 @@
     {
       "text": "Python wrapper failed stdlib import EINTR before tests; same fresh full-project diagnostic relaunched via Node shell sh_12e3394fa0018ZV2ziWGyFHIDi. Await completion notification, do not poll. Source/assertions/retries/timeouts unchanged; hold publication. If all fresh full projects pass, gate covers all 400 tests and authorize PR24 commit/push with ww-1xb; send immutable SHA and note earlier monolithic failures (cause not proven). If any fail, report blocker/request direction rather than publishing or blind reruns. Scoped API already accepted ZAQ 679+12 properties and real WSS.",
       "timestamp": "2026-10-12T03:45:50Z"
+    },
+    {
+      "text": "User explicitly requested full browser gate rerun. Confirmed no widget runner/server active before launch. Fresh full root suite (no max-failures cutoff) then scoped three-browser suite launched sequentially as shell sh_12ecd0fb20018E0LLYH92L0nEB; logs approved temp ww-1xb-full-gate-rerun-{root,scoped}.log. No source/assertion/retry/timeout configuration changes. Await completion notification, do not poll. Publication still gated on both passing; existing commit/push authorization PR24 only, no merge/main switch/no ZAQ edits.",
+      "timestamp": "2026-10-12T06:29:23Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T03:45:50Z"
+  "updated_at": "2026-10-12T06:29:23Z"
 }
