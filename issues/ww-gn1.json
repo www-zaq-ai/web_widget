@@ -2,13 +2,14 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-12T17:49:18Z",
   "created": "2026-10-12T16:57:13Z",
   "description": "Coordinated ZAQ PR #836 migration: public v2 receipt lifecycle, independent correlated assistant streams, focused regression tests and canonical docs. Delivery explicitly authorized on feature/submission-message-lifecycle in the current worktree; no additional worktree or ZAQ changes.",
   "id": "ww-gn1",
   "labels": [],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Separate v2 submission receipts from assistant streams",
   "type": "epic",
-  "updated_at": "2026-10-12T16:57:23Z"
+  "updated_at": "2026-10-12T17:49:18Z"
 }
