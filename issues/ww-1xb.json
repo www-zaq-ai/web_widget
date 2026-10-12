@@ -70,11 +70,15 @@
     {
       "text": "Bounded natural-failure investigation finished: focused instrumented WebKit10/10pass; full ordered WebKit133pass1skip; complete long-history all3browser run400pass2skip0flaky with ORIGINAL assertions/deadlines and passive diagnostics. Natural concurrent-race case passedall3: initial LiveViewjoins202/304ms Chromium(longpoll afterbrowserLNA block),212/212ms Firefox,304/402ms WebKit; allbootstrapHTTP200, exactly1cookiewrite, no terminalsessionerrors; Firefox/WebKitall4WSjoinrepliesOK. No natural failure captured, so originalrootcause NOTPROVEN; no justifiedproductionfix or baseline A/B verdict. Published090 isolatedtemp baseline prepared but notrun because targetdidnotfail; bundled assets byteidentical. Confirmed separate test false-negative mechanism via priorcontrolled4cases6.9sec validstartup vs5secassert, not forensicproof. Removedtemporarypassive helper and restored session-race.spec.ts exactHEAD (gitdiffempty). Scope27file candidate remainsuncommitted/unpublished; no timeout/assertionfix made. Preserve evidence approvedtemp ww-1xb-natural-full-history.json/artifactdir/log and earlierdiagnosticreports. Stop reruns; userdecisionneeded on testcontractcorrection vs leavingbugunproven and scope publication.",
       "timestamp": "2026-10-12T09:01:33Z"
+    },
+    {
+      "text": "User explicitly ended rootcause investigation and reauthorized proceeding with scoped candidate publication under priorPR24 permission; contention onlypossible/notproven, no justifiedproductionworkaround. Finalcheck27candidate files allmtime before passing root/scoped gates; session-race.spec.ts HEADdiffempty/tempobserverremoved; frontend/bundleunchanged. Fresh finalmixprecommit qualityclean280tests0failures; freshassetsbuildpasses; SHA256candidate contentsunchangedduringvalidation. Reuse validunchanged production-source latest root400passed2skipped0flaky (passive diagnostic run, assertions unchanged) and scoped3passed; prior distributedauthstorepass. LatestZAQacceptance689tests+12properties,mixqclean,scopedWSSconnector9 fulllifecyclezeroerrors. No blindbrowserreruns/no user services touched/no ZAQedits/no merge/main switch. Readycommit/push ww-v12/explicit-host-startup withww-1xb.",
+      "timestamp": "2026-10-12T09:38:45Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Trusted process-owned mount scope for HostAdapter (#24/#23)",
   "type": "task",
-  "updated_at": "2026-10-12T09:01:33Z"
+  "updated_at": "2026-10-12T09:38:45Z"
 }
