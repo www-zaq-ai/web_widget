@@ -6,9 +6,15 @@
   "description": "User-approved liveness semantics atop2559489: actual HTTP listener/scoped mounts/responding page+session guard or validatedHTTPSredirect suffice without proxy/forceSSLclassification. Preserve requestsecurity and stronger TLS/proxy checks, malformeds/runtime/auth/missing/stale failures; handshake/external not_checked on guardedfeed. Testsfirst/docs/minimalimplementation/quality/applicablegates/publishsamePR24branch authorized. NoZAQedits/userservice/evalrestarts/unrelatedreruns/newstartupflags/signatures/hooks.",
   "id": "ww-2ou",
   "labels": [],
+  "comments": [
+    {
+      "text": "Final validated localfeed candidate: testsfirst6red failures on2559489 (guardedHTTP/scopedstatus/redirect/gatedprobe). Focused58tests pass; finalmixprecommit297tests0failures/971mods-funsqualityclean; scopedbrowser3pass/cookie-host28pass2existingskips; distributedauthchecks pass; whitespaceclean. Guarded page+session exact503https_required/noCookie or validatedHTTPSredirect proves localfeed without proxy/forceSSLclassification/flags. Stronger directHTTP/TLS handshake + optionalproxy preserved; no actual security assertions removed. New stopped/missing/wrongmount/stale/runtime/auth/policymismatch/arbitrary404/500/503/cookie-write/redirect negatives. Only readiness source+summary productionchanges; no config/API/hooks/assets/guards/ZAQedits/user/evalservices/rootcause reruns. ZAQ38tests+1propertygreen with unchanged baseline-red/local-green host assertions; broadregression next there. Contractdocs clarify liveness versus security, configuredURL neverTLSproof; guarded verification local/not_checked/not_checked. Authorized publish samePR24branch, no merge/main switch.",
+      "timestamp": "2026-10-12T12:15:19Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Report guarded HTTP feed as locally ready (#24)",
   "type": "task",
-  "updated_at": "2026-10-12T12:07:01Z"
+  "updated_at": "2026-10-12T12:15:19Z"
 }
