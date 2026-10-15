@@ -10,11 +10,15 @@
     {
       "text": "APPROVAL recorded before edits: user rejected replicated/cache storage and explicitly approved removing HostAdapter.fetch_profile/runtime profile store, replacing cache/lifetime assertions with transient Context.profile_context envelope delivery. Exact affected tests: all 11 tests in test/web_widget/verified_sender_profile_test.exs: signed profile synchronously at init; user-only tokens; invalid/tampered snapshots; refresh replaces/clears and old reconnect rollback; same-second conflicts; failed renewal; identical snapshots extend expiry; connector/sender isolation; expiry/pruning barrier; revocation lookup; runtime replacement/infrastructure. Rewrite these around per-authenticated-session init/message/history delivery, preserve signature/expiry/revocation/isolation checks; no changes planned to signed_identity_test.exs or verified_profile_test.exs. Approved envelope %{sender_id: verified_sender, channel_config_id: id, profile: validated_profile}, nil when absent; no independent storage, no Incoming fields. Commit/push same branch authorized.",
       "timestamp": "2026-10-15T12:16:40Z"
+    },
+    {
+      "text": "Implemented approved transient alternative: removed HostAdapter/Runtime fetch_profile, runtime cache, cleanup timer, retention and ordering logic. Protocol passes Context.profile_context as exact %{sender_id: session.sender_id, channel_config_id: session.channel_config_id, profile: session.profile}, nil when absent, through shared init/message/history dispatch. Signed validation and Session renewal remain. Replaced the 11 approved tests with transient delivery and authorization checks; no other test files changed. mix precommit passed: Credo clean, 323 tests/0 failures. Focused suite: 34 tests/0 failures. git diff --check clean. No envelope incompatibility; host Context must accept new optional profile_context. Same-branch push authorized.",
+      "timestamp": "2026-10-15T12:21:35Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Resolve distributed verified sender profile authority",
   "type": "task",
-  "updated_at": "2026-10-15T12:16:40Z"
+  "updated_at": "2026-10-15T12:21:35Z"
 }
