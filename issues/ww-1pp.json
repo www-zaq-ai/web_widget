@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-15T10:14:34Z",
   "created": "2026-10-15T10:07:49Z",
   "description": "Implement explicit opt-in normalization ordering, regression tests and host migration documentation on current branch; no commit or push.",
   "id": "ww-1pp",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Support host normalization before widget endpoint guards",
   "type": "task",
-  "updated_at": "2026-10-15T10:14:30Z"
+  "updated_at": "2026-10-15T10:14:34Z"
 }
