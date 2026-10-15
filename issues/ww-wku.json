@@ -11,11 +11,15 @@
     {
       "text": "Implemented on fix/native-phoenix-reconnection based on feature/submission-message-lifecycle. After first LiveView establishment, session bootstrap controller never intercepts transport errors or starts disconnect deadlines; Phoenix handles recovery. Updated contract and initial-bootstrap tests. Native WebSocket outage and browser setOffline tests \u003e10 sec pass in Chromium/Firefox/WebKit, restoring history/draft without connect() or repeated session verification. Focused run 35 passed, 1 WebKit timer fixture failed; fixed clock installation ordering and all 3 variants passed on recheck. mix assets.build and mix precommit (308 tests) pass; diff check clean. Full BEAM restart/RAM binding-store loss not exercised. No commit/push/PR creation.",
       "timestamp": "2026-10-15T07:40:45Z"
+    },
+    {
+      "text": "User requested removal of initial connection management too. Deleted WidgetSessionConnection and its hooks/tests. app.js bootstraps HTTP cookie/CSRF then hands initial connection and all reconnects to Phoenix. widget-session.ts retries transient network/timeout/408/429/5xx HTTP failures with capped backoff and no lifetime deadline; confirmed cookie/config failures remain explicit. Added browser tests for initial session network/503 outages and native initial transport recovery, replacing obsolete terminal-deadline assertions. Focused cases now pass all three browsers (17 initial passes plus corrected six-case rerun); assets.build, precommit 308 tests, diff check pass. Full server process restart/RAM loss remains unverified. No commit/push.",
+      "timestamp": "2026-10-15T08:10:36Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "Delegate established widget reconnection to Phoenix",
   "type": "task",
-  "updated_at": "2026-10-15T07:40:49Z"
+  "updated_at": "2026-10-15T08:10:36Z"
 }
