@@ -10,11 +10,15 @@
     {
       "text": "Implemented private host initialization binding, subscribe-before-history, cross-page/tab assistant streams, processing recovery and persisted-ref dedup including late refs. New tests reproduced old incompatibility before production changes. mix precommit passes (334 tests), actual ZAQ shared constructors smoke passes (2 tests). Checking existing browser regressions and final review; no merge.",
       "timestamp": "2026-10-15T16:18:33Z"
+    },
+    {
+      "text": "User clarified via History lifecycle question: canonical assistant history rows are finalized only. Aligned existing browser fixture (private init envelope, processing active/idle, next full-body live edit, terminal persisted refs) and debug control removed obsolete restore_on_terminal field. Existing Chromium recovery/renewal/expiry/WebSocket tests now pass (6), prolonged rejoin tests pass (2). No E2E tests authored or assertions weakened.",
+      "timestamp": "2026-10-15T16:41:47Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-15T16:18:33Z"
+  "updated_at": "2026-10-15T16:41:47Z"
 }
