@@ -6,9 +6,15 @@
   "description": "Confirmed HostAdapter profile lookup is node-local but ZAQ NodeRouter may choose any Channels node. Need approved distributed authority/lifecycle contract: recommended majority-protected profile snapshots in existing BindingStore Mnesia infrastructure, or replicated owner routing with generation-fenced RPC. Must distinguish authoritative absence from unavailable authority; preserve API and no Incoming/Engine widget additions. Await lifecycle/error behavior approval before implementation.",
   "id": "ww-oqj",
   "labels": [],
+  "comments": [
+    {
+      "text": "APPROVAL recorded before edits: user rejected replicated/cache storage and explicitly approved removing HostAdapter.fetch_profile/runtime profile store, replacing cache/lifetime assertions with transient Context.profile_context envelope delivery. Exact affected tests: all 11 tests in test/web_widget/verified_sender_profile_test.exs: signed profile synchronously at init; user-only tokens; invalid/tampered snapshots; refresh replaces/clears and old reconnect rollback; same-second conflicts; failed renewal; identical snapshots extend expiry; connector/sender isolation; expiry/pruning barrier; revocation lookup; runtime replacement/infrastructure. Rewrite these around per-authenticated-session init/message/history delivery, preserve signature/expiry/revocation/isolation checks; no changes planned to signed_identity_test.exs or verified_profile_test.exs. Approved envelope %{sender_id: verified_sender, channel_config_id: id, profile: validated_profile}, nil when absent; no independent storage, no Incoming fields. Commit/push same branch authorized.",
+      "timestamp": "2026-10-15T12:16:40Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Resolve distributed verified sender profile authority",
   "type": "task",
-  "updated_at": "2026-10-15T12:16:29Z"
+  "updated_at": "2026-10-15T12:16:40Z"
 }
