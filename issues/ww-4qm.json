@@ -39,11 +39,15 @@
     {
       "text": "Pushed 637c7bd68649b582717b01e112b3d21cde44c4d7: runtime-aware fallback, actual assistant-ui regression test first (2 != 1 red), all 6 unit tests now use real runtime and pass. Added test:unit to both E2E workflow jobs, rebuilt bundle. Unchanged response suite passes 15/15 and recovery/renewal/expiry/WebSocket suite passes 15/15 across Chromium Firefox WebKit. mix quality/precommit 336 tests and asset build pass. Full CI run 38795883686 queued; waiting for completion before closing. No merge; configs/dependency clone untouched.",
       "timestamp": "2026-10-15T19:41:18Z"
+    },
+    {
+      "text": "Full CI E2E run 38795883686 completed successfully for exact revision 637c7bd68649b582717b01e112b3d21cde44c4d7: E2E chromium SUCCESS, E2E firefox SUCCESS, E2E webkit macOS SUCCESS. Duplicate-indicator regression validated across the full matrix, including new runtime-aware UI unit CI steps. PR30 remains unmerged pending final approval.",
+      "timestamp": "2026-10-15T19:54:13Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-15T19:41:18Z"
+  "updated_at": "2026-10-15T19:54:13Z"
 }
