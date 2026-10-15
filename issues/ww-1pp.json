@@ -6,9 +6,15 @@
   "description": "Implement explicit opt-in normalization ordering, regression tests and host migration documentation on current branch; no commit or push.",
   "id": "ww-1pp",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented supported web_widget_normalize/1 callback before Proxy/CookieGuard/Phoenix; default identity, halt propagation, documented host trust and ZAQ migration. Real HTTPS/WSS and rejection regression coverage added. mix precommit: 310 tests, zero failures; strict Credo/format/compile and diff check pass. Handoff sent to ZAQ parent session ses_ec13d72c8ffeWdqi7bMB1anHb7. Changes remain uncommitted on current branch by user request; no commit/push/sync. Dependency cannot be pinned until authorized landing.",
+      "timestamp": "2026-10-15T10:14:30Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Support host normalization before widget endpoint guards",
   "type": "task",
-  "updated_at": "2026-10-15T10:08:13Z"
+  "updated_at": "2026-10-15T10:14:30Z"
 }
