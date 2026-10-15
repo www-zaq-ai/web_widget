@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T10:55:26Z",
+  "description": "Validate optional signed profiles; retain scoped server-side state before sink; expose HostAdapter.fetch_profile(sender_id, %{channel_config_id: id}); cover lifecycle, docs and validation. Existing checkout branch explicitly requested.",
+  "id": "ww-qkv",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Implement verified sender profiles",
+  "type": "task",
+  "updated_at": "2026-10-15T10:55:26Z"
+}
