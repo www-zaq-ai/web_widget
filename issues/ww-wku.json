@@ -6,9 +6,15 @@
   "description": "Stack fix/native-phoenix-reconnection on feature/submission-message-lifecycle per user. Remove established-connection deadlines/error interception, retain bounded initial session bootstrap, preserve auth renewal/history recovery and status UI. Add native reconnection tests. No publication authorized.",
   "id": "ww-wku",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented on fix/native-phoenix-reconnection based on feature/submission-message-lifecycle. After first LiveView establishment, session bootstrap controller never intercepts transport errors or starts disconnect deadlines; Phoenix handles recovery. Updated contract and initial-bootstrap tests. Native WebSocket outage and browser setOffline tests \u003e10 sec pass in Chromium/Firefox/WebKit, restoring history/draft without connect() or repeated session verification. Focused run 35 passed, 1 WebKit timer fixture failed; fixed clock installation ordering and all 3 variants passed on recheck. mix assets.build and mix precommit (308 tests) pass; diff check clean. Full BEAM restart/RAM binding-store loss not exercised. No commit/push/PR creation.",
+      "timestamp": "2026-10-15T07:40:45Z"
+    }
+  ],
   "priority": 2,
   "status": "open",
   "title": "Delegate established widget reconnection to Phoenix",
   "type": "task",
-  "updated_at": "2026-10-15T07:36:49Z"
+  "updated_at": "2026-10-15T07:40:45Z"
 }
