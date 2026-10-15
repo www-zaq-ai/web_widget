@@ -35,11 +35,15 @@
     {
       "text": "Approved duplicate-indicator regression fix underway. Reproduced CI failure using real assistant-ui external-store runtime in Node SSR test: optimistic assistant + old fallback rendered 2 indicators. ConversationProgress now subscribes to runtime thread message statuses via useAuiState instead of raw LiveView props. All 6 runtime-aware unit tests and unchanged responses.spec.ts across Chromium/Firefox/WebKit (15 tests) pass; asset build passes. Added UI unit command to both E2E CI jobs. No send/receipt/host changes.",
       "timestamp": "2026-10-15T19:37:51Z"
+    },
+    {
+      "text": "Pushed 637c7bd68649b582717b01e112b3d21cde44c4d7: runtime-aware fallback, actual assistant-ui regression test first (2 != 1 red), all 6 unit tests now use real runtime and pass. Added test:unit to both E2E workflow jobs, rebuilt bundle. Unchanged response suite passes 15/15 and recovery/renewal/expiry/WebSocket suite passes 15/15 across Chromium Firefox WebKit. mix quality/precommit 336 tests and asset build pass. Full CI run 38795883686 queued; waiting for completion before closing. No merge; configs/dependency clone untouched.",
+      "timestamp": "2026-10-15T19:41:18Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-15T19:37:51Z"
+  "updated_at": "2026-10-15T19:41:18Z"
 }
