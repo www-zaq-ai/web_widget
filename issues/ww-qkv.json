@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-15T11:03:25Z",
   "created": "2026-10-15T10:55:26Z",
   "description": "Validate optional signed profiles; retain scoped server-side state before sink; expose HostAdapter.fetch_profile(sender_id, %{channel_config_id: id}); cover lifecycle, docs and validation. Existing checkout branch explicitly requested.",
   "id": "ww-qkv",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Implement verified sender profiles",
   "type": "task",
-  "updated_at": "2026-10-15T11:02:44Z"
+  "updated_at": "2026-10-15T11:03:25Z"
 }
