@@ -27,11 +27,15 @@
     {
       "text": "Reopened for approved widget-only presentation follow-up: recovered active processing needs in-conversation existing WorkingIndicator ('Preparing your answer') until actual running assistant content/activity renders. No synthetic messages/IDs, submission changes, ZAQ APIs, or new full E2E authoring. Implement/test on existing PR30 branch; preserve config/dev.exs and dependency clone; push for review, no merge.",
       "timestamp": "2026-10-15T18:19:46Z"
+    },
+    {
+      "text": "Approved presentation-only recovery follow-up pushed as 1114f771ad5e3baf5c83fcbc6e544dc093d70616 on existing PR30 branch. ConversationProgress reuses extracted existing WorkingIndicator and localized Preparing your answer when isTyping is true with no running assistant row; real create/edit/activity row takes over without duplicate, false typing/terminal/failure clears via existing Chat state. No synthetic message IDs, receipt/send/host changes; config/dev.exs and ZAQ clone untouched. Added dependency-free Node/React static-render unit harness via existing Vite: red 3 tests before implementation, then 5/5 pass. mix quality, precommit (336 tests), assets.build and diff check pass. Built release web-widget.js committed. No new full E2E authored/run; final human UX review pending, PR30 remains unmerged.",
+      "timestamp": "2026-10-15T18:23:39Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-15T18:19:46Z"
+  "updated_at": "2026-10-15T18:23:39Z"
 }
