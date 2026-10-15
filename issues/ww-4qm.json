@@ -23,11 +23,15 @@
     {
       "text": "Host review accepted 0b949ca66aa032ab0b002e056a98ec666bf157b1 for ZAQ integration: no blocking findings. ZAQ pinned exact revision and updated host default event mapping for intended bootstrap Context.delivery=nil. All 62 host/recovery tests pass, including actual held native answer, closing old Chat then fresh authenticated page process on same recipient topic with processing indication; original completion rendered exactly once. Conversations unchanged. Final ZAQ coverage/precommit running at handoff. This is not merge or final human UX approval: keep PR #30 unmerged and preserve clean branch. No additional widget work or test reruns requested.",
       "timestamp": "2026-10-15T16:59:39Z"
+    },
+    {
+      "text": "Reopened for approved widget-only presentation follow-up: recovered active processing needs in-conversation existing WorkingIndicator ('Preparing your answer') until actual running assistant content/activity renders. No synthetic messages/IDs, submission changes, ZAQ APIs, or new full E2E authoring. Implement/test on existing PR30 branch; preserve config/dev.exs and dependency clone; push for review, no merge.",
+      "timestamp": "2026-10-15T18:19:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-15T18:19:41Z"
+  "updated_at": "2026-10-15T18:19:46Z"
 }
