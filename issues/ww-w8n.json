@@ -6,9 +6,15 @@
   "description": "Coordinate with host WebBridge accepted execution failures. Reuse existing Markdown rendering in assistant error panels; cover protocol-v2 accepted pre-stream create/typing-false/failed flow, unsafe links/HTML, and unchanged submission rejection. User authorized current branch, no commit/push.",
   "id": "ww-w8n",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented on current branch at user request, no commit/push. Assistant failure panels reuse TextMessagePartProvider + existing AssistantMarkdown; rebuilt tracked release bundle. Added accepted pre-stream v2 fixture matching ZAQ typing true/create empty/typing false/failed public body, LiveView regression, and browser recovery-link/security/rejection tests. mix precommit: 308 tests pass; mix assets.build passes; focused Playwright failed-response + markdown: 12 pass across Chromium/Firefox/WebKit. Full 411-case browser suite not run. ZAQ still pins d7ed897: publication plus authorized dependency update or explicitly authorized local integration is required; ZAQ and deps untouched. No protocol change, no credential business logic or portal construction. No bw sync because publication/push not authorized.",
+      "timestamp": "2026-10-15T06:14:59Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Render safe recovery links in failed response bodies",
   "type": "task",
-  "updated_at": "2026-10-15T06:08:26Z"
+  "updated_at": "2026-10-15T06:14:59Z"
 }
