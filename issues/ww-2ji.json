@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-15T13:24:52Z",
   "created": "2026-10-15T13:13:47Z",
   "description": "Resolve GitHub #26 on current PR #30 branch: shared Markdown anchors target blank with noopener noreferrer, retain sanitization; approved change to failed-response navigation test from iframe to new tab; add normal response regression, build tracked assets, run browser and precommit checks. User requests top-of-stack fix only.",
   "id": "ww-2ji",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Open widget content links outside iframe",
   "type": "task",
-  "updated_at": "2026-10-15T13:24:34Z"
+  "updated_at": "2026-10-15T13:24:52Z"
 }
