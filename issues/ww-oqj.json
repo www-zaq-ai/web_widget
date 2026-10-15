@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-15T11:44:07Z",
+  "description": "Confirmed HostAdapter profile lookup is node-local but ZAQ NodeRouter may choose any Channels node. Need approved distributed authority/lifecycle contract: recommended majority-protected profile snapshots in existing BindingStore Mnesia infrastructure, or replicated owner routing with generation-fenced RPC. Must distinguish authoritative absence from unavailable authority; preserve API and no Incoming/Engine widget additions. Await lifecycle/error behavior approval before implementation.",
+  "id": "ww-oqj",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Resolve distributed verified sender profile authority",
+  "type": "task",
+  "updated_at": "2026-10-15T11:44:07Z"
+}
