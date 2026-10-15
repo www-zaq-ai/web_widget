@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-15T06:15:01Z",
   "created": "2026-10-15T06:08:22Z",
   "description": "Coordinate with host WebBridge accepted execution failures. Reuse existing Markdown rendering in assistant error panels; cover protocol-v2 accepted pre-stream create/typing-false/failed flow, unsafe links/HTML, and unchanged submission rejection. User authorized current branch, no commit/push.",
   "id": "ww-w8n",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Render safe recovery links in failed response bodies",
   "type": "task",
-  "updated_at": "2026-10-15T06:14:59Z"
+  "updated_at": "2026-10-15T06:15:01Z"
 }
