@@ -14,11 +14,15 @@
     {
       "text": "User clarified via History lifecycle question: canonical assistant history rows are finalized only. Aligned existing browser fixture (private init envelope, processing active/idle, next full-body live edit, terminal persisted refs) and debug control removed obsolete restore_on_terminal field. Existing Chromium recovery/renewal/expiry/WebSocket tests now pass (6), prolonged rejoin tests pass (2). No E2E tests authored or assertions weakened.",
       "timestamp": "2026-10-15T16:41:47Z"
+    },
+    {
+      "text": "Implemented and pushed commit 0b949ca on feat/verified-sender-profile / PR #30; no merge. Final mix quality and mix precommit pass (336 tests, no Credo issues, format and warnings-as-errors); actual ZAQ shared-constructor smoke passes (2 tests); mix assets.build passed. Full existing browser run passed all 133 Chromium plus first 18 Firefox tests before 600s tool timeout (no failures); remainder Firefox/WebKit not completed. Separate relevant Chromium recovery/renewal/expiry/WebSocket batch 6/6 and rejoin batch 2/2 pass. Server-only API: Runtime.initialize(widget.init event, authenticated_session) -\u003e {:ok, public_response, bound_session}; subscribe bound session, subsequent dispatch reuses private descriptor. Canonical history assistant rows finalized only per user confirmation. Dependency clone untouched. Await user/ZAQ reconciliation and review before merge/pin.",
+      "timestamp": "2026-10-15T16:54:44Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-15T16:41:47Z"
+  "updated_at": "2026-10-15T16:54:44Z"
 }
