@@ -6,9 +6,15 @@
   "description": "Validate optional signed profiles; retain scoped server-side state before sink; expose HostAdapter.fetch_profile(sender_id, %{channel_config_id: id}); cover lifecycle, docs and validation. Existing checkout branch explicitly requested.",
   "id": "ww-qkv",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented signed optional profile validation and runtime-local sender snapshots before init dispatch. HostAdapter.fetch_profile(sender_id, %{channel_config_id: id}) ignores extras and returns atom-keyed full_name/email/phone or not_found/invalid_request. Latest iat replaces/clears; same-second conflicts suppress enrichment; authorization/generation checks gate lookup. Added tests without changing existing tests. mix precommit passed: 323 tests, zero failures; Credo clean; git diff --check clean. bw sync intentionally withheld because it pushes and user forbids push without authorization.",
+      "timestamp": "2026-10-15T11:02:44Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Implement verified sender profiles",
   "type": "task",
-  "updated_at": "2026-10-15T10:55:32Z"
+  "updated_at": "2026-10-15T11:02:44Z"
 }
