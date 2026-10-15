@@ -6,9 +6,15 @@
   "description": "Resolve GitHub #26 on current PR #30 branch: shared Markdown anchors target blank with noopener noreferrer, retain sanitization; approved change to failed-response navigation test from iframe to new tab; add normal response regression, build tracked assets, run browser and precommit checks. User requests top-of-stack fix only.",
   "id": "ww-2ji",
   "labels": [],
+  "comments": [
+    {
+      "text": "Implemented #26 on top-of-stack PR #30 branch as requested. Shared safe Markdown anchor uses target=_blank rel=noopener noreferrer; applies to assistant text and public errors without altering sanitization. User approved changing failed-response iframe-navigation assertion; now tests context-routed popup, opener=null, unchanged authorized iframe and subsequent send. Normal Markdown popup regression added. Docs and tracked bundle updated. Validation: mix assets.build passed (TypeScript+Vite), focused 12/12 on Chromium/Firefox/WebKit, full macOS WebKit 132 passed/1 skipped, mix precommit 323 passed/Credo clean, git diff --check clean.",
+      "timestamp": "2026-10-15T13:24:34Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Open widget content links outside iframe",
   "type": "task",
-  "updated_at": "2026-10-15T13:13:52Z"
+  "updated_at": "2026-10-15T13:24:34Z"
 }
