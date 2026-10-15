@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-15T13:13:47Z",
@@ -7,8 +7,8 @@
   "id": "ww-2ji",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Open widget content links outside iframe",
   "type": "task",
-  "updated_at": "2026-10-15T13:13:47Z"
+  "updated_at": "2026-10-15T13:13:52Z"
 }
