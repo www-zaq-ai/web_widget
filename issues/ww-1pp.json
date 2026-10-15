@@ -1,5 +1,5 @@
 {
-  "assignee": "",
+  "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
   "created": "2026-10-15T10:07:49Z",
@@ -7,8 +7,8 @@
   "id": "ww-1pp",
   "labels": [],
   "priority": 2,
-  "status": "open",
+  "status": "in_progress",
   "title": "Support host normalization before widget endpoint guards",
   "type": "task",
-  "updated_at": "2026-10-15T10:07:49Z"
+  "updated_at": "2026-10-15T10:08:13Z"
 }
