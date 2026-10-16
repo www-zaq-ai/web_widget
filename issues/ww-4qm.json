@@ -47,11 +47,15 @@
     {
       "text": "Implemented approved safe context-update error responses (no added logs). Preserve categories through Runtime.initialize, Chat.resume/history and LiveView replies: invalid fields/pending submission/session unauthorized; uniform ownership denial; host unavailable/rejected; invalid protocol/correlation; missing/invalid/changed binding; history unavailable/invalid. Added fixed-message allowlist, semantic host correlation checks, null prompt selection regression and private-data redaction tests. Malformed history ID normalization now fails safely instead of raising. Tests-first LiveView run 5 failures then green; final mix quality/precommit 347 tests, 6 UI unit tests, assets build, and unchanged shared-widget E2E 6/6 across Chromium Firefox WebKit pass. Preparing reviewable commit; configs and dependency clone untouched, no merge.",
       "timestamp": "2026-10-16T07:42:46Z"
+    },
+    {
+      "text": "Pushed 06f1d6d183704010f3f99017913103f2a7c9fd0c to existing PR30 branch; full E2E CI run 38868997612 queued. Awaiting matrix result before closing follow-up. New browser response reason/error identifies safe stage; updateContext SDK already rejects with readable error text. prompt_context:null remains accepted. No added logging, no merge.",
+      "timestamp": "2026-10-16T07:43:26Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-16T07:42:46Z"
+  "updated_at": "2026-10-16T07:43:26Z"
 }
