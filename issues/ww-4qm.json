@@ -43,11 +43,15 @@
     {
       "text": "Full CI E2E run 38795883686 completed successfully for exact revision 637c7bd68649b582717b01e112b3d21cde44c4d7: E2E chromium SUCCESS, E2E firefox SUCCESS, E2E webkit macOS SUCCESS. Duplicate-indicator regression validated across the full matrix, including new runtime-aware UI unit CI steps. PR30 remains unmerged pending final approval.",
       "timestamp": "2026-10-15T19:54:13Z"
+    },
+    {
+      "text": "Implemented approved safe context-update error responses (no added logs). Preserve categories through Runtime.initialize, Chat.resume/history and LiveView replies: invalid fields/pending submission/session unauthorized; uniform ownership denial; host unavailable/rejected; invalid protocol/correlation; missing/invalid/changed binding; history unavailable/invalid. Added fixed-message allowlist, semantic host correlation checks, null prompt selection regression and private-data redaction tests. Malformed history ID normalization now fails safely instead of raising. Tests-first LiveView run 5 failures then green; final mix quality/precommit 347 tests, 6 UI unit tests, assets build, and unchanged shared-widget E2E 6/6 across Chromium Firefox WebKit pass. Preparing reviewable commit; configs and dependency clone untouched, no merge.",
+      "timestamp": "2026-10-16T07:42:46Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-16T07:33:54Z"
+  "updated_at": "2026-10-16T07:42:46Z"
 }
