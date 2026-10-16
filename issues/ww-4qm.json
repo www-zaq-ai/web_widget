@@ -67,11 +67,15 @@
     {
       "text": "Full E2E CI run 38885518361 succeeded for 193f23f3e05d4159b31796900c47ca929db79a33: Chromium, Firefox and WebKit macOS all green. Accepted-user sync and acknowledgement-driven composer implementation ready for root zaq-jdu review/pin; final human UX gate and merge approval still pending. PR30 remains unmerged.",
       "timestamp": "2026-10-16T10:25:29Z"
+    },
+    {
+      "text": "Root ZAQ review/reconciliation accepted exact widget revision 193f23f3e05d4159b31796900c47ca929db79a33 and pinned it. Independent 14 UI/controller tests pass; 145 focused root tests + 12 properties green. Final full ZAQ precommit: 11140 tests, 264 properties, 48 doctests, 0 failures, 1 skipped (125 excluded). Root user explicitly approved replacing the existing no-answer blanket no-PubSub assertion with two saved-user acknowledgements while still forbidding assistant/typing events. Actual installed-host user-record convergence regression passes. CI 38885518361 independently verified successful. No merge; final human UX retest and gated E2E remain pending. No further implementation or retesting requested.",
+      "timestamp": "2026-10-16T10:51:41Z"
     }
   ],
   "priority": 2,
   "status": "closed",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-16T10:25:33Z"
+  "updated_at": "2026-10-16T10:51:41Z"
 }
