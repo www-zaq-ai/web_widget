@@ -58,8 +58,8 @@
     }
   ],
   "priority": 2,
-  "status": "closed",
+  "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-16T07:57:00Z"
+  "updated_at": "2026-10-16T09:01:17Z"
 }
