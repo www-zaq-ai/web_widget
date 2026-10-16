@@ -55,11 +55,15 @@
     {
       "text": "Full E2E CI run 38868997612 succeeded for 06f1d6d183704010f3f99017913103f2a7c9fd0c: Chromium, Firefox and WebKit macOS all green. Safe context-update errors validated; PR30 remains unmerged pending approval.",
       "timestamp": "2026-10-16T07:56:56Z"
+    },
+    {
+      "text": "Cross-tab accepted-user + ack-driven composer follow-up coordinated with root zaq-jdu. Approved contract response.user_message, enriched async receipt canonical user record/positive position/provider time; host external-\u003euser projection. Legacy explicit descriptors without new event mapping remain direct-enriched-receipt only. User explicitly approved: 7-\u003e8 exact event mapping assertions, matching unknown first-send broadcast may establish its conversation, and updating optimistic-placeholder unit expectation to no visible synthetic assistant. Implemented canonical idempotent reducer/order with assistant user refs/request binding, origin-only tab-local LiveView submission_id ack, unknown acknowledgement_unavailable handling/recovery hint, bounded first-unknown assistant queue, retained/locked draft with Sending translations and no resubmit on uncertainty. Session/process replacement without matching local correlation intentionally cannot clear a draft based on equal history text (flagged to root). Current validation: quality/precommit 360 tests, 14 UI/controller tests, real ZAQ constructors smoke2, assets build pass; existing Chromium regression29 and crossbrowser standard30 + auth/recovery15 pass with assertions preserved. No new full E2E authored; configs/ZAQ clone untouched; final review pending commit/push, no merge.",
+      "timestamp": "2026-10-16T10:02:44Z"
     }
   ],
   "priority": 2,
   "status": "in_progress",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-16T09:01:17Z"
+  "updated_at": "2026-10-16T10:02:44Z"
 }
