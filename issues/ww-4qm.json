@@ -2,7 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
-  "closed_at": "2026-10-16T07:57:00Z",
+  "closed_at": "2026-10-16T10:25:33Z",
   "created": "2026-10-15T16:05:48Z",
   "description": "Approved recipient binding contract on existing PR #30 branch. Test first; private initializer envelope; cross-tab assistant correlation; history processing recovery; preserve auth and submission semantics; full validation and reviewable commit, no merge.",
   "id": "ww-4qm",
@@ -70,8 +70,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Bind authenticated widgets to host recipient delivery and recover live history",
   "type": "task",
-  "updated_at": "2026-10-16T10:25:29Z"
+  "updated_at": "2026-10-16T10:25:33Z"
 }
