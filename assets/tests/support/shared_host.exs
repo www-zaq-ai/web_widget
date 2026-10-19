@@ -124,12 +124,16 @@ defmodule WebWidget.E2ESharedHost do
     host = WebWidget.TestIntegration.ChatHost
     conversation = request.conversation_id || "conversation-1"
     created = is_nil(request.conversation_id)
+    acceptance = host.acceptance(request, created)
+    user = %{acceptance.user_message | message_id: "held-user"}
+    assistant = %{message_id: "held-assistant", position: System.unique_integer([:positive, :monotonic]),
+      role: "assistant", content: "**Finished**", provider_sent_at: nil}
     receipt = host.response(request, if(created, do: :conversation_created, else: :status),
-      conversation, %{accepted: true, created: created, user_message: %{message_id: "held-user", position: 1, role: "user", content: request.content, provider_sent_at: nil}})
+      conversation, %{acceptance | user_message: user})
     host.publish(context, %{receipt | type: :user_message})
     stream = %{receipt | message_id: Ecto.UUID.generate()}
     Agent.update(@requests, &Map.put(&1, {:held_stream, context.sender_id},
-      %{status: :running, receipt: receipt, stream: stream, context: context}))
+      %{status: :running, receipt: receipt, stream: stream, context: context, assistant: assistant}))
     host.publish(context, %{receipt | type: :typing, payload: %{active: true}})
     host.publish(context, %{stream | type: :message_create, payload: %{body: ""}})
     host.publish(context, %{stream | type: :message_edit, payload: %{body: "**Partial**"}})
@@ -137,8 +141,8 @@ defmodule WebWidget.E2ESharedHost do
   end
 
   defp held_history(request, held) do
-    user = %{message_id: "held-user", position: 1, role: "user", content: "held stream", provider_sent_at: nil}
-    assistant = %{message_id: "held-assistant", position: 2, role: "assistant", content: "**Finished**", provider_sent_at: nil}
+    user = held.receipt.payload.user_message
+    assistant = held.assistant
     running = held.status == :running
 
     if running do
