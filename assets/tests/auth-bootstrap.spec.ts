@@ -451,6 +451,89 @@ for (const responsePhase of ["completed", "running"] as const) {
   });
 }
 
+test("sending after reconnect preserves the interrupted answer when it completes last (#17)", async ({ page, request }) => {
+  const user = `reconnect-send-${crypto.randomUUID()}`;
+  const control = "http://127.0.0.1:4021";
+  let tokens = 0;
+  await page.route("**/api/widget-token", async route => {
+    tokens++;
+    const issued = await request.get(`${control}/identity`, { params: { user_id: user } });
+    await route.fulfill({ headers: { "cache-control": "no-store" }, json: await issued.json() });
+  });
+  const sessions = async () => {
+    const response = await request.get(`${control}/liveview-sessions/${user}`);
+    expect(response.ok()).toBe(true);
+    return (await response.json()).sessions as Array<{ pid: string; topic: string; conversation_id: string }>;
+  };
+  const hostRequests = async () => {
+    const response = await request.get(`${control}/requests/${user}`);
+    expect(response.ok()).toBe(true);
+    return await response.json() as Array<{ type: string; content?: string; conversation_id: string | null }>;
+  };
+  const streamStatus = async () => {
+    const response = await request.get(`${control}/held-stream/${user}`);
+    expect(response.ok()).toBe(true);
+    return (await response.json()).status as string;
+  };
+
+  await installTokenWidget(page);
+  const widget = page.frameLocator("#zaq-widget");
+  const input = widget.getByRole("textbox", { name: "Message", exact: true });
+  const send = widget.getByRole("button", { name: "Send message", exact: true });
+  const users = widget.locator('[data-role="user"] .zaq-user-content');
+  const answers = widget.locator(".zaq-answer-content");
+  await input.fill("held stream");
+  await input.press("Enter");
+  await expect(input).toHaveValue("");
+  await expect(answers).toHaveText(["Partial"]);
+  await expect.poll(sessions).toHaveLength(1);
+  const [before] = await sessions();
+  expect(before.conversation_id).toBe("conversation-1");
+  expect(await streamStatus()).toBe("running");
+
+  await widget.locator("body").evaluate(() => (window as any).liveSocket.disconnect());
+  await expect(send).toBeDisabled();
+  await expect.poll(sessions).toEqual([]);
+  await widget.locator("body").evaluate(() => (window as any).liveSocket.connect());
+  await expect.poll(async () => {
+    const active = await sessions();
+    return active.length === 1 && active[0].pid !== before.pid;
+  }).toBe(true);
+  await expect(widget.locator("#widget-context")).toHaveAttribute("data-authorized", "true");
+  await expect(widget.locator(".zaq-widget")).toHaveAttribute("data-reconnecting", "false");
+  await expect(answers).toHaveText(["Partial"]);
+  const [restored] = await sessions();
+  expect(restored.topic).toBe(before.topic);
+  expect(restored.conversation_id).toBe(before.conversation_id);
+  expect(await hostRequests()).toEqual(expect.arrayContaining([
+    expect.objectContaining({ type: "conversation_history", conversation_id: before.conversation_id }),
+  ]));
+
+  // Accept and finish a new submission before releasing the pre-disconnect response.
+  await input.fill("instant");
+  await expect(send).toBeEnabled();
+  await input.press("Enter");
+  await expect(input).toHaveValue("");
+  await expect(users).toHaveText(["held stream", "instant"]);
+  await expect(answers).toHaveText(["Partial", "Immediate answer"]);
+  expect(await streamStatus()).toBe("running");
+  const acceptedRequests = (await hostRequests()).filter(r => r.content);
+  expect(acceptedRequests).toEqual([
+    expect.objectContaining({ content: "held stream", conversation_id: null }),
+    expect.objectContaining({ content: "instant", conversation_id: before.conversation_id }),
+  ]);
+
+  expect((await request.post(`${control}/held-stream/${user}/complete`)).status()).toBe(204);
+  await expect.poll(streamStatus).toBe("finished");
+  await expect(answers).toHaveText(["Finished", "Immediate answer"]);
+  await expect(users).toHaveText(["held stream", "instant"]);
+  await expect(widget.locator('[data-role="assistant"]')).toHaveCount(2);
+  await expect(widget.locator(".zaq-working")).toBeHidden();
+  await expect(input).toBeEnabled();
+  expect((await hostRequests()).filter(r => r.content)).toEqual(acceptedRequests);
+  expect(tokens).toBe(1);
+});
+
 for (const answerTiming of ["during", "after"] as const) {
   test(`automatic renewal with five minutes remaining preserves the original answer ${answerTiming} renewal`, async ({ page, request }) => {
     test.setTimeout(45_000);
