@@ -1,0 +1,14 @@
+{
+  "assignee": "",
+  "blocked_by": [],
+  "blocks": [],
+  "created": "2026-10-19T16:13:28Z",
+  "description": "Add focused E2E regression for GitHub #17: disconnect during held stream, reconnect, submit again before original completion, verify independent answers and no duplicate submissions. Validate Chromium Firefox WebKit. User requests a new branch in current worktree.",
+  "id": "ww-v4u",
+  "labels": [],
+  "priority": 2,
+  "status": "open",
+  "title": "Cover sending after reconnect before interrupted answer completes (#17)",
+  "type": "task",
+  "updated_at": "2026-10-19T16:13:28Z"
+}
