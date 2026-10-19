@@ -2,6 +2,7 @@
   "assignee": "Julien",
   "blocked_by": [],
   "blocks": [],
+  "closed_at": "2026-10-19T16:20:22Z",
   "created": "2026-10-19T16:13:28Z",
   "description": "Add focused E2E regression for GitHub #17: disconnect during held stream, reconnect, submit again before original completion, verify independent answers and no duplicate submissions. Validate Chromium Firefox WebKit. User requests a new branch in current worktree.",
   "id": "ww-v4u",
@@ -13,8 +14,8 @@
     }
   ],
   "priority": 2,
-  "status": "in_progress",
+  "status": "closed",
   "title": "Cover sending after reconnect before interrupted answer completes (#17)",
   "type": "task",
-  "updated_at": "2026-10-19T16:20:12Z"
+  "updated_at": "2026-10-19T16:20:22Z"
 }
