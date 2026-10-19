@@ -6,9 +6,15 @@
   "description": "Add focused E2E regression for GitHub #17: disconnect during held stream, reconnect, submit again before original completion, verify independent answers and no duplicate submissions. Validate Chromium Firefox WebKit. User requests a new branch in current worktree.",
   "id": "ww-v4u",
   "labels": [],
+  "comments": [
+    {
+      "text": "Added issue #17 exact browser ordering in auth-bootstrap.spec.ts; confirmed replacement LiveView PID, same authorized conversation/topic, later submission completes before held original, both final answers retained once, and no replay/token refresh. Fresh-server first run exposed fixture collision: held-user hardcoded position 1 vs ChatHost.acceptance's first unique position 1. Fixed held fixture to allocate positions through same monotonic sequence and reuse identical history rows. New regression 9/9 (3 repetitions per browser), related reconnect/early-renewal suite 15/15 across Chromium Firefox WebKit; mix precommit 360 tests passed plus format/strict Credo/compile. No production code modified.",
+      "timestamp": "2026-10-19T16:20:12Z"
+    }
+  ],
   "priority": 2,
   "status": "in_progress",
   "title": "Cover sending after reconnect before interrupted answer completes (#17)",
   "type": "task",
-  "updated_at": "2026-10-19T16:13:33Z"
+  "updated_at": "2026-10-19T16:20:12Z"
 }
