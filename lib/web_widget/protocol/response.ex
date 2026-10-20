@@ -3,6 +3,13 @@ defmodule WebWidget.Protocol.Response do
 
   import WebWidget.Protocol.Validation, only: [nonblank?: 1]
 
+  @tool_states %{
+    "running" => "started",
+    "succeeded" => "completed",
+    "failed" => "failed",
+    "unknown" => "unknown"
+  }
+
   def normalize(%{type: type, widget_id: widget, conversation_id: conversation} = event) do
     with true <- nonblank?(widget) and nonblank?(conversation),
          {:ok, payload} <- payload(type, Map.get(event, :payload), event) do
@@ -27,8 +34,21 @@ defmodule WebWidget.Protocol.Response do
               "response.message.complete"
             ] do
     with true <- nonblank?(id) and is_binary(content),
-         {:ok, timestamp} <- timestamp(message) do
-      {:ok, %{payload: Map.merge(%{id: id, content: content}, timestamp)}}
+         {:ok, timestamp} <- timestamp(message),
+         {:ok, tools} <- tool_snapshot(message) do
+      {:ok, %{payload: %{id: id, content: content} |> Map.merge(timestamp) |> Map.merge(tools)}}
+    else
+      _ -> :error
+    end
+  end
+
+  defp payload(
+         "response.message.step",
+         %{message_id: id, tool_steps: _} = payload,
+         _
+       ) do
+    with true <- nonblank?(id), {:ok, tools} <- tool_snapshot(payload) do
+      {:ok, %{payload: Map.put(tools, :message_id, id)}}
     else
       _ -> :error
     end
@@ -56,10 +76,17 @@ defmodule WebWidget.Protocol.Response do
     end
   end
 
-  defp payload("response.message.failed", %{message_id: id, code: code, message: message}, _) do
-    if nonblank?(id) and nonblank?(code) and nonblank?(message),
-      do: {:ok, %{payload: %{message_id: id, code: code, message: message}}},
-      else: :error
+  defp payload(
+         "response.message.failed",
+         %{message_id: id, code: code, message: message} = payload,
+         _
+       ) do
+    with true <- nonblank?(id) and nonblank?(code) and nonblank?(message),
+         {:ok, tools} <- tool_snapshot(payload) do
+      {:ok, %{payload: Map.merge(%{message_id: id, code: code, message: message}, tools)}}
+    else
+      _ -> :error
+    end
   end
 
   defp payload("response.error", %{request_type: request, code: code, message: message}, _) do
@@ -92,8 +119,10 @@ defmodule WebWidget.Protocol.Response do
 
   defp history_message(%{id: id, role: role, content: content} = message) do
     with true <- nonblank?(id) and role in ["user", "assistant"] and is_binary(content),
-         {:ok, timestamp} <- timestamp(message) do
-      {:ok, Map.merge(Map.take(message, [:id, :role, :content]), timestamp)}
+         {:ok, timestamp} <- timestamp(message),
+         {:ok, tools} <- tool_snapshot(message) do
+      {:ok,
+       message |> Map.take([:id, :role, :content]) |> Map.merge(timestamp) |> Map.merge(tools)}
     else
       _ -> :error
     end
@@ -132,6 +161,41 @@ defmodule WebWidget.Protocol.Response do
   defp normalize_list(_, _), do: :error
 
   defp unique_ids?(items), do: length(Enum.uniq_by(items, & &1.id)) == length(items)
+
+  defp tool_snapshot(%{tool_steps: steps}) do
+    case normalize_list(steps, &tool_step/1) do
+      {:ok, steps} -> {:ok, %{steps: Enum.sort_by(steps, & &1.sequence)}}
+      _ -> :error
+    end
+  end
+
+  defp tool_snapshot(_), do: {:ok, %{}}
+
+  defp tool_step(
+         %{"id" => id, "kind" => "tool", "name" => name, "sequence" => sequence, "state" => state} =
+           step
+       ) do
+    duration = Map.get(step, "duration_ms")
+    label = Map.get(step, "label", name)
+
+    with true <- Enum.all?([id, name, label], &public_tool_text?/1),
+         true <- is_integer(sequence) and sequence > 0,
+         {:ok, state} <- Map.fetch(@tool_states, state),
+         true <- valid_duration?(duration) do
+      public = %{id: id, kind: "tool_call", label: label, sequence: sequence, state: state}
+      {:ok, if(is_nil(duration), do: public, else: Map.put(public, :duration_ms, duration))}
+    else
+      _ -> :error
+    end
+  end
+
+  defp tool_step(_), do: :error
+
+  defp public_tool_text?(value),
+    do: nonblank?(value) and byte_size(value) <= 256 and String.valid?(value)
+
+  defp valid_duration?(nil), do: true
+  defp valid_duration?(value), do: is_integer(value) and value >= 0
 
   defp timestamp(%{timestamp: %DateTime{} = time}),
     do: {:ok, %{timestamp: DateTime.to_iso8601(time)}}

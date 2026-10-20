@@ -868,6 +868,26 @@ the assistant's next full-body edit or terminal arrives through the subscription
 
 ## Outbound payloads
 
+### Public tool snapshots
+
+ZAQ may attach optional `tool_steps` replacement snapshots to message edits,
+steps, completions/failures, and canonical display-history messages. Each public
+entry contains `id`, `kind: "tool"`, `name`, positive `sequence`, `state`
+(`running`, `succeeded`, `failed`, or `unknown`), and optional nonnegative
+`duration_ms`. The adapter validates and maps these into UI `tool_call` steps,
+preserving identity, sequence and duration. No arguments, results or private
+traces are accepted into UI state. The internal UI states map running to started,
+succeeded to completed, and preserve failed and unknown.
+
+Snapshots replace only the tool subset of a message's steps. Omission preserves
+existing tools; an empty list clears them. Terminal snapshots override earlier
+running tools without inferring success from answer completion. An uncompleted
+tool without a terminal snapshot settles as unknown. Message terminals still
+reject duplicate/late edits and steps. History restores the same public facts;
+generic transient activity remains separate. The React activity panel displays
+these existing tool cards, including recorded durations and an explicit unknown
+outcome, over the existing LiveView connection.
+
 Shared Response uses semantic `type`, `protocol_version: 2`, `request_id`, optional
 `conversation_id`/`message_id` and public `payload`. Map this into the existing UI
 vocabulary while preserving correlation; do not make ZAQ emit widget-private maps.

@@ -45,7 +45,15 @@ defmodule WebWidget.Conversation.State do
   end
 
   def apply_event(state, %{type: "response.message.edit", payload: payload}) do
-    update_message(state, payload.id, &%{&1 | content: payload.content})
+    update_message(state, payload.id, fn message ->
+      %{message | content: payload.content, steps: snapshot_steps(message.steps, payload)}
+    end)
+  end
+
+  def apply_event(state, %{type: "response.message.step", payload: %{steps: _} = payload}) do
+    update_message(state, payload.message_id, fn message ->
+      %{message | steps: snapshot_steps(message.steps, payload)}
+    end)
   end
 
   def apply_event(state, %{type: "response.message.step", payload: step}) do
@@ -70,7 +78,7 @@ defmodule WebWidget.Conversation.State do
         message
         | content: payload.content,
           status: "complete",
-          steps: finish_steps(message.steps, "completed")
+          steps: finish_steps(snapshot_steps(message.steps, payload), "completed")
       }
     end)
     |> finish(payload.id)
@@ -78,6 +86,9 @@ defmodule WebWidget.Conversation.State do
 
   def apply_event(state, %{type: "response.message.failed", payload: payload}) do
     state
+    |> update_message(payload.message_id, fn message ->
+      %{message | steps: snapshot_steps(message.steps, payload)}
+    end)
     |> fail_message(payload.message_id, payload.message)
     |> finish(payload.message_id)
   end
@@ -92,7 +103,10 @@ defmodule WebWidget.Conversation.State do
     %{
       state
       | messages:
-          Enum.map(messages, &Map.merge(&1, %{status: "complete", steps: [], error: nil})),
+          Enum.map(
+            messages,
+            &Map.merge(&1, %{status: "complete", steps: Map.get(&1, :steps, []), error: nil})
+          ),
         error: nil
     }
   end
@@ -139,9 +153,39 @@ defmodule WebWidget.Conversation.State do
 
   defp finish(state, _id), do: state
 
+  defp snapshot_steps(previous, %{steps: steps}) do
+    tools = Enum.filter(previous, &(&1.kind in ["tool_call", "tool_result"]))
+    settled = Map.new(tools, &{&1.id, &1})
+
+    steps =
+      Enum.map(steps, fn step ->
+        case Map.get(settled, step.id) do
+          %{state: state} = old
+          when state in ["completed", "failed", "unknown"] and state != step.state ->
+            old
+
+          _ ->
+            step
+        end
+      end)
+
+    Enum.reject(previous, &(&1.kind in ["tool_call", "tool_result"])) ++ steps
+  end
+
+  defp snapshot_steps(previous, _payload), do: previous
+
   defp finish_steps(steps, state),
     do:
       Enum.map(steps, fn step ->
-        if step.state in ["started", "updated"], do: %{step | state: state}, else: step
+        cond do
+          step.state not in ["started", "updated"] ->
+            step
+
+          step.kind in ["tool_call", "tool_result"] and Map.has_key?(step, :sequence) ->
+            %{step | state: "unknown"}
+
+          true ->
+            %{step | state: state}
+        end
       end)
 end

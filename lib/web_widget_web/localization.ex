@@ -55,6 +55,8 @@ defmodule WebWidgetWeb.Localization do
         "Running" => dgettext("widget", "Running"),
         "Done" => dgettext("widget", "Done"),
         "Failed" => dgettext("widget", "Failed"),
+        "Unknown" => dgettext("widget", "Unknown"),
+        "Tool outcome unavailable" => dgettext("widget", "Tool outcome unavailable"),
         "Progress" => dgettext("widget", "Progress"),
         "Error details" => dgettext("widget", "Error details"),
         "Result" => dgettext("widget", "Result"),
