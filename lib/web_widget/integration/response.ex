@@ -153,21 +153,34 @@ defmodule WebWidget.Integration.Response do
 
   def error_text(_), do: "Unable to complete this request."
 
-  defp payload(type, %{body: body}, id)
+  defp payload(type, %{body: body} = payload, id)
        when type in [:message_create, :message_edit, :message_complete] and is_binary(body),
-       do: {:ok, %{id: id, content: body}}
+       do: {:ok, with_tools(%{id: id, content: body}, payload)}
 
   defp payload(:typing, %{active: active}, _), do: {:ok, %{active: active}}
 
   defp payload(
          :message_step,
-         %{kind: :activity, state: :running, step_id: step, label: label},
+         %{kind: :activity, state: :running, step_id: step, label: label} = payload,
          id
        ),
-       do: {:ok, %{id: step, message_id: id, kind: "status", state: "updated", label: label}}
+       do:
+         {:ok,
+          with_tools(
+            %{id: step, message_id: id, kind: "status", state: "updated", label: label},
+            payload
+          )}
+
+  defp payload(:message_step, %{tool_steps: _} = payload, id),
+    do: {:ok, with_tools(%{message_id: id}, payload)}
 
   defp payload(:message_failed, payload, id),
-    do: {:ok, %{message_id: id, code: "response_failed", message: failure_message(payload)}}
+    do:
+      {:ok,
+       with_tools(
+         %{message_id: id, code: "response_failed", message: failure_message(payload)},
+         payload
+       )}
 
   defp payload(:error, payload, _),
     do:
@@ -193,9 +206,12 @@ defmodule WebWidget.Integration.Response do
     |> Map.take([:id, :role, :content, :timestamp])
     |> Map.put(:id, to_string(Map.get(message, :message_id, Map.get(message, :id))))
     |> history_timestamp(Map.get(message, :provider_sent_at))
+    |> with_tools(message)
   end
 
   defp history_message(_), do: %{}
+
+  defp with_tools(output, source), do: Map.merge(output, Map.take(source, [:tool_steps]))
 
   defp history_timestamp(message, nil), do: message
   defp history_timestamp(message, time), do: Map.put(message, :timestamp, time)
